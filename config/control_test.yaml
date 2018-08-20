@@ -1,0 +1,6 @@
+max_xy: 20
+min_xy: -20
+max_z: 15
+min_z: 5
+max_yaw: 3.14
+min_yaw: -3.14
