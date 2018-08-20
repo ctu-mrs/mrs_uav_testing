@@ -111,7 +111,8 @@ private:
   void       mainTimer(const ros::TimerEvent &event);
 
 private:
-  ControlState_t current_state = IDLE_STATE;
+  ControlState_t current_state  = IDLE_STATE;
+  ControlState_t previous_state = IDLE_STATE;
   void           changeState(ControlState_t new_state);
 
 private:
@@ -129,6 +130,8 @@ private:
   double genZ(void);
   double sanitizeYaw(const double yaw_in);
   bool   inDesiredState(void);
+
+  int active_tracker = -1;
 
   // | -------------------- for goto testing -------------------- |
 private:
@@ -313,7 +316,6 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
     return;
   }
 
-
   ROS_INFO_THROTTLE(1.0, "");
   ROS_WARN_THROTTLE(1.0, "[ControlTest]: current state: %s", state_names[current_state]);
   ROS_INFO_THROTTLE(1.0, "[ControlTest]: dessired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
@@ -325,7 +327,6 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
     case IDLE_STATE:
 
       changeState(ControlState_t(int(current_state) + 1));
-
       break;
 
     case GOTO_TOPIC_STATE:
@@ -384,9 +385,14 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
 
     case SET_YAW_RELATIVE_SERVICE_STATE:
       if (inDesiredState()) {
-        ROS_INFO("");
-        ROS_INFO("[ControlTest]: TEST FINISHED");
-        ros::shutdown();
+
+        if (active_tracker == 0) {
+          changeState(GOTO_TOPIC_STATE);
+        } else if (active_tracker == 1) {
+          ROS_INFO("");
+          ROS_INFO("[ControlTest]: TEST FINISHED");
+          ros::shutdown();
+        }
       }
       break;
   }
@@ -404,12 +410,14 @@ void ControlTest::changeState(ControlState_t new_state) {
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state], state_names[new_state]);
 
-  current_state = new_state;
+  previous_state = current_state;
+  current_state  = new_state;
 
   mrs_msgs::TrackerPointStamped goal_tracker_point_stamped;
   std_msgs::Float64             goal_float64;
   mrs_msgs::Vec4                goal_vec4;
   mrs_msgs::Vec1                goal_vec1;
+  mrs_msgs::SwitchTracker       switch_tracker;
 
   switch (new_state) {
 
@@ -417,6 +425,15 @@ void ControlTest::changeState(ControlState_t new_state) {
       break;
 
     case GOTO_TOPIC_STATE:
+
+      if (active_tracker == -1) {
+        switch_tracker.request.tracker = "mrs_trackers/LineTracker";
+      } else if (active_tracker == 0) {
+        switch_tracker.request.tracker = "mrs_trackers/MpcTracker";
+      }
+      active_tracker++;
+      ROS_INFO("[ControlTest]: switching to %s", switch_tracker.request.tracker.c_str());
+      service_client_switch_tracker.call(switch_tracker);
 
       goal_tracker_point_stamped.position.x   = genXY();
       goal_tracker_point_stamped.position.y   = genXY();
@@ -430,7 +447,8 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       try {
         publisher_goto.publish(goal_tracker_point_stamped);
-      } catch (...) {
+      }
+      catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
       }
 
@@ -456,7 +474,8 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       try {
         publisher_goto_relative.publish(goal_tracker_point_stamped);
-      } catch (...) {
+      }
+      catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_relative.getTopic().c_str());
       }
 
@@ -475,7 +494,8 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       try {
         publisher_goto_altitude.publish(goal_float64);
-      } catch (...) {
+      }
+      catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_altitude.getTopic().c_str());
       }
 
@@ -494,7 +514,8 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       try {
         publisher_set_yaw.publish(goal_float64);
-      } catch (...) {
+      }
+      catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_yaw.getTopic().c_str());
       }
 
@@ -664,8 +685,7 @@ bool ControlTest::inDesiredState(void) {
 
   mutex_odometry.lock();
   {
-    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.1 &&
-        fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.30) {
+    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.2 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.2) {
       mutex_odometry.unlock();
       ROS_WARN("[ControlTest]: We are at the goal!");
       return true;
