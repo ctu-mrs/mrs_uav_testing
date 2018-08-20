@@ -11,6 +11,7 @@
       <!-- Subscribers --> 
       <remap from="~odometry_in" to="odometry/new_odom" />
       <remap from="~position_command_in" to="control_manager/position_cmd" />
+      <remap from="~tracker_status_in" to="control_manager/tracker_status" />
 
       <!-- Publisher --> 
       <remap from="~goto_out" to="control_manager/goto" />
