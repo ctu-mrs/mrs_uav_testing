@@ -8,14 +8,17 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -fno-diagnostics-color")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  nodelet
   mrs_msgs
   mrs_lib
   nav_msgs
-  nodelet
+  std_msgs
+  std_srvs
+  mavros_msgs
   )
 
 catkin_package(
-  CATKIN_DEPENDS nav_msgs mrs_lib
+  CATKIN_DEPENDS nav_msgs mrs_lib std_msgs std_srvs mavros_msgs
   LIBRARIES ControlTest
   #  DEPENDS system_lib
   )

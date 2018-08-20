@@ -21,7 +21,16 @@
 
       <remap from="~set_trajectory_out" to="control_manager/mpc_tracker/set_trajectory" />
 
+      <!-- Services --> 
       <remap from="~switch_tracker_out" to="control_manager/switch_tracker" />
+      <remap from="~motors_out" to="control_manager/motors" />
+      <remap from="~arm_out" to="mavros/cmd/arming" />
+      <remap from="~offboard_out" to="mavros/set_mode" />
+      <remap from="~takeoff_out" to="mav_manager/takeoff" />
+      <remap from="~land_out" to="mav_manager/land" />
+      <remap from="~land_home_out" to="mav_manager/land_home" />
+      <remap from="~fly_to_start_out" to="control_manager/mpc_tracker/fly_to_trajectory_start" />
+      <remap from="~start_following_out" to="control_manager/mpc_tracker/start_trajectory_following" />
 
     </node>
 

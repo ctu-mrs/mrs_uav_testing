@@ -2,18 +2,23 @@
 #include <nodelet/nodelet.h>
 
 #include <std_srvs/Trigger.h>
+#include <std_srvs/SetBool.h>
+
 #include <std_msgs/Float64.h>
 
 #include <mrs_msgs/TrackerPointStamped.h>
+#include <mrs_msgs/TrackerPoint.h>
 #include <mrs_msgs/TrackerTrajectory.h>
 #include <mrs_msgs/TrackerTrajectorySrv.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/Vec1.h>
-
 #include <mrs_msgs/SwitchTracker.h>
 #include <mrs_msgs/PositionCommand.h>
 
 #include <nav_msgs/Odometry.h>
+
+#include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/SetMode.h>
 
 #include <mutex>
 
@@ -29,21 +34,31 @@ namespace mrs_testing
 // state machine
 typedef enum
 {
-  IDLE_STATE                     = 0,
-  GOTO_TOPIC_STATE               = 1,
-  GOTO_RELATIVE_TOPIC_STATE      = 2,
-  GOTO_ALTITUDE_TOPIC_STATE      = 3,
-  SET_YAW_TOPIC_STATE            = 4,
-  SET_YAW_RELATIVE_TOPIC_STATE   = 5,
-  GOTO_SERVICE_STATE             = 6,
-  GOTO_RELATIVE_SERVICE_STATE    = 7,
-  GOTO_ALTITUDE_SERVICE_STATE    = 8,
-  SET_YAW_SERVICE_STATE          = 9,
-  SET_YAW_RELATIVE_SERVICE_STATE = 10,
+  IDLE_STATE,
+  TAKEOFF_STATE,
+  GOTO_TOPIC_STATE,
+  GOTO_RELATIVE_TOPIC_STATE,
+  GOTO_ALTITUDE_TOPIC_STATE,
+  SET_YAW_TOPIC_STATE,
+  SET_YAW_RELATIVE_TOPIC_STATE,
+  GOTO_SERVICE_STATE,
+  GOTO_RELATIVE_SERVICE_STATE,
+  GOTO_ALTITUDE_SERVICE_STATE,
+  SET_YAW_SERVICE_STATE,
+  SET_YAW_RELATIVE_SERVICE_STATE,
+  TRAJECTORY_LOAD_STATIC_TOPIC_STATE,
+  TRAJECTORY_FLY_TO_START_TOPIC_STATE,
+  TRAJECTORY_START_FOLLOWING_TOPIC_STATE,
+  TRAJECTORY_LOAD_STATIC_SERVICE_STATE,
+  TRAJECTORY_FLY_TO_START_SERVICE_STATE,
+  TRAJECTORY_START_FOLLOWING_SERVICE_STATE,
+  TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE,
+  FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[11] = {
+const char *state_names[20] = {
     "IDLE_STATE",
+    "TAKEOFF_STATE",
     "GOTO_TOPIC_STATE",
     "GOTO_RELATIVE_TOPIC_STATE",
     "GOTO_ALTITUDE_TOPIC_STATE",
@@ -54,6 +69,14 @@ const char *state_names[11] = {
     "GOTO_ALTITUDE_SERVICE_STATE",
     "SET_YAW_SERVICE_STATE",
     "SET_YAW_RELATIVE_SERVICE_STATE",
+    "TRAJECTORY_LOAD_STATIC_TOPIC_STATE",
+    "TRAJECTORY_FLY_TO_START_TOPIC_STATE",
+    "TRAJECTORY_START_FOLLOWING_TOPIC_STATE",
+    "TRAJECTORY_LOAD_STATIC_SERVICE_STATE",
+    "TRAJECTORY_FLY_TO_START_SERVICE_STATE",
+    "TRAJECTORY_START_FOLLOWING_SERVICE_STATE",
+    "TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE",
+    "FINISHED_STATE",
 };
 
 //}
@@ -94,13 +117,22 @@ private:
 
 private:
   ros::ServiceClient service_client_switch_tracker;
+  ros::ServiceClient service_client_arm;
+  ros::ServiceClient service_client_offboard;
+  ros::ServiceClient service_client_takeoff;
+  ros::ServiceClient service_client_land;
+  ros::ServiceClient service_client_land_home;
+  ros::ServiceClient service_client_motors;
 
+private:
   ros::ServiceClient service_client_goto;
   ros::ServiceClient service_client_goto_relative;
   ros::ServiceClient service_client_goto_altitude;
   ros::ServiceClient service_client_set_yaw;
   ros::ServiceClient service_client_set_yaw_relative;
   ros::ServiceClient service_client_trajectory;
+  ros::ServiceClient service_client_fly_to_start;
+  ros::ServiceClient service_client_start_following;
 
 private:
   void callbackOdometry(const nav_msgs::OdometryConstPtr &msg);
@@ -130,8 +162,11 @@ private:
   double genZ(void);
   double sanitizeYaw(const double yaw_in);
   bool   inDesiredState(void);
+  void   activateTracker(std::string tracker_name);
 
   int active_tracker = -1;
+
+  mrs_msgs::TrackerPoint goal_tracker_point;
 
   // | -------------------- for goto testing -------------------- |
 private:
@@ -218,7 +253,15 @@ void ControlTest::onInit() {
   // |                          services                          |
   // --------------------------------------------------------------
 
+  // | -------------------- takeoff and land -------------------- |
+
   service_client_switch_tracker = nh_.serviceClient<mrs_msgs::SwitchTracker>("switch_tracker_out");
+  service_client_motors         = nh_.serviceClient<std_srvs::SetBool>("motors_out");
+  service_client_arm            = nh_.serviceClient<mavros_msgs::CommandBool>("arm_out");
+  service_client_offboard       = nh_.serviceClient<mavros_msgs::SetMode>("offboard_out");
+  service_client_takeoff        = nh_.serviceClient<std_srvs::Trigger>("takeoff_out");
+  service_client_land           = nh_.serviceClient<std_srvs::Trigger>("land_out");
+  service_client_land_home      = nh_.serviceClient<std_srvs::Trigger>("land_home_out");
 
   // | ------------------ std tracker services ------------------ |
 
@@ -230,7 +273,9 @@ void ControlTest::onInit() {
 
   // | -------------- additional trackers services -------------- |
 
-  service_client_trajectory = nh_.serviceClient<mrs_msgs::SwitchTracker>("set_trajectory_out");
+  service_client_trajectory      = nh_.serviceClient<mrs_msgs::SwitchTracker>("set_trajectory_out");
+  service_client_fly_to_start    = nh_.serviceClient<std_srvs::Trigger>("fly_to_start_out");
+  service_client_start_following = nh_.serviceClient<std_srvs::Trigger>("start_following_out");
 
   // --------------------------------------------------------------
   // |                           timers                           |
@@ -311,22 +356,30 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
   if (!is_initialized)
     return;
 
-  if (!got_odometry || !got_position_command) {
-    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for data");
+  if (!got_odometry) {
+    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for data, got_odometry: %s", got_odometry ? "YES" : "NO");
     return;
   }
 
-  ROS_INFO_THROTTLE(1.0, "");
-  ROS_WARN_THROTTLE(1.0, "[ControlTest]: current state: %s", state_names[current_state]);
-  ROS_INFO_THROTTLE(1.0, "[ControlTest]: dessired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
-  ROS_INFO_THROTTLE(1.0, "[ControlTest]: cmd: %f %f %f %f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
-  ROS_INFO_THROTTLE(1.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
+  ROS_INFO_THROTTLE(5.0, " ");
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: dessired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %f %f %f %f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
+  ROS_INFO_THROTTLE(5.0, " ");
 
   switch (current_state) {
 
     case IDLE_STATE:
 
       changeState(ControlState_t(int(current_state) + 1));
+      break;
+
+    case TAKEOFF_STATE:
+
+      if (odometry_z > 1.0) {
+        /* changeState(ControlState_t(int(current_state) + 1)); */
+        changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
+      }
       break;
 
     case GOTO_TOPIC_STATE:
@@ -389,11 +442,58 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
         if (active_tracker == 0) {
           changeState(GOTO_TOPIC_STATE);
         } else if (active_tracker == 1) {
-          ROS_INFO("");
-          ROS_INFO("[ControlTest]: TEST FINISHED");
-          ros::shutdown();
+          changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
         }
       }
+      break;
+
+    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE:
+
+      changeState(ControlState_t(int(current_state) + 1));
+      break;
+
+    case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+
+      changeState(ControlState_t(int(current_state) + 1));
+      break;
+
+    case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case FINISHED_STATE:
+
       break;
   }
 }
@@ -413,11 +513,19 @@ void ControlTest::changeState(ControlState_t new_state) {
   previous_state = current_state;
   current_state  = new_state;
 
-  mrs_msgs::TrackerPointStamped goal_tracker_point_stamped;
-  std_msgs::Float64             goal_float64;
-  mrs_msgs::Vec4                goal_vec4;
-  mrs_msgs::Vec1                goal_vec1;
-  mrs_msgs::SwitchTracker       switch_tracker;
+  mrs_msgs::TrackerPointStamped  goal_tracker_point_stamped;
+  std_msgs::Float64              goal_float64;
+  mrs_msgs::Vec4                 goal_vec4;
+  mrs_msgs::Vec1                 goal_vec1;
+  mrs_msgs::SwitchTracker        goal_switch_tracker;
+  std_srvs::SetBool              goal_bool;
+  mavros_msgs::CommandBool       goal_mavros_commandbool;
+  mavros_msgs::SetMode           goal_mavros_set_mode;
+  std_srvs::Trigger              goal_trigger;
+  mrs_msgs::TrackerTrajectory    goal_trajectory_topic;
+  mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
+
+  ros::Duration wait(1.0);
 
   switch (new_state) {
 
@@ -426,19 +534,19 @@ void ControlTest::changeState(ControlState_t new_state) {
 
     case GOTO_TOPIC_STATE:
 
+      //{ test goto topic
+
       if (active_tracker == -1) {
-        switch_tracker.request.tracker = "mrs_trackers/LineTracker";
+        activateTracker("mrs_trackers/LineTracker");
       } else if (active_tracker == 0) {
-        switch_tracker.request.tracker = "mrs_trackers/MpcTracker";
+        activateTracker("mrs_trackers/MpcTracker");
       }
       active_tracker++;
-      ROS_INFO("[ControlTest]: switching to %s", switch_tracker.request.tracker.c_str());
-      service_client_switch_tracker.call(switch_tracker);
 
       goal_tracker_point_stamped.position.x   = genXY();
       goal_tracker_point_stamped.position.y   = genXY();
       goal_tracker_point_stamped.position.z   = genZ();
-      goal_tracker_point_stamped.position.yaw = genYaw();
+      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
 
       des_x   = goal_tracker_point_stamped.position.x;
       des_y   = goal_tracker_point_stamped.position.y;
@@ -452,23 +560,48 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
       }
 
-      ROS_INFO("[ControlTest]: testing goto");
+      //}
+
+      break;
+
+    case TAKEOFF_STATE:
+
+      //{ testing takeoff
+      // | ------------------------- motors ------------------------- |
+      goal_bool.request.data = 1;
+      service_client_motors.call(goal_bool);
+
+      // | ------------------------- arming ------------------------- |
+      goal_mavros_commandbool.request.value = 1;
+      service_client_arm.call(goal_mavros_commandbool);
+
+      // | ------------------------ offboard ------------------------ |
+      goal_mavros_set_mode.request.base_mode   = 0;
+      goal_mavros_set_mode.request.custom_mode = "offboard";
+      service_client_offboard.call(goal_mavros_set_mode);
+
+      // | ------------------------- takeoff ------------------------ |
+      service_client_takeoff.call(goal_trigger);
+
+      //}
 
       break;
 
     case GOTO_RELATIVE_TOPIC_STATE:
 
+      //{ test goto_relative topic
+
       goal_tracker_point_stamped.position.x   = genXY();
       goal_tracker_point_stamped.position.y   = genXY();
       goal_tracker_point_stamped.position.z   = randd(-2, 2);
-      goal_tracker_point_stamped.position.yaw = genYaw();
+      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
 
       mutex_odometry.lock();
       {
         des_x   = goal_tracker_point_stamped.position.x + odometry_x;
         des_y   = goal_tracker_point_stamped.position.y + odometry_y;
         des_z   = goal_tracker_point_stamped.position.z + odometry_z;
-        des_yaw = goal_tracker_point_stamped.position.yaw + odometry_yaw;
+        des_yaw = sanitizeYaw(goal_tracker_point_stamped.position.yaw + odometry_yaw);
       }
       mutex_odometry.unlock();
 
@@ -479,11 +612,13 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_relative.getTopic().c_str());
       }
 
-      ROS_INFO("[ControlTest]: testing goto_relative");
+      //}
 
       break;
 
     case GOTO_ALTITUDE_TOPIC_STATE:
+
+      //{ test goto_altitude topic
 
       goal_float64.data = genZ();
 
@@ -499,13 +634,15 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_altitude.getTopic().c_str());
       }
 
-      ROS_INFO("[ControlTest]: testing goto_altitude");
+      //}
 
       break;
 
     case SET_YAW_TOPIC_STATE:
 
-      goal_float64.data = genYaw();
+      //{ test set_yaw topic
+
+      goal_float64.data = sanitizeYaw(genYaw());
 
       des_x   = cmd_x;
       des_y   = cmd_y;
@@ -519,27 +656,35 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_yaw.getTopic().c_str());
       }
 
+      //}
+
       break;
 
     case SET_YAW_RELATIVE_TOPIC_STATE:
 
-      goal_float64.data = genYaw();
+      //{ test set_yaw_relative topic
+
+      goal_float64.data = sanitizeYaw(genYaw());
 
       des_x   = cmd_x;
       des_y   = cmd_y;
       des_z   = cmd_z;
-      des_yaw = cmd_yaw + goal_float64.data;
+      des_yaw = sanitizeYaw(cmd_yaw + goal_float64.data);
 
       publisher_set_yaw_relative.publish(goal_float64);
+
+      //}
 
       break;
 
     case GOTO_SERVICE_STATE:
 
+      //{ test goto service
+
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = genZ();
-      goal_vec4.request.goal[3] = genYaw();
+      goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
 
       des_x   = goal_vec4.request.goal[0];
       des_y   = goal_vec4.request.goal[1];
@@ -548,25 +693,33 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_goto.call(goal_vec4);
 
+      //}
+
       break;
 
     case GOTO_RELATIVE_SERVICE_STATE:
 
+      //{ test goto_relative service
+
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = randd(-2, 2);
-      goal_vec4.request.goal[3] = genYaw();
+      goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
 
       des_x   = cmd_x + goal_vec4.request.goal[0];
       des_y   = cmd_y + goal_vec4.request.goal[1];
       des_z   = cmd_z + goal_vec4.request.goal[2];
-      des_yaw = cmd_yaw + goal_vec4.request.goal[3];
+      des_yaw = sanitizeYaw(cmd_yaw + goal_vec4.request.goal[3]);
 
       service_client_goto_relative.call(goal_vec4);
+
+      //}
 
       break;
 
     case GOTO_ALTITUDE_SERVICE_STATE:
+
+      //{ test goto_altitude service
 
       goal_vec1.request.goal = genZ();
 
@@ -577,11 +730,15 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_goto_altitude.call(goal_vec1);
 
+      //}
+
       break;
 
     case SET_YAW_SERVICE_STATE:
 
-      goal_vec1.request.goal = genYaw();
+      //{ test set_yaw service
+
+      goal_vec1.request.goal = sanitizeYaw(genYaw());
 
       des_x   = cmd_x;
       des_y   = cmd_y;
@@ -590,18 +747,112 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_set_yaw.call(goal_vec1);
 
+      //}
+
       break;
 
     case SET_YAW_RELATIVE_SERVICE_STATE:
 
-      goal_vec1.request.goal = genYaw();
+      //{ test set_yaw_relative service
+
+      goal_vec1.request.goal = sanitizeYaw(genYaw());
 
       des_x   = cmd_x;
       des_y   = cmd_y;
       des_z   = cmd_z;
-      des_yaw = cmd_yaw + goal_vec1.request.goal;
+      des_yaw = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
 
       service_client_set_yaw_relative.call(goal_vec1);
+
+      //}
+
+      break;
+
+    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE:
+
+      activateTracker("mrs_trackers/MpcTracker");
+
+      //{ test loadingtrajectory using a topic
+
+      goal_trajectory_topic.fly_now         = false;
+      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.stamp    = ros::Time::now();
+      goal_trajectory_topic.loop            = false;
+      goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.start_index     = 0;
+
+      goal_tracker_point.x   = -10;
+      goal_tracker_point.y   = -10;
+      goal_tracker_point.z   = 5;
+      goal_tracker_point.yaw = 1.57;
+      goal_trajectory_topic.points.push_back(goal_tracker_point);
+
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+
+      for (int i = 0; i < 50; i++) {
+
+        goal_tracker_point.x += 0.4;
+        goal_tracker_point.y += 0.4;
+        goal_tracker_point.z += 0.2;
+        goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw + 0.1);
+        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
+        goal_trajectory_topic.points.push_back(goal_tracker_point);
+      }
+
+      try {
+        publisher_set_trajectory.publish(goal_trajectory_topic);
+      }
+      catch (...) {
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory.getTopic().c_str());
+      }
+
+      wait.sleep();
+
+      //}
+
+      break;
+
+    case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
+
+      service_client_fly_to_start.call(goal_trigger);
+
+      break;
+
+    case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
+
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+
+      service_client_start_following.call(goal_trigger);
+
+      break;
+
+    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+
+      break;
+
+    case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
+
+      break;
+
+    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
+
+      break;
+
+    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+
+      break;
+
+    case FINISHED_STATE:
+
+      ROS_INFO(" ");
+      ROS_INFO("[ControlTest]: TEST FINISHED");
+      ros::shutdown();
 
       break;
   }
@@ -687,13 +938,29 @@ bool ControlTest::inDesiredState(void) {
   {
     if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.2 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.2) {
       mutex_odometry.unlock();
-      ROS_WARN("[ControlTest]: We are at the goal!");
+      ROS_WARN("[ControlTest]: The goal has been reached.");
       return true;
     }
   }
   mutex_odometry.unlock();
 
   return false;
+}
+
+//}
+
+//{ activateTracker()
+
+void ControlTest::activateTracker(std::string tracker_name) {
+
+  mrs_msgs::SwitchTracker goal_switch_tracker;
+  goal_switch_tracker.request.tracker = tracker_name;
+
+  active_tracker++;
+  ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.tracker.c_str());
+  service_client_switch_tracker.call(goal_switch_tracker);
+  ros::Duration wait(1.0);
+  wait.sleep();
 }
 
 //}
