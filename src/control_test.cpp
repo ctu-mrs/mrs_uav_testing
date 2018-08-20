@@ -181,7 +181,7 @@ private:
   bool   inDesiredState(void);
   void   activateTracker(std::string tracker_name);
 
-  int active_tracker = -1;
+  int active_tracker = 1;
   int takeoff_num    = 0;
 
   mrs_msgs::TrackerPoint goal_tracker_point;
@@ -408,8 +408,9 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
   ROS_INFO_THROTTLE(5.0, " ");
 
-  if ((ros::Time::now() - timeout).toSec() < 60.0) {
-    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED"); 
+  if ((ros::Time::now() - timeout).toSec() > 60.0) {
+    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!"); 
+    ros::shutdown();
   }
 
   switch (current_state) {
@@ -494,9 +495,9 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
     case SET_YAW_RELATIVE_SERVICE_STATE:
       if (inDesiredState()) {
 
-        if (active_tracker == 0) {
+        if (active_tracker == 1) {
           changeState(GOTO_TOPIC_STATE);
-        } else if (active_tracker == 1) {
+        } else if (active_tracker == 2) {
           changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
         }
       }
@@ -629,12 +630,12 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       //{ test goto topic
 
-      if (active_tracker == -1) {
+      if (active_tracker == 1) {
         activateTracker("mrs_trackers/LineTracker");
-      } else if (active_tracker == 0) {
+        active_tracker++;
+      } else if (active_tracker == 2) {
         activateTracker("mrs_trackers/MpcTracker");
       }
-      active_tracker++;
 
       goal_tracker_point_stamped.position.x   = genXY();
       goal_tracker_point_stamped.position.y   = genXY();
@@ -1266,7 +1267,6 @@ void ControlTest::activateTracker(std::string tracker_name) {
   mrs_msgs::SwitchTracker goal_switch_tracker;
   goal_switch_tracker.request.tracker = tracker_name;
 
-  active_tracker++;
   ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.tracker.c_str());
   service_client_switch_tracker.call(goal_switch_tracker);
   ros::Duration wait(1.0);
