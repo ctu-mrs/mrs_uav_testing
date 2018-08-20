@@ -53,10 +53,11 @@ typedef enum
   TRAJECTORY_FLY_TO_START_SERVICE_STATE,
   TRAJECTORY_START_FOLLOWING_SERVICE_STATE,
   TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE,
+  TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE,
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[20] = {
+const char *state_names[21] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "GOTO_TOPIC_STATE",
@@ -76,6 +77,7 @@ const char *state_names[20] = {
     "TRAJECTORY_FLY_TO_START_SERVICE_STATE",
     "TRAJECTORY_START_FOLLOWING_SERVICE_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE",
+    "TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE",
     "FINISHED_STATE",
 };
 
@@ -273,7 +275,7 @@ void ControlTest::onInit() {
 
   // | -------------- additional trackers services -------------- |
 
-  service_client_trajectory      = nh_.serviceClient<mrs_msgs::SwitchTracker>("set_trajectory_out");
+  service_client_trajectory      = nh_.serviceClient<mrs_msgs::TrackerTrajectorySrv>("set_trajectory_out");
   service_client_fly_to_start    = nh_.serviceClient<std_srvs::Trigger>("fly_to_start_out");
   service_client_start_following = nh_.serviceClient<std_srvs::Trigger>("start_following_out");
 
@@ -486,6 +488,13 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
       break;
 
     case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+
+      if (inDesiredState()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
+
+    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
 
       if (inDesiredState()) {
         changeState(ControlState_t(int(current_state) + 1));
@@ -770,9 +779,9 @@ void ControlTest::changeState(ControlState_t new_state) {
 
     case TRAJECTORY_LOAD_STATIC_TOPIC_STATE:
 
-      activateTracker("mrs_trackers/MpcTracker");
+      //{ test set_trajectory topic
 
-      //{ test loadingtrajectory using a topic
+      activateTracker("mrs_trackers/MpcTracker");
 
       goal_trajectory_topic.fly_now         = false;
       goal_trajectory_topic.header.frame_id = "local_origin";
@@ -809,7 +818,7 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory.getTopic().c_str());
       }
 
-      wait.sleep();
+      /* wait.sleep(); */
 
       //}
 
@@ -817,34 +826,182 @@ void ControlTest::changeState(ControlState_t new_state) {
 
     case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
 
+      //{ test fly_to_start_out service
+      
       service_client_fly_to_start.call(goal_trigger);
+      
+      //}
 
       break;
 
     case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
+
+      //{ test start_following_out service
+      
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+      
+      service_client_start_following.call(goal_trigger);
+      
+      //}
+
+      break;
+
+    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+
+      //{ test trajectory loading using service
+
+      activateTracker("mrs_trackers/MpcTracker");
+
+      goal_trajectory_topic.fly_now         = false;
+      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.stamp    = ros::Time::now();
+      goal_trajectory_topic.loop            = false;
+      goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.start_index     = 0;
+
+      goal_tracker_point.x   = -10;
+      goal_tracker_point.y   = -10;
+      goal_tracker_point.z   = 15;
+      goal_tracker_point.yaw = 1.57;
+      goal_trajectory_topic.points.push_back(goal_tracker_point);
 
       des_x   = goal_tracker_point.x;
       des_y   = goal_tracker_point.y;
       des_z   = goal_tracker_point.z;
       des_yaw = sanitizeYaw(goal_tracker_point.yaw);
 
-      service_client_start_following.call(goal_trigger);
+      for (int i = 0; i < 50; i++) {
 
-      break;
+        goal_tracker_point.x += 0.4;
+        goal_tracker_point.y += 0.4;
+        goal_tracker_point.z -= 0.2;
+        goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw - 0.1);
+        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
+        goal_trajectory_topic.points.push_back(goal_tracker_point);
+      }
 
-    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+      goal_trajectory_srv.request.trajectory_msg = goal_trajectory_topic;
+
+      service_client_trajectory.call(goal_trajectory_srv);
+
+      //}
 
       break;
 
     case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
 
+      //{ test fly_to_start_out service
+      
+      service_client_fly_to_start.call(goal_trigger);
+      
+      //}
+
       break;
 
     case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
 
+      //{ test start_following_out service
+      
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+      
+      service_client_start_following.call(goal_trigger);
+      
+      //}
+
       break;
 
     case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+
+      //{ test set_trajectory topic with fly_now
+
+      activateTracker("mrs_trackers/MpcTracker");
+
+      goal_trajectory_topic.fly_now         = true;
+      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.stamp    = ros::Time::now();
+      goal_trajectory_topic.loop            = false;
+      goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.start_index     = 0;
+
+      goal_tracker_point.x   = 10;
+      goal_tracker_point.y   = 10;
+      goal_tracker_point.z   = 5;
+      goal_tracker_point.yaw = 0;
+      goal_trajectory_topic.points.push_back(goal_tracker_point);
+
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+
+      for (int i = 0; i < 50; i++) {
+
+        goal_tracker_point.x -= 0.4;
+        goal_tracker_point.y -= 0.4;
+        goal_tracker_point.z += 0.2;
+        goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw + 0.1);
+        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
+        goal_trajectory_topic.points.push_back(goal_tracker_point);
+      }
+
+      try {
+        publisher_set_trajectory.publish(goal_trajectory_topic);
+      }
+      catch (...) {
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory.getTopic().c_str());
+      }
+
+      /* wait.sleep(); */
+
+      //}
+
+      break;
+
+    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
+
+      //{ test trajectory loading using service
+
+      activateTracker("mrs_trackers/MpcTracker");
+
+      goal_trajectory_topic.fly_now         = true;
+      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.stamp    = ros::Time::now();
+      goal_trajectory_topic.loop            = false;
+      goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.start_index     = 0;
+
+      goal_tracker_point.x   = -10;
+      goal_tracker_point.y   = -10;
+      goal_tracker_point.z   = 15;
+      goal_tracker_point.yaw = 1.57;
+      goal_trajectory_topic.points.push_back(goal_tracker_point);
+
+      des_x   = goal_tracker_point.x;
+      des_y   = goal_tracker_point.y;
+      des_z   = goal_tracker_point.z;
+      des_yaw = sanitizeYaw(goal_tracker_point.yaw);
+
+      for (int i = 0; i < 50; i++) {
+
+        goal_tracker_point.x += 0.4;
+        goal_tracker_point.y += 0.4;
+        goal_tracker_point.z -= 0.2;
+        goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw - 0.1);
+        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
+        goal_trajectory_topic.points.push_back(goal_tracker_point);
+      }
+
+      goal_trajectory_srv.request.trajectory_msg = goal_trajectory_topic;
+
+      service_client_trajectory.call(goal_trajectory_srv);
+
+      //}
 
       break;
 
