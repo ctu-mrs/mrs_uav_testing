@@ -190,6 +190,9 @@ private:
 private:
   double des_x, des_y, des_z, des_yaw;
   double home_x, home_y;
+
+private:
+  ros::Time timeout;
 };
 
 //}
@@ -201,6 +204,8 @@ void ControlTest::onInit() {
   ros::NodeHandle nh_ = nodelet::Nodelet::getMTPrivateNodeHandle();
 
   ros::Time::waitForValid();
+
+  timeout = ros::Time::now();
 
   srand(static_cast<unsigned int>(ros::Time::now().toSec()));
 
@@ -402,6 +407,10 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %f %f %f %f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
   ROS_INFO_THROTTLE(5.0, " ");
+
+  if ((ros::Time::now() - timeout).toSec() < 60.0) {
+    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED"); 
+  }
 
   switch (current_state) {
 
@@ -898,7 +907,7 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory.getTopic().c_str());
       }
 
-      /* wait.sleep(); */
+      wait.sleep();
 
       //}
 
@@ -966,6 +975,8 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_srv.request.trajectory_msg = goal_trajectory_topic;
 
       service_client_trajectory.call(goal_trajectory_srv);
+
+      wait.sleep();
 
       //}
 
@@ -1120,8 +1131,6 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       //}
 
-      //}
-
       break;
 
     case LAND_STATE:
@@ -1146,6 +1155,8 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       break;
   }
+
+  timeout = ros::Time::now();
 }
 
 //}
