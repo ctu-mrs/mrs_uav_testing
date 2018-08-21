@@ -409,7 +409,7 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
   ROS_INFO_THROTTLE(5.0, " ");
 
   if ((ros::Time::now() - timeout).toSec() > 60.0) {
-    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!"); 
+    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
     ros::shutdown();
   }
 
@@ -429,7 +429,7 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
         ROS_INFO("[ControlTest]: takeoff_num %d", takeoff_num);
 
         if (takeoff_num == 0) {
-          changeState(GOTO_TOPIC_STATE); // after the first takeoff 
+          changeState(GOTO_TOPIC_STATE);  // after the first takeoff
         } else if (takeoff_num == 1) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
         }
@@ -1147,11 +1147,11 @@ void ControlTest::changeState(ControlState_t new_state) {
     case FINISHED_STATE:
 
       //{ finish and end the node
-      
+
       ROS_INFO(" ");
       ROS_INFO("[ControlTest]: TEST FINISHED");
       ros::shutdown();
-      
+
       //}
 
       break;
