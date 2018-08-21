@@ -1247,7 +1247,7 @@ bool ControlTest::inDesiredState(void) {
 
   mutex_odometry.lock();
   {
-    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.2 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.2) {
+    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.15) {
       mutex_odometry.unlock();
       ROS_WARN("[ControlTest]: The goal has been reached.");
       return true;
