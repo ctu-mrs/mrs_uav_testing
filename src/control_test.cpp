@@ -25,6 +25,8 @@
 
 #include <tf/transform_datatypes.h>
 
+#include <mrs_lib/ParamLoader.h>
+
 #define PI 3.141592653
 
 namespace mrs_testing
@@ -213,42 +215,14 @@ void ControlTest::onInit() {
   // |                           params                           |
   // --------------------------------------------------------------
 
-  nh_.param("max_xy", max_xy_, -999.0);
-  nh_.param("min_xy", max_xy_, -999.0);
-  nh_.param("max_z", max_z_, -999.0);
-  nh_.param("min_z", min_z_, -999.0);
-  nh_.param("max_yaw", max_yaw_, -999.0);
-  nh_.param("min_yaw", min_yaw_, -999.0);
+  mrs_lib::ParamLoader param_loader(nh_, "ControlTest");
 
-  if (max_xy_ < -999) {
-    ROS_ERROR("[ControlTest]: max_xy was not specified!");
-    ros::shutdown();
-  }
-
-  if (min_xy_ < -999) {
-    ROS_ERROR("[ControlTest]: min_xy was not specified!");
-    ros::shutdown();
-  }
-
-  if (max_z_ < -999) {
-    ROS_ERROR("[ControlTest]: max_z was not specified!");
-    ros::shutdown();
-  }
-
-  if (min_z_ < -999) {
-    ROS_ERROR("[ControlTest]: min_z was not specified!");
-    ros::shutdown();
-  }
-
-  if (max_yaw_ < -999) {
-    ROS_ERROR("[ControlTest]: max_yaw was not specified!");
-    ros::shutdown();
-  }
-
-  if (min_yaw_ < -999) {
-    ROS_ERROR("[ControlTest]: min_yaw was not specified!");
-    ros::shutdown();
-  }
+  param_loader.load_param("max_xy", max_xy_);
+  param_loader.load_param("min_xy", max_xy_);
+  param_loader.load_param("max_z", max_z_);
+  param_loader.load_param("min_z", min_z_);
+  param_loader.load_param("max_yaw", max_yaw_);
+  param_loader.load_param("min_yaw", min_yaw_);
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -306,11 +280,17 @@ void ControlTest::onInit() {
   // |                           timers                           |
   // --------------------------------------------------------------
 
-  ROS_INFO("[ControlTest]: initialized");
-
   main_timer = nh_.createTimer(ros::Rate(10), &ControlTest::mainTimer, this);
 
+  // | ---------------------- finish inint ---------------------- |
+
+  if (!param_loader.loaded_successfully()) {
+    ros::shutdown();
+  }
+
   is_initialized = true;
+
+  ROS_INFO("[ControlTest]: initialized");
 }
 
 //}
@@ -619,7 +599,7 @@ void ControlTest::changeState(ControlState_t new_state) {
   mrs_msgs::TrackerTrajectory    goal_trajectory_topic;
   mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
 
-  ros::Duration wait(1.0);
+  ros::Duration wait(3.0);
 
   switch (new_state) {
 
@@ -721,10 +701,7 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_float64.data = genZ();
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
       des_z   = goal_float64.data;
-      des_yaw = cmd_yaw;
 
       try {
         publisher_goto_altitude.publish(goal_float64);
@@ -743,9 +720,6 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_float64.data = sanitizeYaw(genYaw());
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
-      des_z   = cmd_z;
       des_yaw = goal_float64.data;
 
       try {
@@ -765,9 +739,6 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_float64.data = sanitizeYaw(genYaw());
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
-      des_z   = cmd_z;
       des_yaw = sanitizeYaw(cmd_yaw + goal_float64.data);
 
       publisher_set_yaw_relative.publish(goal_float64);
@@ -822,10 +793,7 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_vec1.request.goal = genZ();
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
       des_z   = goal_vec1.request.goal;
-      des_yaw = cmd_yaw;
 
       service_client_goto_altitude.call(goal_vec1);
 
@@ -839,9 +807,6 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_vec1.request.goal = sanitizeYaw(genYaw());
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
-      des_z   = cmd_z;
       des_yaw = goal_vec1.request.goal;
 
       service_client_set_yaw.call(goal_vec1);
@@ -856,9 +821,6 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_vec1.request.goal = sanitizeYaw(genYaw());
 
-      des_x   = cmd_x;
-      des_y   = cmd_y;
-      des_z   = cmd_z;
       des_yaw = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
 
       service_client_set_yaw_relative.call(goal_vec1);
