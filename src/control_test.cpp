@@ -193,6 +193,15 @@ private:
   double des_x, des_y, des_z, des_yaw;
   double home_x, home_y;
 
+  // | ------------------ goto relative testing ----------------- |
+
+private:
+  double goto_relative_altitude_down_;
+  double goto_relative_altitude_up_;
+
+private:
+  double trajectory_p1_, trajectory_p2_, trajectory_speed_;
+
 private:
   ros::Time timeout;
 };
@@ -223,6 +232,14 @@ void ControlTest::onInit() {
   param_loader.load_param("min_z", min_z_);
   param_loader.load_param("max_yaw", max_yaw_);
   param_loader.load_param("min_yaw", min_yaw_);
+  param_loader.load_param("goto_relative_altitude_down", goto_relative_altitude_down_);
+  param_loader.load_param("goto_relative_altitude_up", goto_relative_altitude_up_);
+
+  param_loader.load_param("trajectory/p1", trajectory_p1_);
+  param_loader.load_param("trajectory/p2", trajectory_p2_);
+  param_loader.load_param("trajectory/speed", trajectory_speed_);
+
+  trajectory_speed_ = trajectory_speed_/1.414;
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -598,6 +615,7 @@ void ControlTest::changeState(ControlState_t new_state) {
   std_srvs::Trigger              goal_trigger;
   mrs_msgs::TrackerTrajectory    goal_trajectory_topic;
   mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
+  double trajectory_length;
 
   ros::Duration wait(3.0);
 
@@ -672,17 +690,17 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_tracker_point_stamped.position.x   = genXY();
       goal_tracker_point_stamped.position.y   = genXY();
-      goal_tracker_point_stamped.position.z   = randd(-2, 2);
+      goal_tracker_point_stamped.position.z   = randd(goto_relative_altitude_down_, goto_relative_altitude_up_);
       goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
 
-      mutex_odometry.lock();
+      mutex_cmd.lock();
       {
-        des_x   = goal_tracker_point_stamped.position.x + odometry_x;
-        des_y   = goal_tracker_point_stamped.position.y + odometry_y;
-        des_z   = goal_tracker_point_stamped.position.z + odometry_z;
-        des_yaw = sanitizeYaw(goal_tracker_point_stamped.position.yaw + odometry_yaw);
+        des_x   = goal_tracker_point_stamped.position.x + cmd_x;
+        des_y   = goal_tracker_point_stamped.position.y + cmd_y;
+        des_z   = goal_tracker_point_stamped.position.z + cmd_z;
+        des_yaw = sanitizeYaw(goal_tracker_point_stamped.position.yaw + cmd_yaw);
       }
-      mutex_odometry.unlock();
+      mutex_cmd.unlock();
 
       try {
         publisher_goto_relative.publish(goal_tracker_point_stamped);
@@ -739,7 +757,11 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_float64.data = sanitizeYaw(genYaw());
 
-      des_yaw = sanitizeYaw(cmd_yaw + goal_float64.data);
+      mutex_cmd.lock();
+      {
+        des_yaw = sanitizeYaw(cmd_yaw + goal_float64.data);
+      }
+      mutex_cmd.unlock();
 
       publisher_set_yaw_relative.publish(goal_float64);
 
@@ -773,13 +795,17 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
-      goal_vec4.request.goal[2] = randd(-2, 2);
+      goal_vec4.request.goal[2] = randd(goto_relative_altitude_down_, goto_relative_altitude_up_);
       goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
 
-      des_x   = cmd_x + goal_vec4.request.goal[0];
-      des_y   = cmd_y + goal_vec4.request.goal[1];
-      des_z   = cmd_z + goal_vec4.request.goal[2];
-      des_yaw = sanitizeYaw(cmd_yaw + goal_vec4.request.goal[3]);
+      mutex_cmd.lock();
+      {
+        des_x   = cmd_x + goal_vec4.request.goal[0];
+        des_y   = cmd_y + goal_vec4.request.goal[1];
+        des_z   = cmd_z + goal_vec4.request.goal[2];
+        des_yaw = sanitizeYaw(cmd_yaw + goal_vec4.request.goal[3]);
+      }
+      mutex_cmd.unlock();
 
       service_client_goto_relative.call(goal_vec4);
 
@@ -821,7 +847,11 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       goal_vec1.request.goal = sanitizeYaw(genYaw());
 
-      des_yaw = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
+      mutex_cmd.lock();
+      {
+        des_yaw = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
+      }
+      mutex_cmd.unlock();
 
       service_client_set_yaw_relative.call(goal_vec1);
 
@@ -842,9 +872,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.use_yaw         = true;
       goal_trajectory_topic.start_index     = 0;
 
-      goal_tracker_point.x   = -10;
-      goal_tracker_point.y   = -10;
-      goal_tracker_point.z   = 5;
+      goal_tracker_point.x   = trajectory_p1_;
+      goal_tracker_point.y   = trajectory_p1_;
+      goal_tracker_point.z   = min_z_;
       goal_tracker_point.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
@@ -853,11 +883,13 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z   = goal_tracker_point.z;
       des_yaw = sanitizeYaw(goal_tracker_point.yaw);
 
-      for (int i = 0; i < 50; i++) {
+      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-        goal_tracker_point.x += 0.4;
-        goal_tracker_point.y += 0.4;
-        goal_tracker_point.z += 0.2;
+      for (int i = 0; i < trajectory_length*1.414; i++) {
+
+        goal_tracker_point.x += trajectory_speed_/5;
+        goal_tracker_point.y += trajectory_speed_/5;
+        goal_tracker_point.z += (max_z_-min_z_)/trajectory_length;
         goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw + 0.1);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point);
@@ -914,9 +946,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.use_yaw         = true;
       goal_trajectory_topic.start_index     = 0;
 
-      goal_tracker_point.x   = -10;
-      goal_tracker_point.y   = -10;
-      goal_tracker_point.z   = 15;
+      goal_tracker_point.x   = trajectory_p1_;
+      goal_tracker_point.y   = trajectory_p1_;
+      goal_tracker_point.z   = max_z_;
       goal_tracker_point.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
@@ -925,11 +957,13 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z   = goal_tracker_point.z;
       des_yaw = sanitizeYaw(goal_tracker_point.yaw);
 
-      for (int i = 0; i < 50; i++) {
+      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-        goal_tracker_point.x += 0.4;
-        goal_tracker_point.y += 0.4;
-        goal_tracker_point.z -= 0.2;
+      for (int i = 0; i < trajectory_length*1.41; i++) {
+
+        goal_tracker_point.x += trajectory_speed_/5;
+        goal_tracker_point.y += trajectory_speed_/5;
+        goal_tracker_point.z -= (max_z_-min_z_)/trajectory_length;
         goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw - 0.1);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point);
@@ -983,17 +1017,19 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.use_yaw         = true;
       goal_trajectory_topic.start_index     = 0;
 
-      goal_tracker_point.x   = 10;
-      goal_tracker_point.y   = 10;
-      goal_tracker_point.z   = 5;
+      goal_tracker_point.x   = trajectory_p2_;
+      goal_tracker_point.y   = trajectory_p2_;
+      goal_tracker_point.z   = min_z_;
       goal_tracker_point.yaw = 0;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
-      for (int i = 0; i < 50; i++) {
+      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-        goal_tracker_point.x -= 0.4;
-        goal_tracker_point.y -= 0.4;
-        goal_tracker_point.z += 0.2;
+      for (int i = 0; i < trajectory_length*1.414; i++) {
+
+        goal_tracker_point.x -= trajectory_speed_/5;
+        goal_tracker_point.y -= trajectory_speed_/5;
+        goal_tracker_point.z += (max_z_-min_z_)/trajectory_length;
         goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw + 0.1);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point);
@@ -1030,17 +1066,19 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.use_yaw         = true;
       goal_trajectory_topic.start_index     = 0;
 
-      goal_tracker_point.x   = -10;
-      goal_tracker_point.y   = -10;
-      goal_tracker_point.z   = 15;
+      goal_tracker_point.x   = trajectory_p1_;
+      goal_tracker_point.y   = trajectory_p1_;
+      goal_tracker_point.z   = max_z_;
       goal_tracker_point.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
-      for (int i = 0; i < 50; i++) {
+      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-        goal_tracker_point.x += 0.4;
-        goal_tracker_point.y += 0.4;
-        goal_tracker_point.z -= 0.2;
+      for (int i = 0; i < trajectory_length*1.41; i++) {
+
+        goal_tracker_point.x += trajectory_speed_/5;
+        goal_tracker_point.y += trajectory_speed_/5;
+        goal_tracker_point.z -= (max_z_-min_z_)/trajectory_length;
         goal_tracker_point.yaw = sanitizeYaw(goal_tracker_point.yaw - 0.1);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point.x, goal_tracker_point.y, goal_tracker_point.z, goal_tracker_point.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point);
@@ -1212,6 +1250,7 @@ bool ControlTest::inDesiredState(void) {
     if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.15) {
       mutex_odometry.unlock();
       ROS_WARN("[ControlTest]: The goal has been reached.");
+      ros::Duration(3.0).sleep();
       return true;
     }
   }
