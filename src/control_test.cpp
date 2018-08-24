@@ -883,9 +883,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z   = goal_tracker_point.z;
       des_yaw = sanitizeYaw(goal_tracker_point.yaw);
 
-      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
+      trajectory_length = int(1.414*(5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-      for (int i = 0; i < trajectory_length*1.414; i++) {
+      for (int i = 0; i < trajectory_length; i++) {
 
         goal_tracker_point.x += trajectory_speed_/5;
         goal_tracker_point.y += trajectory_speed_/5;
@@ -957,9 +957,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z   = goal_tracker_point.z;
       des_yaw = sanitizeYaw(goal_tracker_point.yaw);
 
-      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
+      trajectory_length = int(1.414*(5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-      for (int i = 0; i < trajectory_length*1.41; i++) {
+      for (int i = 0; i < trajectory_length; i++) {
 
         goal_tracker_point.x += trajectory_speed_/5;
         goal_tracker_point.y += trajectory_speed_/5;
@@ -1023,9 +1023,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_tracker_point.yaw = 0;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
-      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
+      trajectory_length = int(1.414*(5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-      for (int i = 0; i < trajectory_length*1.414; i++) {
+      for (int i = 0; i < trajectory_length; i++) {
 
         goal_tracker_point.x -= trajectory_speed_/5;
         goal_tracker_point.y -= trajectory_speed_/5;
@@ -1072,9 +1072,9 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_tracker_point.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point);
 
-      trajectory_length = int((5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
+      trajectory_length = int(1.414*(5*fabs(trajectory_p2_-trajectory_p1_))/(trajectory_speed_));
 
-      for (int i = 0; i < trajectory_length*1.41; i++) {
+      for (int i = 0; i < trajectory_length; i++) {
 
         goal_tracker_point.x += trajectory_speed_/5;
         goal_tracker_point.y += trajectory_speed_/5;
