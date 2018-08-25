@@ -12,7 +12,7 @@
 #include <mrs_msgs/TrackerTrajectorySrv.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/Vec1.h>
-#include <mrs_msgs/SwitchTracker.h>
+#include <mrs_msgs/String.h>
 #include <mrs_msgs/PositionCommand.h>
 #include <mrs_msgs/TrackerStatus.h>
 
@@ -271,7 +271,7 @@ void ControlTest::onInit() {
 
   // | -------------------- takeoff and land -------------------- |
 
-  service_client_switch_tracker = nh_.serviceClient<mrs_msgs::SwitchTracker>("switch_tracker_out");
+  service_client_switch_tracker = nh_.serviceClient<mrs_msgs::String>("switch_tracker_out");
   service_client_motors         = nh_.serviceClient<std_srvs::SetBool>("motors_out");
   service_client_arm            = nh_.serviceClient<mavros_msgs::CommandBool>("arm_out");
   service_client_offboard       = nh_.serviceClient<mavros_msgs::SetMode>("offboard_out");
@@ -1265,10 +1265,10 @@ bool ControlTest::inDesiredState(void) {
 
 void ControlTest::activateTracker(std::string tracker_name) {
 
-  mrs_msgs::SwitchTracker goal_switch_tracker;
-  goal_switch_tracker.request.tracker = tracker_name;
+  mrs_msgs::String goal_switch_tracker;
+  goal_switch_tracker.request.value = tracker_name;
 
-  ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.tracker.c_str());
+  ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.value.c_str());
   service_client_switch_tracker.call(goal_switch_tracker);
   ros::Duration wait(1.0);
   wait.sleep();
