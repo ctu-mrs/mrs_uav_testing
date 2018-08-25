@@ -617,7 +617,7 @@ void ControlTest::changeState(ControlState_t new_state) {
   mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
   double trajectory_length;
 
-  ros::Duration wait(3.0);
+  ros::Duration wait(1.0);
 
   switch (new_state) {
 
