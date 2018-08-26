@@ -12,6 +12,7 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch simulation simulation.launch gui:=false
+        - waitForControl; ~/.i3/layout_manager.sh simulation
   - spawn:
       layout: even-vertical
       panes:
