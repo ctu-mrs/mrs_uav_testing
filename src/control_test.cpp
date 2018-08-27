@@ -617,7 +617,7 @@ void ControlTest::changeState(ControlState_t new_state) {
   mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
   double trajectory_length;
 
-  ros::Duration wait(0.5);
+  ros::Duration wait(1.0);
 
   switch (new_state) {
 
@@ -1251,7 +1251,7 @@ bool ControlTest::inDesiredState(void) {
     if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.15) {
       mutex_odometry.unlock();
       ROS_WARN("[ControlTest]: The goal has been reached.");
-      ros::Duration(0.5).sleep();
+      ros::Duration(1.0).sleep();
       return true;
     }
   }
@@ -1271,7 +1271,7 @@ void ControlTest::activateTracker(std::string tracker_name) {
 
   ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.value.c_str());
   service_client_switch_tracker.call(goal_switch_tracker);
-  ros::Duration wait(0.5);
+  ros::Duration wait(1.0);
   wait.sleep();
 }
 
