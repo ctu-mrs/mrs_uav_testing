@@ -183,7 +183,7 @@ private:
   bool   inDesiredState(void);
   void   activateTracker(std::string tracker_name);
 
-  int active_tracker = 1;
+  int active_tracker = 0;
   int takeoff_num    = 0;
 
   mrs_msgs::TrackerPoint goal_tracker_point;
@@ -628,11 +628,12 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       //{ test goto topic
 
-      if (active_tracker == 1) {
+      if (active_tracker == 0) {
         activateTracker("mrs_trackers/LineTracker");
         active_tracker++;
-      } else if (active_tracker == 2) {
+      } else if (active_tracker == 1) {
         activateTracker("mrs_trackers/MpcTracker");
+        active_tracker++;
       }
 
       goal_tracker_point_stamped.position.x   = genXY();
@@ -1250,7 +1251,7 @@ bool ControlTest::inDesiredState(void) {
     if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.15) {
       mutex_odometry.unlock();
       ROS_WARN("[ControlTest]: The goal has been reached.");
-      ros::Duration(3.0).sleep();
+      ros::Duration(1.0).sleep();
       return true;
     }
   }
