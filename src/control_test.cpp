@@ -183,7 +183,7 @@ private:
   bool   inDesiredState(void);
   void   activateTracker(std::string tracker_name);
 
-  int active_tracker = 1;
+  int active_tracker = 0;
   int takeoff_num    = 0;
 
   mrs_msgs::TrackerPoint goal_tracker_point;
@@ -628,10 +628,10 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       //{ test goto topic
 
-      if (active_tracker == 1) {
+      if (active_tracker == 0) {
         activateTracker("mrs_trackers/LineTracker");
         active_tracker++;
-      } else if (active_tracker == 2) {
+      } else if (active_tracker == 1) {
         activateTracker("mrs_trackers/MpcTracker");
       }
 
