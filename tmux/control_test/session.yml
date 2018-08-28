@@ -1,0 +1,30 @@
+name: simulation
+root: ./
+
+pre_window: export UAV_NAME=uav1
+startup_window: control_test
+windows:
+  - roscore:
+      layout: even-vertical
+      panes:
+        - roscore
+  - gazebo:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch simulation simulation.launch gui:=false
+  - spawn:
+      layout: even-vertical
+      panes:
+        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
+  - control:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_mav_manager simulation.launch
+  - control_test:
+      layout: even-vertical
+      panes:
+        - 'waitForControl; roslaunch mrs_testing control_test.launch'
+  - rviz:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
