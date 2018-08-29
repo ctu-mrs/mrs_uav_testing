@@ -425,6 +425,9 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
 
         ROS_INFO("[ControlTest]: takeoff_num %d", takeoff_num);
 
+        ros::Duration wait(2.0);
+        wait.sleep();
+
         if (takeoff_num == 0) {
           changeState(GOTO_TOPIC_STATE);  // after the first takeoff
         } else if (takeoff_num == 1) {
