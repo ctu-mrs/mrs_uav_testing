@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1
+pre_window: export UAV_NAME=uav2
 startup_window: control_test
 windows:
   - roscore:
@@ -11,12 +11,11 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=false
-        - waitForOdometry; sleep 2; ~/.i3/layout_manager.sh simulation
+        - waitForRos; roslaunch simulation simulation.launch gui:=true
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera --file ~/mrs_workspace/src/uav_core/ros_packages/mrs_odometry/config/init_pose/init_pose.csv
+        - waitForSimulation; spawn 2 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
   - control:
       layout: even-vertical
       panes:
@@ -29,6 +28,7 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
+        - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation
   - optic_flow:
       layout: even-vertical
       panes:
