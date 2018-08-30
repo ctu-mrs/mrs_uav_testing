@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1; export PROFILER=true
+pre_window: export UAV_NAME=uav1; export PROFILER=false
 startup_window: control_test
 windows:
   - roscore:
