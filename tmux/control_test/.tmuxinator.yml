@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1
+pre_window: export UAV_NAME=uav1; export PROFILER=true
 startup_window: control_test
 windows:
   - roscore:
@@ -29,7 +29,7 @@ windows:
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
         - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation2
-  # - optic_flow:
-  #     layout: even-vertical
-  #     panes:
-  #       - waitForRos; roslaunch optic_flow simulation.launch
+  - optic_flow:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch optic_flow simulation.launch
