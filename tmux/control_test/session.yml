@@ -11,7 +11,7 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=true
+        - waitForRos; roslaunch simulation simulation.launch gui:=false
   - spawn:
       layout: even-vertical
       panes:
@@ -28,8 +28,8 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
-        - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation
-  - optic_flow:
-      layout: even-vertical
-      panes:
-        - waitForRos; roslaunch optic_flow simulation.launch
+        - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation2
+  # - optic_flow:
+  #     layout: even-vertical
+  #     panes:
+  #       - waitForRos; roslaunch optic_flow simulation.launch
