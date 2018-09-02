@@ -245,9 +245,9 @@ void ControlTest::onInit() {
   // |                         subscribers                        |
   // --------------------------------------------------------------
 
-  subscriber_odometry         = nh_.subscribe("odometry_in", 1, &ControlTest::callbackOdometry, this, ros::TransportHints().udp());
-  subscriber_position_command = nh_.subscribe("position_command_in", 1, &ControlTest::callbackPositionCommand, this, ros::TransportHints().udp());
-  subscriber_tracker_status   = nh_.subscribe("tracker_status_in", 1, &ControlTest::callbackTrackerStatus, this, ros::TransportHints().udp());
+  subscriber_odometry         = nh_.subscribe("odometry_in", 1, &ControlTest::callbackOdometry, this, ros::TransportHints().tcpNoDelay());
+  subscriber_position_command = nh_.subscribe("position_command_in", 1, &ControlTest::callbackPositionCommand, this, ros::TransportHints().tcpNoDelay());
+  subscriber_tracker_status   = nh_.subscribe("tracker_status_in", 1, &ControlTest::callbackTrackerStatus, this, ros::TransportHints().tcpNoDelay());
 
   // --------------------------------------------------------------
   // |                         publishers                         |
@@ -350,6 +350,8 @@ void ControlTest::callbackPositionCommand(const mrs_msgs::PositionCommandConstPt
 
   if (!is_initialized)
     return;
+
+  ROS_INFO("[ControlTest]: cmd");
 
   got_position_command = true;
 
