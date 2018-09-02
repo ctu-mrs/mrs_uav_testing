@@ -351,8 +351,6 @@ void ControlTest::callbackPositionCommand(const mrs_msgs::PositionCommandConstPt
   if (!is_initialized)
     return;
 
-  ROS_INFO("[ControlTest]: cmd");
-
   got_position_command = true;
 
   mutex_cmd.lock();
