@@ -28,7 +28,7 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
-        - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation2
+        - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation_test
   - optic_flow:
       layout: even-vertical
       panes:
