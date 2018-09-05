@@ -1,18 +1,18 @@
 max_xy: 20
 min_xy: -20
 
-max_z: 3
-min_z: 1
+max_z: 10
+min_z: 5
 
 max_yaw: 3.14
 min_yaw: -3.14
 
-goto_relative_altitude_up: 0.5
-goto_relative_altitude_down: 0.0
+goto_relative_altitude_up: 2.5
+goto_relative_altitude_down: 2.0
 
 trajectory:
 
   p1: -10
   p2: 10
 
-  speed: 2.0
+  speed: 4.0
