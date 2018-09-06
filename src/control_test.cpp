@@ -417,7 +417,7 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
   ROS_INFO_THROTTLE(5.0, " ");
 
-  if ((ros::Time::now() - timeout).toSec() > 60.0) {
+  if ((ros::Time::now() - timeout).toSec() > 180.0) {
     ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
     ros::shutdown();
   }
@@ -442,8 +442,8 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
 
         if (takeoff_num == 0) {
           // TODO uncomment
-          /* changeState(GOTO_TOPIC_STATE);  // after the first takeoff */
-          changeState(TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE);
+          changeState(GOTO_TOPIC_STATE);  // after the first takeoff
+          /* changeState(TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE); */
         } else if (takeoff_num == 1) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
         }
@@ -565,7 +565,7 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
     case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
 
       if (inDesiredState()) {
-        changeState(GOTO_ORIGIN_STATE);
+        changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
@@ -584,7 +584,8 @@ void ControlTest::mainTimer(const ros::TimerEvent &event) {
     case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE:
 
       if (inDesiredState()) {
-        changeState(ControlState_t(int(current_state) + 1));
+        setHeadless(false);
+        changeState(GOTO_ORIGIN_STATE);
       }
       break;
 
