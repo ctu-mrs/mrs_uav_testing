@@ -11,7 +11,7 @@ Panels:
         - /ground_truth1/Covariance1
         - /odom_gps1/Shape1
       Splitter Ratio: 0.5
-    Tree Height: 354
+    Tree Height: 271
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -139,7 +139,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: ground_truth
       Position Tolerance: 0.009999999776482582
@@ -155,7 +155,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /uav1/odometry/rtk_local_odom
       Unreliable: true
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -189,7 +189,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: odom_gps
       Position Tolerance: 0.009999999776482582
@@ -205,7 +205,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /uav1/odometry/odom_gps
       Unreliable: true
-      Value: true
+      Value: false
     - Class: rviz/Axes
       Enabled: true
       Length: 1
@@ -230,7 +230,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: odom_optflow
       Position Tolerance: 0.009999999776482582
@@ -246,7 +246,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /uav1/odometry/odom_optflow
       Unreliable: true
-      Value: true
+      Value: false
     - Angle Tolerance: 0.009999999776482582
       Class: rviz/Odometry
       Covariance:
@@ -264,7 +264,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: odom_optflowgps
       Position Tolerance: 0.009999999776482582
@@ -280,7 +280,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /uav1/odometry/odom_optflowgps
       Unreliable: true
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -306,25 +306,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 13.444574356079102
+      Distance: 2.6140990257263184
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.845430374145508
-        Y: -2.9421653747558594
-        Z: -4.0531158447265625e-6
+        X: -0.20894372463226318
+        Y: 0.6024203300476074
+        Z: -5.9604644775390625e-6
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.35039806365966797
+      Pitch: 0.3203980624675751
       Target Frame: fcu_uav1
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.330399513244629
+      Yaw: 3.0153934955596924
     Saved: ~
 Window Geometry:
   Displays:
