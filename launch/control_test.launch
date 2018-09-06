@@ -25,6 +25,7 @@
       <!-- Services --> 
       <remap from="~switch_tracker_out" to="control_manager/switch_tracker" />
       <remap from="~motors_out" to="control_manager/motors" />
+      <remap from="~headless_out" to="control_manager/mpc_tracker/headless" />
       <remap from="~arm_out" to="mavros/cmd/arming" />
       <remap from="~offboard_out" to="mavros/set_mode" />
       <remap from="~takeoff_out" to="mav_manager/takeoff" />
