@@ -15,7 +15,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox
   - control:
       layout: even-vertical
       panes:
@@ -29,7 +29,7 @@ windows:
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
         - waitForOdometry; sleep 3; ~/.i3/layout_manager.sh simulation_test
-  # - optic_flow:
-  #     layout: even-vertical
-  #     panes:
-  #       - waitForRos; roslaunch optic_flow simulation.launch
+  - optic_flow:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch optic_flow simulation.launch
