@@ -401,7 +401,7 @@ void ControlTest::callbackTrackerStatus(const mrs_msgs::TrackerStatusConstPtr &m
 
 /* //{ mainTimer() */
 
-void ControlTest::mainTimer(const ros::TimerEvent &event) {
+void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
   if (!is_initialized)
     return;
@@ -1173,6 +1173,8 @@ void ControlTest::changeState(ControlState_t new_state) {
         goal_tracker_point.yaw = 0;
         goal_trajectory_topic.points.push_back(goal_tracker_point);
       }
+
+      trajectory_length = 25;
 
       for (int i = 0; i < trajectory_length; i++) {
 
