@@ -11,11 +11,11 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=true
+        - waitForRos; roslaunch simulation simulation.launch gui:=false
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
+        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox
   - control:
       layout: even-vertical
       panes:
