@@ -11,7 +11,7 @@ Panels:
         - /ground_truth1/Covariance1
         - /odom_gps1/Shape1
       Splitter Ratio: 0.5
-    Tree Height: 271
+    Tree Height: 354
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -306,15 +306,15 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 21.447265625
+      Distance: 9.007272720336914
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.823218822479248
-        Y: 0.7637319564819336
+        X: -0.21604704856872559
+        Y: -1.9415125846862793
         Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
