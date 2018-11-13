@@ -19,7 +19,7 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_mav_manager simulation.launch
+        - waitForOdometry; roslaunch mrs_mav_manager simulation_f550_gps.launch
   - control_test:
       layout: even-vertical
       panes:

@@ -7,7 +7,7 @@
 
   <maintainer email="tomas.baca@fel.cvut.cz">Tomas Baca</maintainer>
 
-  <license>MIT</license>
+  <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -28,7 +28,7 @@
   <run_depend>mavros_msgs</run_depend>
 
   <export>
-    <nodelet plugin="${prefix}/control_test.xml" />
+    <nodelet plugin="${prefix}/plugins.xml" />
   </export>
 
 </package>
