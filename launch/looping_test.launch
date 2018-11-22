@@ -1,0 +1,22 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+
+  <group ns="$(arg uav_name)">
+
+    <node pkg="nodelet" type="nodelet" name="looping_test" args="standalone mrs_testing/LoopingTest" output="screen">
+
+      <rosparam file="$(find mrs_testing)/config/looping_test.yaml" />
+
+      <!-- Subscribers --> 
+      <remap from="~odometry_in" to="odometry/odom_main" />
+      <remap from="~position_command_in" to="control_manager/position_cmd" />
+      <remap from="~tracker_status_in" to="control_manager/tracker_status" />
+
+      <remap from="~set_trajectory_out" to="control_manager/mpc_tracker/set_trajectory" />
+
+    </node>
+
+  </group>
+
+</launch>
