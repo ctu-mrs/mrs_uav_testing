@@ -1,0 +1,11 @@
+<library path="lib/libControlTest">
+  <class name="mrs_testing/ControlTest" type="mrs_testing::ControlTest" base_class_type="nodelet::Nodelet">
+    <description>the ControlTest nodelet</description>
+  </class>
+</library>
+
+<library path="lib/libLoopingTest">
+  <class name="mrs_testing/LoopingTest" type="mrs_testing::LoopingTest" base_class_type="nodelet::Nodelet">
+    <description>the LoopingTest nodelet</description>
+  </class>
+</library>

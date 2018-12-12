@@ -1,5 +1,0 @@
-<library path="lib/libControlTest">
-  <class name="mrs_testing/ControlTest" type="mrs_testing::ControlTest" base_class_type="nodelet::Nodelet">
-    <description>the ControlTest nodelet</description>
-  </class>
-</library>
