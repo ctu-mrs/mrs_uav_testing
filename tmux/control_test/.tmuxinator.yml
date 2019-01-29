@@ -15,11 +15,11 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox
+        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_mav_manager simulation_f550_gps.launch
+        - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_gps.launch
   - control_test:
       layout: even-vertical
       panes:
@@ -32,4 +32,4 @@ windows:
   - optic_flow:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch optic_flow simulation.launch
+        - waitForRos; roslaunch mrs_optic_flow simulation.launch
