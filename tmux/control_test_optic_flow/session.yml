@@ -20,16 +20,19 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_status status.launch
+  - optic_flow:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_optic_flow simulation.launch
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_gps.launch
+        - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_optflow.launch
   - control_test:
       layout: even-vertical
       panes:
-        - 'waitForControl; roslaunch mrs_testing control_test.launch'
-  - rviz:
+        - 'waitForControl; roslaunch mrs_testing control_test_optic_flow.launch'
+  - gazebo_camera_follow:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
-        - waitForOdometry; sleep 3; read; ~/.i3/layout_manager.sh simulation_test
+        - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1

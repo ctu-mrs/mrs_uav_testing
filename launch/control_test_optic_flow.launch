@@ -6,7 +6,7 @@
 
     <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_testing/ControlTest" output="screen">
 
-      <rosparam file="$(find mrs_testing)/config/control_test.yaml" />
+      <rosparam file="$(find mrs_testing)/config/control_test_optic_flow.yaml" />
 
       <!-- Subscribers --> 
       <remap from="~odometry_in" to="odometry/odom_main" />
