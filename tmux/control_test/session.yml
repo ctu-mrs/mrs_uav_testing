@@ -2,7 +2,7 @@ name: simulation
 root: ./
 
 pre_window: export UAV_NAME=uav1; export PROFILER=false
-startup_window: control_test
+startup_window: status
 windows:
   - roscore:
       layout: even-vertical
@@ -16,6 +16,10 @@ windows:
       layout: even-vertical
       panes:
         - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
+  - status:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_status status.launch
   - control:
       layout: even-vertical
       panes:
@@ -29,7 +33,3 @@ windows:
       panes:
         - waitForOdometry; roslaunch mrs_testing rviz_control_test.launch
         - waitForOdometry; sleep 3; read; ~/.i3/layout_manager.sh simulation_test
-  - optic_flow:
-      layout: even-vertical
-      panes:
-        - waitForRos; roslaunch mrs_optic_flow simulation.launch
