@@ -12,6 +12,10 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch simulation simulation.launch gui:=true
+  - rviz:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch mrs_testing rviz_control_test.launch
   - spawn:
       layout: even-vertical
       panes:
@@ -31,7 +35,7 @@ windows:
   - control_test:
       layout: even-vertical
       panes:
-        - 'waitForControl; roslaunch mrs_testing control_test_optic_flow.launch'
+        - waitForControl; roslaunch mrs_testing control_test_optic_flow.launch
   - gazebo_camera_follow:
       layout: even-vertical
       panes:
