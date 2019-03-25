@@ -709,6 +709,8 @@ namespace mrs_testing
         goal_mavros_set_mode.request.custom_mode = "offboard";
         service_client_offboard.call(goal_mavros_set_mode);
 
+        wait.sleep();
+
         // | ------------------------- takeoff ------------------------ |
         service_client_takeoff.call(goal_trigger);
 
