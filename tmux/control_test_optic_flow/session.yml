@@ -2,7 +2,7 @@ name: simulation
 root: ./
 
 pre_window: export UAV_NAME=uav1; export PROFILER=false
-startup_window: status
+startup_window: control
 windows:
   - roscore:
       layout: even-vertical
