@@ -1,5 +1,5 @@
-max_xy: 20.0
-min_xy: -20.0
+max_xy: 10.0
+min_xy: -10.0
 
 max_z: 1.0
 min_z: 6.0
@@ -12,7 +12,7 @@ goto_relative_altitude_down: 1.0
 
 trajectory:
 
-  p1: -10.0
-  p2: 10.0
+  p1: -5.0
+  p2: 5.0
 
-  speed: 5.0
+  speed: 3.0
