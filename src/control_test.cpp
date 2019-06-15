@@ -595,7 +595,7 @@ namespace mrs_testing
       case LAND_HOME_STATE: {
         std::scoped_lock lock(mutex_tracker_status);
 
-        if (tracker_status.tracker.compare("mrs_uav_manager/NullTracker") == 0 && dist2d(home_x, odometry_x, home_y, odometry_y) < 1.0) {
+        if (tracker_status.tracker.compare("NullTracker") == 0 && dist2d(home_x, odometry_x, home_y, odometry_y) < 1.0) {
           ROS_INFO("[ControlTest]: %s", tracker_status.tracker.c_str());
           changeState(TAKEOFF_STATE);
         }
@@ -615,7 +615,7 @@ namespace mrs_testing
       case LAND_STATE: {
         std::scoped_lock lock(mutex_tracker_status);
 
-        if (tracker_status.tracker.compare("mrs_uav_manager/NullTracker") == 0 && dist2d(des_x, odometry_x, des_y, odometry_y) < 1.0) {
+        if (tracker_status.tracker.compare("NullTracker") == 0 && dist2d(des_x, odometry_x, des_y, odometry_y) < 1.0) {
           changeState(ControlState_t(int(current_state) + 1));
         }
       } break;
