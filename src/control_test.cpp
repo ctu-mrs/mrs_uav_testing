@@ -665,10 +665,10 @@ namespace mrs_testing
         /* //{ test goto topic */
 
         if (active_tracker == 0) {
-          activateTracker("mrs_trackers/LineTracker");
+          activateTracker("LineTracker");
           active_tracker++;
         } else if (active_tracker == 1) {
-          activateTracker("mrs_trackers/MpcTracker");
+          activateTracker("MpcTracker");
           active_tracker++;
         }
 
@@ -902,7 +902,7 @@ namespace mrs_testing
 
         /* //{ test set_trajectory topic */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         goal_trajectory_topic.fly_now         = false;
         goal_trajectory_topic.header.frame_id = "local_origin";
@@ -976,7 +976,7 @@ namespace mrs_testing
 
         /* //{ test trajectory loading using service */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         goal_trajectory_topic.fly_now         = false;
         goal_trajectory_topic.header.frame_id = "local_origin";
@@ -1047,7 +1047,7 @@ namespace mrs_testing
 
         /* //{ test set_trajectory topic with fly_now */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         goal_trajectory_topic.fly_now         = true;
         goal_trajectory_topic.header.frame_id = "local_origin";
@@ -1096,7 +1096,7 @@ namespace mrs_testing
 
         /* //{ test trajectory loading using service */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         goal_trajectory_topic.fly_now         = true;
         goal_trajectory_topic.header.frame_id = "local_origin";
@@ -1140,7 +1140,7 @@ namespace mrs_testing
 
         /* //{ load trajectory for testing the headless following */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         setHeadless(true);
 
@@ -1270,7 +1270,7 @@ namespace mrs_testing
 
         /* //{ go to origin */
 
-        activateTracker("mrs_trackers/MpcTracker");
+        activateTracker("MpcTracker");
 
         goal_tracker_point_stamped.position.x   = 0;
         goal_tracker_point_stamped.position.y   = 0;
