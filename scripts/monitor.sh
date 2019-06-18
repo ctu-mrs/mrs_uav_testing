@@ -29,14 +29,14 @@ then
   TMUX= tmux new-session -s "$SESSION_NAME" -d
   echo "Starting new session."
 else
-  echo "Already in tmux, leave it first."
-  exit
+  SESSION_NAME=$(tmux display-message -p '#S')
+  echo "Already in tmux, attaching to the current session"
 fi
 
 # create arrays of names and commands
 for ((i=0; i < ${#input[*]}; i++));
 do
-  ((i%2==0)) && names[$i/2]="${input[$i]}" 
+  ((i%2==0)) && names[$i/2]="${input[$i]}"
 	((i%2==1)) && cmds[$i/2]="${input[$i]}"
 done
 
@@ -57,11 +57,11 @@ pes=""
 for ((i=0; i < ((${#names[*]}+2)); i++));
 do
   pes=$pes"tmux split-window -d -t $SESSION_NAME:$(($i))"
-  pes=$pes"tmux send-keys -t $SESSION_NAME:$(($i)) 'tail -F /tmp/status.txt'"
+  pes=$pes"tmux send-keys -t $SESSION_NAME:$(($i)) "${pre_input};"'tail -F /tmp/status.txt'"
   pes=$pes"tmux select-pane -U -t $(($i))"
 done
 
-tmux send-keys -t $SESSION_NAME:$((${#names[*]}+1)) "${pes}"
+tmux send-keys -t $SESSION_NAME:$((${#names[*]}+1)) "${pre_input};${pes}"
 
 sleep 6
 
@@ -88,7 +88,7 @@ done
 pes=$pes"tmux select-window -t $SESSION_NAME:4"
 pes=$pes"waitForRos; export UAV_NAME=$UAV_NAME; roslaunch mrs_status f550.launch >> /tmp/status.txt"
 
-tmux send-keys -t $SESSION_NAME:$((${#names[*]}+1)) "${pes}"
+tmux send-keys -t $SESSION_NAME:$((${#names[*]}+1)) "${pre_input};${pes}"
 
 tmux -2 attach-session -t $SESSION_NAME
 
