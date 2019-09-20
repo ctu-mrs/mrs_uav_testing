@@ -41,6 +41,7 @@ typedef enum
 {
   IDLE_STATE,
   TAKEOFF_STATE,
+  CHANGE_TRACKER_STATE,
   GOTO_TOPIC_STATE,
   GOTO_RELATIVE_TOPIC_STATE,
   GOTO_ALTITUDE_TOPIC_STATE,
@@ -68,9 +69,10 @@ typedef enum
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[27] = {
+const char *state_names[28] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
+    "CHANGE_TRACKER_STATE",
     "GOTO_TOPIC_STATE",
     "GOTO_RELATIVE_TOPIC_STATE",
     "GOTO_ALTITUDE_TOPIC_STATE",
@@ -190,6 +192,7 @@ private:
   double genZ(void);
   double sanitizeYaw(const double yaw_in);
   bool   inDesiredState(void);
+  bool   trackerReady(void);
   void   activateTracker(std::string tracker_name);
 
   int active_tracker = 0;
@@ -435,86 +438,100 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       changeState(ControlState_t(int(current_state) + 1));
       break;
 
-    case TAKEOFF_STATE:
+    case TAKEOFF_STATE: {
 
-      if (odometry_z > 1.0) {
+      std::scoped_lock lock(mutex_control_manager_diagnostics);
 
-        /* changeState(ControlState_t(int(current_state) + 1)); */
+      if (control_manager_diagnostics.tracker_status.tracker.compare("MpcTracker") == 0 && trackerReady()) {
 
         ROS_INFO("[ControlTest]: takeoff_num %d", takeoff_num);
 
-        ros::Duration wait(2.0);
+        takeoff_num++;
+
+        changeState(CHANGE_TRACKER_STATE);
+
+        ros::Duration wait(1.0);
+        wait.sleep();
+      }
+      break;
+    }
+
+    case CHANGE_TRACKER_STATE:
+
+      if (trackerReady()) {
+
+        ros::Duration wait(1.0);
         wait.sleep();
 
-        if (takeoff_num == 0) {
-          // TODO uncomment
+        if (takeoff_num == 1) {
           changeState(GOTO_TOPIC_STATE);  // after the first takeoff
           /* changeState(TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE); */
-        } else if (takeoff_num == 1) {
+        } else if (takeoff_num == 2) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
         }
 
-        takeoff_num++;
+        wait.sleep();
       }
       break;
 
     case GOTO_TOPIC_STATE:
-      if (inDesiredState()) {
+
+      if (inDesiredState() && trackerReady()) {
+
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case GOTO_RELATIVE_TOPIC_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case GOTO_ALTITUDE_TOPIC_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case SET_YAW_TOPIC_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case SET_YAW_RELATIVE_TOPIC_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case GOTO_SERVICE_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case GOTO_RELATIVE_SERVICE_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case GOTO_ALTITUDE_SERVICE_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case SET_YAW_SERVICE_STATE:
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case SET_YAW_RELATIVE_SERVICE_STATE:
-      if (inDesiredState()) {
-
+      if (inDesiredState() && trackerReady()) {
         if (active_tracker == 1) {
           changeState(GOTO_TOPIC_STATE);
         } else if (active_tracker == 2) {
@@ -530,14 +547,14 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
@@ -549,28 +566,28 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
@@ -582,14 +599,14 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
 
     case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         setHeadless(false);
         changeState(GOTO_ORIGIN_STATE);
       }
@@ -606,7 +623,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
     case GOTO_ORIGIN_STATE:
 
-      if (inDesiredState()) {
+      if (inDesiredState() && trackerReady()) {
         if (takeoff_num == 1) {
           changeState(LAND_HOME_STATE);
         } else if (takeoff_num == 2) {
@@ -663,39 +680,6 @@ void ControlTest::changeState(ControlState_t new_state) {
     case IDLE_STATE:
       break;
 
-    case GOTO_TOPIC_STATE:
-
-      /* //{ test goto topic */
-
-      if (active_tracker == 0) {
-        activateTracker("LineTracker");
-        active_tracker++;
-      } else if (active_tracker == 1) {
-        activateTracker("MpcTracker");
-        active_tracker++;
-      }
-
-      goal_tracker_point_stamped.position.x   = genXY();
-      goal_tracker_point_stamped.position.y   = genXY();
-      goal_tracker_point_stamped.position.z   = genZ();
-      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
-
-      des_x   = goal_tracker_point_stamped.position.x;
-      des_y   = goal_tracker_point_stamped.position.y;
-      des_z   = goal_tracker_point_stamped.position.z;
-      des_yaw = goal_tracker_point_stamped.position.yaw;
-
-      try {
-        publisher_goto.publish(goal_tracker_point_stamped);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
-      }
-
-      //}
-
-      break;
-
     case TAKEOFF_STATE:
 
       /* //{ testing takeoff */
@@ -725,6 +709,47 @@ void ControlTest::changeState(ControlState_t new_state) {
       //}
 
       break;
+
+    case CHANGE_TRACKER_STATE: {
+
+      if (active_tracker == 0) {
+        activateTracker("LineTracker");
+        active_tracker++;
+      } else if (active_tracker == 1) {
+        activateTracker("MpcTracker");
+        active_tracker++;
+      }
+
+      break;
+    }
+
+    case GOTO_TOPIC_STATE:
+
+      /* //{ test goto topic */
+
+      ROS_INFO("[ControlTest]: calling goto");
+
+      goal_tracker_point_stamped.position.x   = genXY();
+      goal_tracker_point_stamped.position.y   = genXY();
+      goal_tracker_point_stamped.position.z   = genZ();
+      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
+
+      des_x   = goal_tracker_point_stamped.position.x;
+      des_y   = goal_tracker_point_stamped.position.y;
+      des_z   = goal_tracker_point_stamped.position.z;
+      des_yaw = goal_tracker_point_stamped.position.yaw;
+
+      try {
+        publisher_goto.publish(goal_tracker_point_stamped);
+      }
+      catch (...) {
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
+      }
+
+      //}
+
+      break;
+
 
     case GOTO_RELATIVE_TOPIC_STATE:
 
@@ -1420,6 +1445,15 @@ bool ControlTest::inDesiredState(void) {
   }
 
   return false;
+}
+
+//}
+
+/* //{ trackerReady() */
+
+bool ControlTest::trackerReady(void) {
+
+  return control_manager_diagnostics.tracker_status.active && control_manager_diagnostics.tracker_status.callbacks_enabled;
 }
 
 //}
