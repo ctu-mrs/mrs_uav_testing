@@ -533,7 +533,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
     case SET_YAW_RELATIVE_SERVICE_STATE:
       if (inDesiredState() && trackerReady()) {
         if (active_tracker == 1) {
-          changeState(GOTO_TOPIC_STATE);
+          changeState(CHANGE_TRACKER_STATE);
         } else if (active_tracker == 2) {
           changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
         }
