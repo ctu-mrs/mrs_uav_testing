@@ -191,6 +191,7 @@ private:
   double genXY(void);
   double genZ(void);
   double sanitizeYaw(const double yaw_in);
+  double angleDist(const double in1, const double in2);
   bool   inDesiredState(void);
   bool   trackerReady(void);
   void   activateTracker(std::string tracker_name);
@@ -1428,6 +1429,21 @@ double ControlTest::sanitizeYaw(const double yaw_in) {
 
 //}
 
+/* angleDist() //{ */
+
+double ControlTest::angleDist(const double in1, const double in2) {
+
+  double sanitized_difference = fabs(sanitizeYaw(in1) - sanitizeYaw(in2));
+
+  if (sanitized_difference > M_PI) {
+    sanitized_difference = 2*M_PI - sanitized_difference;
+  }
+
+  return fabs(sanitized_difference);
+}
+
+//}
+
 /* //{ inDesiredState() */
 
 bool ControlTest::inDesiredState(void) {
@@ -1436,7 +1452,7 @@ bool ControlTest::inDesiredState(void) {
     std::scoped_lock lock(mutex_odometry);
 
     // TODO: uncoment
-    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && (headless || fabs(sanitizeYaw(odometry_yaw) - sanitizeYaw(des_yaw)) < 0.15)) {
+    if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && (headless || angleDist(odometry_yaw, sanitizeYaw(des_yaw)) < 0.15)) {
 
       ROS_WARN("[ControlTest]: The goal has been reached.");
       ros::Duration(1.0).sleep();
