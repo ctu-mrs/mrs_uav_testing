@@ -184,7 +184,7 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
     std::scoped_lock lock(mutex_control_cmd);
 
     // if the uav reach the previousy set destination
-    if ((ros::Time::now() - last_successfull_command).toSec() > 1.0 && control_cmd.twist.twist.linear.x < 0.01 && control_cmd.twist.twist.linear.y < 0.01) {
+    if ((ros::Time::now() - last_successfull_command).toSec() > 2.0 && control_cmd.twist.twist.linear.x < 0.01 && control_cmd.twist.twist.linear.y < 0.01) {
 
       // create new point to fly to
       mrs_msgs::Vec4 new_point;
@@ -221,7 +221,7 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
             dist -= 0.1;
 
-            if (dist < 0.0) {
+            if (dist < 1.0) {
 
               if (randomize_distance_) {
                 dist = randd(0, max_distance_);
