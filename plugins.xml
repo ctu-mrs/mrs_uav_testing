@@ -9,3 +9,9 @@
     <description>the LoopingTest nodelet</description>
   </class>
 </library>
+
+<library path="lib/libRandomFlier">
+  <class name="mrs_testing/RandomFlier" type="mrs_testing::RandomFlier" base_class_type="nodelet::Nodelet">
+    <description>the RandomFlier nodelet</description>
+  </class>
+</library>

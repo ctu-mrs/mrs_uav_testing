@@ -1,6 +1,12 @@
 #!/bin/bash
 
-MY_PATH=`dirname "$0"`
+if_is_link=`readlink $0`
+command_name=$0
+if [[ if_is_link ]]; then
+  command_name=$if_is_link
+fi
+
+MY_PATH=`dirname "$if_is_link"`
 MY_PATH=`( cd "$MY_PATH" && pwd )`
 cd $MY_PATH
 
