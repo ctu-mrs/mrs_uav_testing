@@ -2,7 +2,7 @@
 
 # get path to script
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
-echo $1
+
 UAV_NAME=$1
 SESSION_NAME=monitor_$UAV_NAME
 
@@ -14,9 +14,9 @@ pre_input="export UAV_NAME=$UAV_NAME; export ATHAME_ENABLED=0"
 # define commands
 # 'name' 'command'
 input=(
-  'RVIZ' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/msckf.rviz
+  'RVIZ' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/vins.rviz
   "
-  'Juggler' "waitForRos; sleep 2;  ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; i3 workspace "9"; rosrun plotjuggler PlotJuggler -l ${SCRIPT_PATH}/../plot_juggler/msckf.xml
+  'Juggler' "waitForRos; sleep 2;  ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; i3 workspace "9"; rosrun plotjuggler PlotJuggler -l ${SCRIPT_PATH}/../plot_juggler/vins.xml
   "
   'Reconfigure' " waitForRos; rosrun rqt_reconfigure rqt_reconfigure
   "

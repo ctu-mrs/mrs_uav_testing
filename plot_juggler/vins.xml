@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.0">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <plotmatrix tab_name="position" columns="1" rows="3">
+   <plot row="0" col="0">
+    <range right="-3.896000" bottom="10.224888" top="11.343145" left="-23.896000"/>
+    <limitY/>
+    <curve name="/uav42/ground_truth/pose/pose/position/x" R="0" G="0" B="255" custom_transform="noTransform"/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/position/x" R="15" G="160" B="0" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/odometry_tf/pose/position/x" R="255" G="0" B="10" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="-3.896000" bottom="13.360982" top="14.592196" left="-23.896000"/>
+    <limitY/>
+    <curve name="/uav42/ground_truth/pose/pose/position/y" R="0" G="9" B="255" custom_transform="noTransform"/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/position/y" R="15" G="183" B="0" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/odometry_tf/pose/position/y" R="255" G="0" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="2" col="0">
+    <range right="-3.896000" bottom="3.030749" top="3.888429" left="-23.896000"/>
+    <limitY/>
+    <curve name="/uav42/ground_truth/pose/pose/position/z" R="14" G="13" B="236" custom_transform="noTransform"/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/position/z" R="33" G="161" B="0" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/odometry_tf/pose/position/z" R="255" G="0" B="13" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="orientation" columns="1" rows="3">
+   <plot row="0" col="0">
+    <range right="29.404000" bottom="-0.024580" top="-0.001296" left="9.372000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/orientation_mavros/vector/x" R="18" G="214" B="18" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/rpy/vector/x" R="255" G="0" B="3" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="29.404000" bottom="-0.002953" top="0.014365" left="9.372000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/orientation_mavros/vector/y" R="3" G="255" B="0" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/rpy/vector/y" R="255" G="0" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="2" col="0">
+    <range right="29.404000" bottom="-1.452293" top="-1.446109" left="9.372000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/orientation_mavros/vector/z" R="16" G="255" B="0" custom_transform="noTransform"/>
+    <curve name="/vins_estimator/rpy/vector/z" R="255" G="0" B="7" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="orientation_q" columns="1" rows="4">
+   <plot row="0" col="0">
+    <range right="-3.896000" bottom="-0.750077" top="-0.739820" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/orientation/w" R="67" G="238" B="38" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="-3.896000" bottom="-0.085411" top="0.073450" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/orientation/x" R="52" G="255" B="12" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="2" col="0">
+    <range right="-3.896000" bottom="-0.082763" top="0.135923" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/orientation/y" R="0" G="255" B="19" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="3" col="0">
+    <range right="-3.896000" bottom="0.654251" top="0.663225" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/pose/pose/orientation/z" R="0" G="255" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="velocity" columns="1" rows="3">
+   <plot row="0" col="0">
+    <range right="-3.896000" bottom="-0.180670" top="0.187924" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/twist/twist/linear/x" R="40" G="164" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="-3.896000" bottom="-0.849408" top="0.838653" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/twist/twist/linear/y" R="24" G="180" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="2" col="0">
+    <range right="-3.896000" bottom="-0.602183" top="0.454390" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/odom_main/twist/twist/linear/z" R="35" G="176" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="heading" columns="2" rows="1">
+   <plot row="0" col="0">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="1">
+    <range right="-3.896000" bottom="-0.063925" top="0.054976" left="-23.892000"/>
+    <limitY/>
+    <curve name="/uav42/mavros/imu/data/angular_velocity/z" R="255" G="0" B="22" custom_transform="noTransform"/>
+    <curve name="/uav42/mavros_interface/converted_mavros_odom/twist/twist/angular/z" R="0" G="0" B="255" custom_transform="noTransform"/>
+    <curve name="/uav42/odometry/odom_main/twist/twist/angular/z" R="1" G="150" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="lateral_state" columns="4" rows="2">
+   <plot row="0" col="0">
+    <range right="-3.908000" bottom="-0.109161" top="0.075314" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_x/tilt" R="0" G="0" B="255" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="-3.908000" bottom="-0.236693" top="0.289620" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_y/tilt" R="0" G="128" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="1">
+    <range right="-3.908000" bottom="-0.759016" top="0.427756" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_x/acc" R="255" G="0" B="255" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="1">
+    <range right="-3.908000" bottom="-1.402053" top="1.912399" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_y/acc" R="255" G="0" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="2">
+    <range right="-3.908000" bottom="-0.058784" top="-0.034765" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_x/acc_d" R="0" G="128" B="128" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="2">
+    <range right="-3.908000" bottom="0.054096" top="0.104109" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_y/acc_d" R="0" G="0" B="128" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="3">
+    <range right="-3.908000" bottom="-0.700629" top="0.484183" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_x/acc_i" R="128" G="128" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="3">
+    <range right="-3.908000" bottom="-1.505460" top="1.849322" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/lkf_states_y/acc_i" R="160" G="160" B="164" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix tab_name="heading_state" columns="3" rows="2">
+   <plot row="0" col="0">
+    <range right="-3.908000" bottom="-1.461861" top="-1.443585" left="-23.908000"/>
+    <limitY/>
+    <curve name="/uav42/odometry/heading_state_out/state.0" R="128" G="128" B="0" custom_transform="noTransform"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="0">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="1">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="1">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="0" col="2">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot row="1" col="2">
+    <range right="-329.036000" bottom="0.000000" top="1.000000" left="-330.036000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <currentPlotMatrix index="1"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <Plugins>
+  <plugin ID="DataLoad_CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad_ROS_bags">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad_ULog"/>
+  <plugin ID="ROS_Topic_Streamer">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="RosoutPublisherROS" status="idle"/>
+  <plugin ID="TopicPublisherROS" status="idle"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS_Topic_Streamer"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets/>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
