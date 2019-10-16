@@ -17,7 +17,7 @@ echo "<launch>" > "$filename"
 echo "<arg name=\"UAV_NAME\" default=\"\$(env UAV_NAME)\" />" >> "$filename"
 echo "<group ns=\"\$(arg UAV_NAME)\">" >> "$filename"
 
-echo -n "<node pkg=\"rosbag\" type=\"record\" name=\"rosbag_record\" args=\"-o /home/\$(optenv USER mrs)/bag_files/latest/" >> "$filename"
+echo -n "<node pkg=\"rosbag\" type=\"record\" name=\"rosbag_record_remote\" args=\"-o /home/\$(optenv USER mrs)/bag_files/latest/" >> "$filename"
 
 # if there is anything to exclude
 if [ "${#include[*]}" -gt 0 ]; then
