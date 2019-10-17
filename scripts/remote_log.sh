@@ -6,7 +6,7 @@ SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UAV_NAME=$1
 PROJECT_NAME=monitor_$UAV_NAME
 
-# ~/.i3/detacher.sh 1 "~/.scripts/set_ros_master_uri.sh $UAV_NAME"
+~/.i3/detacher.sh 1 "~/.scripts/set_ros_master_uri.sh $UAV_NAME"
 
 # following commands will be executed first, in each window
 pre_input="export UAV_NAME=$UAV_NAME"
@@ -18,7 +18,7 @@ input=(
 "
   'Rosout' "waitForRos; rostopic echo /rosout
 "
-  'Rosbag' "waitForRos; rosrun mrs_testing remote_rosbag.sh
+  'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh
 "
   'Layout' "waitForRos; i3 workspace '9'; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
 "
