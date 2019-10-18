@@ -20,7 +20,7 @@ input=(
 "
   'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh
 "
-  'Layout' "waitForRos; i3 workspace '9'; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
+  'Layout' "waitForRos; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
 "
 )
 
@@ -30,7 +30,7 @@ init_window="Rosout"
 ### DO NOT MODIFY BELOW ###
 ###########################
 
-SESSION_NAME=mav
+SESSION_NAME=$PROJECT_NAME
 
 MAIN_DIR=~/"bag_files"
 
