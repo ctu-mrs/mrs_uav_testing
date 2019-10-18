@@ -98,7 +98,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav62/control_manager/cmd_odom
+      Topic: /uav64/control_manager/cmd_odom
       Unreliable: true
       Value: true
     - Class: rviz/MarkerArray
@@ -141,7 +141,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Axes
-      Topic: /uav62/odometry/odom_main
+      Topic: /uav64/odometry/odom_main
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -157,7 +157,7 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /uav62/control_manager/mpc_tracker/predicted_trajectory_debugging
+      Topic: /uav64/control_manager/mpc_tracker/predicted_trajectory_debugging
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -173,12 +173,12 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /uav62/control_manager/mpc_tracker/debug_set_trajectory
+      Topic: /uav64/control_manager/mpc_tracker/debug_set_trajectory
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /uav62/balloon_circle_destroy/rviz_out
+      Marker Topic: /uav64/balloon_circle_destroy/rviz_out
       Name: MarkerArray
       Namespaces:
         mtsp: true
@@ -211,7 +211,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /uav62/balloon_planner/balloon_chosen_out
+      Topic: /uav64/balloon_planner/balloon_chosen_out
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -241,7 +241,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /uav62/balloon_planner/balloon_detection_used
+      Topic: /uav64/balloon_planner/balloon_detection_used
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -269,7 +269,7 @@ Visualization Manager:
       Size (Pixels): 36
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /uav62/object_detect/detected_objects_pcl
+      Topic: /uav64/object_detect/detected_objects_pcl
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

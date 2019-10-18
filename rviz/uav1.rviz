@@ -9,7 +9,7 @@ Panels:
         - /MRS_Bumper1
         - /Odometry1
       Splitter Ratio: 0.5
-    Tree Height: 290
+    Tree Height: 373
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
