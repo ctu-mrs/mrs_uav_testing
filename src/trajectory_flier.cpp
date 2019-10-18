@@ -57,7 +57,9 @@ private:
   bool   single_d_           = false;
   bool   active              = true;
   bool   randomize_distance_ = false;
-  double speed_              = false;
+  double speed_;
+  double acceleration_;
+  double jerk_;
   double max_distance_;
 
   nav_msgs::Odometry control_cmd;
@@ -85,6 +87,8 @@ void TrajectoryFlier::onInit(void) {
   param_loader.load_param("active", active);
   param_loader.load_param("randomize_distance", randomize_distance_);
   param_loader.load_param("speed", speed_);
+  param_loader.load_param("acceleration", acceleration_);
+  param_loader.load_param("jerk", jerk_);
   param_loader.load_param("max_distance", max_distance_);
 
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &TrajectoryFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
@@ -205,11 +209,33 @@ void TrajectoryFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
       int n_points = (dist / speed_) * 5.0;
 
+      double speed        = 0;
+      double acceleration = 0;
+      double pos_x        = control_cmd.pose.pose.position.x;
+      double pos_y        = control_cmd.pose.pose.position.y;
+
       for (int it = 0; it < n_points; it++) {
 
+        acceleration += (jerk_ * 0.2);
+
+        if (acceleration >= acceleration_) {
+          acceleration = acceleration_;
+        }
+
+        speed += (acceleration * 0.2);
+
+        if (speed >= speed_) {
+          speed = speed_;
+        }
+
+        ROS_INFO("[TrajectoryFlier]: jerk %.2f acceleration %.2f speed %.2f", jerk_, acceleration, speed);
+
+        pos_x += cos(direction) * (speed * 0.2);
+        pos_y += sin(direction) * (speed * 0.2);
+
         mrs_msgs::TrackerPoint new_point;
-        new_point.x   = control_cmd.pose.pose.position.x + cos(direction) * float(it) * (speed_ / 5.0);
-        new_point.y   = control_cmd.pose.pose.position.y + sin(direction) * float(it) * (speed_ / 5.0);
+        new_point.x   = pos_x;
+        new_point.y   = pos_y;
         new_point.z   = height_;
         new_point.yaw = 0;
 
