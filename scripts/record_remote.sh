@@ -5,11 +5,8 @@ filename=`mktemp`
 include=(
 '(.*)odometry/odom_main(.*)'
 '(.*)control_manager/cmd_odom(.*)'
-'(.*)control_manager/mpc_tracker/predicted_trajectory'
 '(.*)control_manager/mpc_tracker/debug_set_trajectory'
 '(.*)control_manager/diagnostics'
-'(.*)control_manager/attitude_cmd'
-'(.*)control_manager/position_cmd'
 '(.*)odometry/diagnostics'
 '/rosout'
 )
