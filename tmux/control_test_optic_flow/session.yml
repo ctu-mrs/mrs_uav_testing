@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1; export PROFILER=false
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow
 startup_window: control
 windows:
   - roscore:
@@ -19,7 +19,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
+        - waitForSimulation; spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-bluefox-camera
   - status:
       layout: even-vertical
       panes:
@@ -27,11 +27,11 @@ windows:
   - optic_flow:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_optic_flow simulation.launch
+        - waitForOdometry; roslaunch mrs_optic_flow optic_flow.launch
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_optflow.launch
+        - waitForOdometry; roslaunch mrs_general core.launch
   - control_test:
       layout: even-vertical
       panes:
@@ -40,3 +40,4 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
+        - waitForControl; sleep 3; ~/.i3/layout_manager.sh layout.json
