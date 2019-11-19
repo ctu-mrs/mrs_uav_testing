@@ -229,7 +229,6 @@ namespace mrs_testing
     goal_trajectory_topic.header.stamp    = ros::Time::now();
     goal_trajectory_topic.loop            = false;
     goal_trajectory_topic.use_yaw         = false;
-    goal_trajectory_topic.start_index     = 0;
 
     mrs_msgs::TrackerPoint point;
 
