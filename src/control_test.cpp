@@ -938,7 +938,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.start_index     = 0;
 
       goal_tracker_point.x   = trajectory_p1_;
       goal_tracker_point.y   = trajectory_p1_;
@@ -1012,7 +1011,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.start_index     = 0;
 
       goal_tracker_point.x   = trajectory_p1_;
       goal_tracker_point.y   = trajectory_p1_;
@@ -1083,7 +1081,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.start_index     = 0;
 
       goal_tracker_point.x   = trajectory_p2_;
       goal_tracker_point.y   = trajectory_p2_;
@@ -1132,7 +1129,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.start_index     = 0;
 
       goal_tracker_point.x   = trajectory_p1_;
       goal_tracker_point.y   = trajectory_p1_;
@@ -1178,7 +1174,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.start_index     = 0;
 
       double radius = 5;
 
