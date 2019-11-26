@@ -8,12 +8,14 @@
 
       <rosparam file="$(find mrs_testing)/config/control_test_gps.yaml" />
 
-      <!-- Subscribers --> 
+      <param name="uav_name" value="$(arg uav_name)" />
+
+        <!-- Subscribers -->
       <remap from="~odometry_in" to="odometry/odom_main" />
       <remap from="~position_command_in" to="control_manager/position_cmd" />
       <remap from="~control_manager_diagnostics_in" to="control_manager/diagnostics" />
 
-      <!-- Publisher --> 
+        <!-- Publisher -->
       <remap from="~goto_out" to="control_manager/goto" />
       <remap from="~goto_relative_out" to="control_manager/goto_relative" />
       <remap from="~goto_altitude_out" to="control_manager/goto_altitude" />
@@ -22,7 +24,7 @@
 
       <remap from="~set_trajectory_out" to="control_manager/mpc_tracker/set_trajectory" />
 
-      <!-- Services --> 
+        <!-- Services -->
       <remap from="~switch_tracker_out" to="control_manager/switch_tracker" />
       <remap from="~motors_out" to="control_manager/motors" />
       <remap from="~headless_out" to="control_manager/mpc_tracker/headless" />

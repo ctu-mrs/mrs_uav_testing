@@ -13,7 +13,7 @@
 
 #include <nav_msgs/Odometry.h>
 #include <mrs_msgs/Vec4.h>
-#include <mrs_msgs/TrackerPointStamped.h>  // ros message to set desired goal
+#include <mrs_msgs/ReferenceStamped.h>  // ros message to set desired goal
 
 #include <mrs_lib/ParamLoader.h>
 
@@ -87,7 +87,7 @@ void RandomFlier::onInit(void) {
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &RandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
   // PUBLISHERS
-  publisher_goto = nh_.advertise<mrs_msgs::TrackerPointStamped>("goto_out", 1);
+  publisher_goto = nh_.advertise<mrs_msgs::ReferenceStamped>("goto_out", 1);
 
   service_server_activate = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
   service_client_goto     = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
@@ -184,7 +184,8 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
     std::scoped_lock lock(mutex_control_cmd);
 
     // if the uav reach the previousy set destination
-    if ((ros::Time::now() - last_successfull_command).toSec() > 1.0 && fabs(control_cmd.twist.twist.linear.x) < 0.01 && fabs(control_cmd.twist.twist.linear.y) < 0.01) {
+    if ((ros::Time::now() - last_successfull_command).toSec() > 1.0 && fabs(control_cmd.twist.twist.linear.x) < 0.01 &&
+        fabs(control_cmd.twist.twist.linear.y) < 0.01) {
 
       // create new point to fly to
       mrs_msgs::Vec4 new_point;

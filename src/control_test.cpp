@@ -8,7 +8,7 @@
 
 #include <std_msgs/Float64.h>
 
-#include <mrs_msgs/TrackerPointStamped.h>
+#include <mrs_msgs/ReferenceStamped.h>
 #include <mrs_msgs/TrackerPoint.h>
 #include <mrs_msgs/TrackerTrajectory.h>
 #include <mrs_msgs/TrackerTrajectorySrv.h>
@@ -43,10 +43,6 @@ typedef enum
   TAKEOFF_STATE,
   CHANGE_TRACKER_STATE,
   GOTO_TOPIC_STATE,
-  GOTO_RELATIVE_TOPIC_STATE,
-  GOTO_ALTITUDE_TOPIC_STATE,
-  SET_YAW_TOPIC_STATE,
-  SET_YAW_RELATIVE_TOPIC_STATE,
   GOTO_SERVICE_STATE,
   GOTO_RELATIVE_SERVICE_STATE,
   GOTO_ALTITUDE_SERVICE_STATE,
@@ -69,15 +65,11 @@ typedef enum
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[28] = {
+const char *state_names[24] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "CHANGE_TRACKER_STATE",
     "GOTO_TOPIC_STATE",
-    "GOTO_RELATIVE_TOPIC_STATE",
-    "GOTO_ALTITUDE_TOPIC_STATE",
-    "SET_YAW_TOPIC_STATE",
-    "SET_YAW_RELATIVE_TOPIC_STATE",
     "GOTO_SERVICE_STATE",
     "GOTO_RELATIVE_SERVICE_STATE",
     "GOTO_ALTITUDE_SERVICE_STATE",
@@ -136,10 +128,6 @@ private:
 
 private:
   ros::Publisher publisher_goto;
-  ros::Publisher publisher_goto_relative;
-  ros::Publisher publisher_goto_altitude;
-  ros::Publisher publisher_set_yaw;
-  ros::Publisher publisher_set_yaw_relative;
   ros::Publisher publisher_set_trajectory;
 
 private:
@@ -276,11 +264,7 @@ void ControlTest::onInit() {
 
   // | ------------------- std tracker topics ------------------- |
 
-  publisher_goto             = nh_.advertise<mrs_msgs::TrackerPointStamped>("goto_out", 1);
-  publisher_goto_relative    = nh_.advertise<mrs_msgs::TrackerPointStamped>("goto_relative_out", 1);
-  publisher_goto_altitude    = nh_.advertise<std_msgs::Float64>("goto_altitude_out", 1);
-  publisher_set_yaw          = nh_.advertise<std_msgs::Float64>("set_yaw_out", 1);
-  publisher_set_yaw_relative = nh_.advertise<std_msgs::Float64>("set_yaw_relative", 1);
+  publisher_goto = nh_.advertise<mrs_msgs::ReferenceStamped>("goto_out", 1);
 
   // | --------------- additional tracker topics ---------------- |
 
@@ -483,30 +467,6 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       }
       break;
 
-    case GOTO_RELATIVE_TOPIC_STATE:
-      if (inDesiredState() && trackerReady()) {
-        changeState(ControlState_t(int(current_state) + 1));
-      }
-      break;
-
-    case GOTO_ALTITUDE_TOPIC_STATE:
-      if (inDesiredState() && trackerReady()) {
-        changeState(ControlState_t(int(current_state) + 1));
-      }
-      break;
-
-    case SET_YAW_TOPIC_STATE:
-      if (inDesiredState() && trackerReady()) {
-        changeState(ControlState_t(int(current_state) + 1));
-      }
-      break;
-
-    case SET_YAW_RELATIVE_TOPIC_STATE:
-      if (inDesiredState() && trackerReady()) {
-        changeState(ControlState_t(int(current_state) + 1));
-      }
-      break;
-
     case GOTO_SERVICE_STATE:
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
@@ -662,7 +622,7 @@ void ControlTest::changeState(ControlState_t new_state) {
   previous_state = current_state;
   current_state  = new_state;
 
-  mrs_msgs::TrackerPointStamped  goal_tracker_point_stamped;
+  mrs_msgs::ReferenceStamped     goal_tracker_point_stamped;
   std_msgs::Float64              goal_float64;
   mrs_msgs::Vec4                 goal_vec4;
   mrs_msgs::Vec1                 goal_vec1;
@@ -730,15 +690,15 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       ROS_INFO("[ControlTest]: calling goto");
 
-      goal_tracker_point_stamped.position.x   = genXY();
-      goal_tracker_point_stamped.position.y   = genXY();
-      goal_tracker_point_stamped.position.z   = genZ();
-      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
+      goal_tracker_point_stamped.reference.position.x = genXY();
+      goal_tracker_point_stamped.reference.position.y = genXY();
+      goal_tracker_point_stamped.reference.position.z = genZ();
+      goal_tracker_point_stamped.reference.yaw        = sanitizeYaw(genYaw());
 
-      des_x   = goal_tracker_point_stamped.position.x;
-      des_y   = goal_tracker_point_stamped.position.y;
-      des_z   = goal_tracker_point_stamped.position.z;
-      des_yaw = goal_tracker_point_stamped.position.yaw;
+      des_x   = goal_tracker_point_stamped.reference.position.x;
+      des_y   = goal_tracker_point_stamped.reference.position.y;
+      des_z   = goal_tracker_point_stamped.reference.position.z;
+      des_yaw = goal_tracker_point_stamped.reference.yaw;
 
       try {
         publisher_goto.publish(goal_tracker_point_stamped);
@@ -746,92 +706,6 @@ void ControlTest::changeState(ControlState_t new_state) {
       catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
       }
-
-      //}
-
-      break;
-
-
-    case GOTO_RELATIVE_TOPIC_STATE:
-
-      /* //{ test goto_relative topic */
-
-      goal_tracker_point_stamped.position.x   = genXY();
-      goal_tracker_point_stamped.position.y   = genXY();
-      goal_tracker_point_stamped.position.z   = randd(goto_relative_altitude_down_, goto_relative_altitude_up_);
-      goal_tracker_point_stamped.position.yaw = sanitizeYaw(genYaw());
-
-      {
-        std::scoped_lock lock(mutex_cmd);
-
-        des_x   = goal_tracker_point_stamped.position.x + cmd_x;
-        des_y   = goal_tracker_point_stamped.position.y + cmd_y;
-        des_z   = goal_tracker_point_stamped.position.z + cmd_z;
-        des_yaw = sanitizeYaw(goal_tracker_point_stamped.position.yaw + cmd_yaw);
-      }
-
-      try {
-        publisher_goto_relative.publish(goal_tracker_point_stamped);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_relative.getTopic().c_str());
-      }
-
-      //}
-
-      break;
-
-    case GOTO_ALTITUDE_TOPIC_STATE:
-
-      /* //{ test goto_altitude topic */
-
-      goal_float64.data = genZ();
-
-      des_z = goal_float64.data;
-
-      try {
-        publisher_goto_altitude.publish(goal_float64);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto_altitude.getTopic().c_str());
-      }
-
-      //}
-
-      break;
-
-    case SET_YAW_TOPIC_STATE:
-
-      /* //{ test set_yaw topic */
-
-      goal_float64.data = sanitizeYaw(genYaw());
-
-      des_yaw = goal_float64.data;
-
-      try {
-        publisher_set_yaw.publish(goal_float64);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_yaw.getTopic().c_str());
-      }
-
-      //}
-
-      break;
-
-    case SET_YAW_RELATIVE_TOPIC_STATE:
-
-      /* //{ test set_yaw_relative topic */
-
-      goal_float64.data = sanitizeYaw(genYaw());
-
-      {
-        std::scoped_lock lock(mutex_cmd);
-
-        des_yaw = sanitizeYaw(cmd_yaw + goal_float64.data);
-      }
-
-      publisher_set_yaw_relative.publish(goal_float64);
 
       //}
 
@@ -934,7 +808,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       activateTracker("MpcTracker");
 
       goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.frame_id = "";
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
@@ -1007,7 +881,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       activateTracker("MpcTracker");
 
       goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.frame_id = "";
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
@@ -1077,7 +951,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       activateTracker("MpcTracker");
 
       goal_trajectory_topic.fly_now         = true;
-      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.frame_id = "";
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
@@ -1125,7 +999,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       activateTracker("MpcTracker");
 
       goal_trajectory_topic.fly_now         = true;
-      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.frame_id = "";
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
@@ -1170,7 +1044,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       setHeadless(true);
 
       goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "local_origin";
+      goal_trajectory_topic.header.frame_id = "";
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
@@ -1296,15 +1170,15 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       activateTracker("MpcTracker");
 
-      goal_tracker_point_stamped.position.x   = 0;
-      goal_tracker_point_stamped.position.y   = 0;
-      goal_tracker_point_stamped.position.z   = 3;
-      goal_tracker_point_stamped.position.yaw = 0;
+      goal_tracker_point_stamped.reference.position.x = 0;
+      goal_tracker_point_stamped.reference.position.y = 0;
+      goal_tracker_point_stamped.reference.position.z = 3;
+      goal_tracker_point_stamped.reference.yaw        = 0;
 
-      des_x   = goal_tracker_point_stamped.position.x;
-      des_y   = goal_tracker_point_stamped.position.y;
-      des_z   = goal_tracker_point_stamped.position.z;
-      des_yaw = goal_tracker_point_stamped.position.yaw;
+      des_x   = goal_tracker_point_stamped.reference.position.x;
+      des_y   = goal_tracker_point_stamped.reference.position.y;
+      des_z   = goal_tracker_point_stamped.reference.position.z;
+      des_yaw = goal_tracker_point_stamped.reference.yaw;
 
       try {
         publisher_goto.publish(goal_tracker_point_stamped);
@@ -1431,7 +1305,7 @@ double ControlTest::angleDist(const double in1, const double in2) {
   double sanitized_difference = fabs(sanitizeYaw(in1) - sanitizeYaw(in2));
 
   if (sanitized_difference > M_PI) {
-    sanitized_difference = 2*M_PI - sanitized_difference;
+    sanitized_difference = 2 * M_PI - sanitized_difference;
   }
 
   return fabs(sanitized_difference);
