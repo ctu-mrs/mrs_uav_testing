@@ -12,6 +12,7 @@
 #include <mrs_msgs/TrackerPoint.h>
 #include <mrs_msgs/TrackerTrajectory.h>
 #include <mrs_msgs/TrackerTrajectorySrv.h>
+#include <mrs_msgs/ReferenceStampedSrv.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/Vec1.h>
 #include <mrs_msgs/String.h>
@@ -42,7 +43,8 @@ typedef enum
   IDLE_STATE,
   TAKEOFF_STATE,
   CHANGE_TRACKER_STATE,
-  GOTO_TOPIC_STATE,
+  SET_REFERENCE_TOPIC_STATE,
+  SET_REFERENCE_SERVICE_STATE,
   GOTO_SERVICE_STATE,
   GOTO_RELATIVE_SERVICE_STATE,
   GOTO_ALTITUDE_SERVICE_STATE,
@@ -65,11 +67,12 @@ typedef enum
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[24] = {
+const char *state_names[25] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "CHANGE_TRACKER_STATE",
-    "GOTO_TOPIC_STATE",
+    "SET_REFERENCE_TOPIC_STATE",
+    "SET_REFERENCE_SERVICE_STATE",
     "GOTO_SERVICE_STATE",
     "GOTO_RELATIVE_SERVICE_STATE",
     "GOTO_ALTITUDE_SERVICE_STATE",
@@ -127,7 +130,7 @@ private:
   std::mutex                          mutex_control_manager_diagnostics;
 
 private:
-  ros::Publisher publisher_goto;
+  ros::Publisher publisher_set_reference;
   ros::Publisher publisher_set_trajectory;
 
 private:
@@ -141,6 +144,7 @@ private:
   ros::ServiceClient service_client_headless;
 
 private:
+  ros::ServiceClient service_client_set_reference;
   ros::ServiceClient service_client_goto;
   ros::ServiceClient service_client_goto_relative;
   ros::ServiceClient service_client_goto_altitude;
@@ -264,7 +268,7 @@ void ControlTest::onInit() {
 
   // | ------------------- std tracker topics ------------------- |
 
-  publisher_goto = nh_.advertise<mrs_msgs::ReferenceStamped>("goto_out", 1);
+  publisher_set_reference = nh_.advertise<mrs_msgs::ReferenceStamped>("set_reference_out", 1);
 
   // | --------------- additional tracker topics ---------------- |
 
@@ -286,6 +290,8 @@ void ControlTest::onInit() {
   service_client_land_home      = nh_.serviceClient<std_srvs::Trigger>("land_home_out");
 
   // | ------------------ std tracker services ------------------ |
+
+  service_client_set_reference = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("set_reference_out");
 
   service_client_goto             = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
   service_client_goto_relative    = nh_.serviceClient<mrs_msgs::Vec4>("goto_relative_out");
@@ -449,7 +455,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
         wait.sleep();
 
         if (takeoff_num == 1) {
-          changeState(GOTO_TOPIC_STATE);  // after the first takeoff
+          changeState(SET_REFERENCE_TOPIC_STATE);  // after the first takeoff
           /* changeState(TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE); */
         } else if (takeoff_num == 2) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
@@ -459,10 +465,14 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       }
       break;
 
-    case GOTO_TOPIC_STATE:
-
+    case SET_REFERENCE_TOPIC_STATE:
       if (inDesiredState() && trackerReady()) {
+        changeState(ControlState_t(int(current_state) + 1));
+      }
+      break;
 
+    case SET_REFERENCE_SERVICE_STATE:
+      if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state) + 1));
       }
       break;
@@ -622,7 +632,8 @@ void ControlTest::changeState(ControlState_t new_state) {
   previous_state = current_state;
   current_state  = new_state;
 
-  mrs_msgs::ReferenceStamped     goal_tracker_point_stamped;
+  mrs_msgs::ReferenceStamped     goal_reference_stamped_topic;
+  mrs_msgs::ReferenceStampedSrv  goal_reference_stamped_srv;
   std_msgs::Float64              goal_float64;
   mrs_msgs::Vec4                 goal_vec4;
   mrs_msgs::Vec1                 goal_vec1;
@@ -684,32 +695,51 @@ void ControlTest::changeState(ControlState_t new_state) {
       break;
     }
 
-    case GOTO_TOPIC_STATE:
+    case SET_REFERENCE_TOPIC_STATE:
 
-      /* //{ test goto topic */
+      /* //{ test set reference topic */
 
-      ROS_INFO("[ControlTest]: calling goto");
+      ROS_INFO("[ControlTest]: calling set reference");
 
-      goal_tracker_point_stamped.reference.position.x = genXY();
-      goal_tracker_point_stamped.reference.position.y = genXY();
-      goal_tracker_point_stamped.reference.position.z = genZ();
-      goal_tracker_point_stamped.reference.yaw        = sanitizeYaw(genYaw());
+      goal_reference_stamped_topic.reference.position.x = genXY();
+      goal_reference_stamped_topic.reference.position.y = genXY();
+      goal_reference_stamped_topic.reference.position.z = genZ();
+      goal_reference_stamped_topic.reference.yaw        = sanitizeYaw(genYaw());
 
-      des_x   = goal_tracker_point_stamped.reference.position.x;
-      des_y   = goal_tracker_point_stamped.reference.position.y;
-      des_z   = goal_tracker_point_stamped.reference.position.z;
-      des_yaw = goal_tracker_point_stamped.reference.yaw;
+      des_x   = goal_reference_stamped_topic.reference.position.x;
+      des_y   = goal_reference_stamped_topic.reference.position.y;
+      des_z   = goal_reference_stamped_topic.reference.position.z;
+      des_yaw = goal_reference_stamped_topic.reference.yaw;
 
       try {
-        publisher_goto.publish(goal_tracker_point_stamped);
+        publisher_set_reference.publish(goal_reference_stamped_topic);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_reference.getTopic().c_str());
       }
 
       //}
 
       break;
+
+    case SET_REFERENCE_SERVICE_STATE:
+
+      /* //{ test set reference service */
+
+      goal_reference_stamped_srv.request.reference.position.x = genXY();
+      goal_reference_stamped_srv.request.reference.position.y = genXY();
+      goal_reference_stamped_srv.request.reference.position.z = genZ();
+      goal_reference_stamped_srv.request.reference.yaw = sanitizeYaw(genYaw());
+
+      des_x   = goal_reference_stamped_srv.request.reference.position.x;
+      des_y   = goal_reference_stamped_srv.request.reference.position.y;
+      des_z   = goal_reference_stamped_srv.request.reference.position.z;
+      des_yaw = goal_reference_stamped_srv.request.reference.yaw;
+
+      service_client_set_reference.call(goal_reference_stamped_srv);
+
+      //}
+
 
     case GOTO_SERVICE_STATE:
 
@@ -1170,21 +1200,21 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       activateTracker("MpcTracker");
 
-      goal_tracker_point_stamped.reference.position.x = 0;
-      goal_tracker_point_stamped.reference.position.y = 0;
-      goal_tracker_point_stamped.reference.position.z = 3;
-      goal_tracker_point_stamped.reference.yaw        = 0;
+      goal_reference_stamped_topic.reference.position.x = 0;
+      goal_reference_stamped_topic.reference.position.y = 0;
+      goal_reference_stamped_topic.reference.position.z = 3;
+      goal_reference_stamped_topic.reference.yaw        = 0;
 
-      des_x   = goal_tracker_point_stamped.reference.position.x;
-      des_y   = goal_tracker_point_stamped.reference.position.y;
-      des_z   = goal_tracker_point_stamped.reference.position.z;
-      des_yaw = goal_tracker_point_stamped.reference.yaw;
+      des_x   = goal_reference_stamped_topic.reference.position.x;
+      des_y   = goal_reference_stamped_topic.reference.position.y;
+      des_z   = goal_reference_stamped_topic.reference.position.z;
+      des_yaw = goal_reference_stamped_topic.reference.yaw;
 
       try {
-        publisher_goto.publish(goal_tracker_point_stamped);
+        publisher_set_reference.publish(goal_reference_stamped_topic);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_goto.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_reference.getTopic().c_str());
       }
 
       //}

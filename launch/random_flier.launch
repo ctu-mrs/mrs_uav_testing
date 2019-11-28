@@ -8,13 +8,11 @@
 
       <rosparam file="$(find mrs_testing)/config/random_flier.yaml" />
 
-      <param name="uav_name" value="$(arg uav_name)" />
-
         <!-- Subscribers -->
       <remap from="~control_cmd_in" to="control_manager/cmd_odom" />
 
         <!-- Publishers -->
-      <remap from="~goto_out" to="control_manager/goto" />
+      <remap from="~set_reference_out" to="control_manager/set_reference" />
 
         <!-- Services -->
       <remap from="~activate_in" to="~activate" />

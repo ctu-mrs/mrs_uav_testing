@@ -12,8 +12,7 @@
 #include <mutex>
 
 #include <nav_msgs/Odometry.h>
-#include <mrs_msgs/Vec4.h>
-#include <mrs_msgs/ReferenceStamped.h>  // ros message to set desired goal
+#include <mrs_msgs/ReferenceStampedSrv.h>
 
 #include <mrs_lib/ParamLoader.h>
 
@@ -43,9 +42,8 @@ private:
 
 private:
   ros::Subscriber    subscriber_control_cmd;
-  ros::Publisher     publisher_goto;
   ros::ServiceServer service_server_activate;
-  ros::ServiceClient service_client_goto;
+  ros::ServiceClient service_client_set_reference;
   ros::Timer         main_timer;
 
   double main_timer_rate_;
@@ -86,11 +84,8 @@ void RandomFlier::onInit(void) {
 
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &RandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
-  // PUBLISHERS
-  publisher_goto = nh_.advertise<mrs_msgs::ReferenceStamped>("goto_out", 1);
-
-  service_server_activate = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
-  service_client_goto     = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
+  service_server_activate      = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
+  service_client_set_reference = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("set_reference_out");
 
   // initialize the random number generator
   /* srand(static_cast<unsigned int>(time(0))); */
@@ -188,7 +183,8 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
         fabs(control_cmd.twist.twist.linear.y) < 0.01) {
 
       // create new point to fly to
-      mrs_msgs::Vec4 new_point;
+      mrs_msgs::ReferenceStampedSrv new_point;
+      new_point.request.header.frame_id = "gps_origin";
 
       double dist, direction;
 
@@ -202,16 +198,16 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
       while (true) {
 
-        new_point.request.goal[0] = control_cmd.pose.pose.position.x + cos(direction) * dist;
-        new_point.request.goal[1] = control_cmd.pose.pose.position.y + sin(direction) * dist;
-        new_point.request.goal[2] = height_;
-        new_point.request.goal[3] = 0;
+        new_point.request.reference.position.x = control_cmd.pose.pose.position.x + cos(direction) * dist;
+        new_point.request.reference.position.y = control_cmd.pose.pose.position.y + sin(direction) * dist;
+        new_point.request.reference.position.z = height_;
+        new_point.request.reference.yaw        = 0;
 
-        if (service_client_goto.call(new_point)) {
+        if (service_client_set_reference.call(new_point)) {
 
           if (new_point.response.success) {
 
-            ROS_INFO("New goal: %2.2f %2.2f", new_point.request.goal[0], new_point.request.goal[1]);
+            ROS_INFO("New goal: %2.2f %2.2f", new_point.request.reference.position.x, new_point.request.reference.position.y);
 
             last_successfull_command = ros::Time::now();
             break;
