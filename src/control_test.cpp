@@ -130,7 +130,7 @@ private:
   std::mutex                          mutex_control_manager_diagnostics;
 
 private:
-  ros::Publisher publisher_set_reference;
+  ros::Publisher publisher_reference;
   ros::Publisher publisher_set_trajectory;
 
 private:
@@ -268,7 +268,7 @@ void ControlTest::onInit() {
 
   // | ------------------- std tracker topics ------------------- |
 
-  publisher_set_reference = nh_.advertise<mrs_msgs::ReferenceStamped>("set_reference_out", 1);
+  publisher_reference = nh_.advertise<mrs_msgs::ReferenceStamped>("reference_out", 1);
 
   // | --------------- additional tracker topics ---------------- |
 
@@ -712,10 +712,10 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_yaw = goal_reference_stamped_topic.reference.yaw;
 
       try {
-        publisher_set_reference.publish(goal_reference_stamped_topic);
+        publisher_reference.publish(goal_reference_stamped_topic);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_reference.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_reference.getTopic().c_str());
       }
 
       //}
@@ -729,7 +729,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_reference_stamped_srv.request.reference.position.x = genXY();
       goal_reference_stamped_srv.request.reference.position.y = genXY();
       goal_reference_stamped_srv.request.reference.position.z = genZ();
-      goal_reference_stamped_srv.request.reference.yaw = sanitizeYaw(genYaw());
+      goal_reference_stamped_srv.request.reference.yaw        = sanitizeYaw(genYaw());
 
       des_x   = goal_reference_stamped_srv.request.reference.position.x;
       des_y   = goal_reference_stamped_srv.request.reference.position.y;
@@ -1211,10 +1211,10 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_yaw = goal_reference_stamped_topic.reference.yaw;
 
       try {
-        publisher_set_reference.publish(goal_reference_stamped_topic);
+        publisher_reference.publish(goal_reference_stamped_topic);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_reference.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_reference.getTopic().c_str());
       }
 
       //}

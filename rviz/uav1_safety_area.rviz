@@ -9,7 +9,7 @@ Panels:
         - /odom_main1
         - /odom_main1/Shape1
         - /position_cmd1
-        - /Odometry1
+        - /MarkerArray1
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
     Tree Height: 291
@@ -255,7 +255,7 @@ Visualization Manager:
       Vertical collision threshold: 1
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /visualization_marker_array
+      Marker Topic: /uav1/control_manager/visualization_marker_array
       Name: MarkerArray
       Namespaces:
         "": true
@@ -323,7 +323,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: -1.341104507446289e-7
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -357,5 +357,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 936
-  X: 1932
+  X: 12
   Y: 556

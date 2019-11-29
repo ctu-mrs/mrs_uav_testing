@@ -43,7 +43,7 @@ private:
 private:
   ros::Subscriber    subscriber_control_cmd;
   ros::ServiceServer service_server_activate;
-  ros::ServiceClient service_client_set_reference;
+  ros::ServiceClient service_client_reference;
   ros::Timer         main_timer;
 
   double main_timer_rate_;
@@ -84,8 +84,8 @@ void RandomFlier::onInit(void) {
 
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &RandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
-  service_server_activate      = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
-  service_client_set_reference = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("set_reference_out");
+  service_server_activate  = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
+  service_client_reference = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("reference_out");
 
   // initialize the random number generator
   /* srand(static_cast<unsigned int>(time(0))); */
@@ -203,7 +203,7 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
         new_point.request.reference.position.z = height_;
         new_point.request.reference.yaw        = 0;
 
-        if (service_client_set_reference.call(new_point)) {
+        if (service_client_reference.call(new_point)) {
 
           if (new_point.response.success) {
 
