@@ -31,7 +31,7 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch
+        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./uav_manager.yaml
   - control_test:
       layout: even-vertical
       panes:
