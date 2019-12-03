@@ -15,7 +15,10 @@
       <remap from="~position_command_in" to="control_manager/position_cmd" />
       <remap from="~control_manager_diagnostics_in" to="control_manager/diagnostics" />
 
-        <!-- Publisher -->
+        <!-- Advertised topics -->
+      <remap from="~reference_out" to="control_manager/reference" />
+
+        <!-- Advertised services -->
       <remap from="~goto_out" to="control_manager/goto" />
       <remap from="~goto_relative_out" to="control_manager/goto_relative" />
       <remap from="~goto_altitude_out" to="control_manager/goto_altitude" />
