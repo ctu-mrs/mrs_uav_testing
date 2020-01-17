@@ -270,7 +270,7 @@ Visualization Manager:
       Marker Topic: /uav60/control_manager/mpc_tracker/debug_trajectory_marker
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -317,25 +317,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 24.166147232055664
+      Distance: 55.455894470214844
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -3.955415725708008
+        Y: 10.088403701782227
+        Z: -3.814697265625e-6
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.390397310256958
+      Pitch: 0.6653979420661926
       Target Frame: uav60/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.370395660400391
+      Yaw: 2.1653943061828613
     Saved: ~
 Window Geometry:
   Displays:
