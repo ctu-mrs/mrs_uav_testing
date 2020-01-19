@@ -6,9 +6,8 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /TF1/Tree1
-        - /MpcTracker1
       Splitter Ratio: 0.649289071559906
-    Tree Height: 385
+    Tree Height: 865
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -89,91 +88,34 @@ Visualization Manager:
       Value: true
       Vertical collision threshold: 1
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        gazebo_user_camera:
-          Value: false
-        uav1/fcu:
-          Value: true
-        uav1/fcu/arms:
-          Value: false
-        uav1/fcu/props:
-          Value: false
-        uav1/fcu/uav_marker:
-          Value: false
-        uav1/fcu_untilted:
-          Value: true
-        uav1/garmin:
-          Value: false
-        uav1/gps_origin:
-          Value: true
-        uav1/local_origin:
-          Value: true
-        uav1/utm_origin:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        uav1/fcu:
-          uav1/fcu/arms:
-            {}
-          uav1/fcu/props:
-            {}
-          uav1/fcu/uav_marker:
-            {}
-          uav1/fcu_untilted:
-            {}
-          uav1/garmin:
-            {}
-          uav1/gps_origin:
-            gazebo_user_camera:
-              {}
-            uav1/utm_origin:
-              {}
-          uav1/local_origin:
-            {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        uav1/fcu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/arms:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/props:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/uav_marker:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: UAVModel
       Robot Description: /uav1/robot_model
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Class: rviz/Group
       Displays:
@@ -301,7 +243,7 @@ Visualization Manager:
           Topic: /uav1/control_manager/mpc_tracker/debug_set_trajectory
           Unreliable: false
           Value: true
-        - Angle Tolerance: 0.10000000149011612
+        - Angle Tolerance: 0.0010000000474974513
           Class: rviz/Odometry
           Covariance:
             Orientation:
@@ -321,7 +263,7 @@ Visualization Manager:
           Enabled: true
           Keep: 1
           Name: MpcTrackerReference
-          Position Tolerance: 0.10000000149011612
+          Position Tolerance: 0.0010000000474974513
           Shape:
             Alpha: 1
             Axes Length: 1
@@ -333,6 +275,22 @@ Visualization Manager:
             Shaft Radius: 0.05000000074505806
             Value: Axes
           Topic: /uav1/control_manager/mpc_tracker/setpoint_odom
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.10000000149011612
+          Axes Radius: 0.05000000074505806
+          Class: rviz/PoseArray
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
+          Name: MpcInnerReference
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
+          Shape: Axes
+          Topic: /uav1/control_manager/mpc_tracker/mpc_reference_debugging
           Unreliable: false
           Value: true
       Enabled: true
@@ -365,33 +323,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 2.2047207355499268
+      Distance: 7.163970470428467
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.9117332696914673
-        Y: 0.09922289848327637
-        Z: 2.2649765014648438e-6
+        X: -0.9383558034896851
+        Y: 0.9969745874404907
+        Z: 2.5033950805664062e-6
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.41479796171188354
+      Pitch: 1.5697963237762451
       Target Frame: uav1/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 2.9753708839416504
+      Yaw: 3.280374765396118
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: true
-  Height: 600
+  Height: 1080
   Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000002be00000202fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b00000202000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c900000001000001160000024efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000024e000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000023f00fffffffb0000000800540069006d00650100000000000004500000000000000000000003a80000020200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002be000003e2fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b000003e2000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c900000001000001160000024efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b0000024e000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000023f00fffffffb0000000800540069006d0065010000000000000450000000000000000000000780000003e200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -400,6 +358,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 936
-  X: 966
-  Y: 34
+  Width: 1920
+  X: 0
+  Y: 0
