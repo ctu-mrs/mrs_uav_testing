@@ -6,10 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /BrickEstimator1
-        - /BrickEstimator1/ClosestAny1
-        - /BalloonDetection1
-        - /BalloonDetection1/PointCloud21
+        - /MpcTracker1
       Splitter Ratio: 0.5837696194648743
     Tree Height: 893
   - Class: rviz/Selection
@@ -30,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -54,7 +51,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 100
-      Reference Frame: uav60/gps_origin
+      Reference Frame: uav63/gps_origin
       Value: true
     - Alpha: 1
       Cell Size: 5
@@ -72,7 +69,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 20
-      Reference Frame: uav60/gps_origin
+      Reference Frame: uav63/gps_origin
       Value: true
     - Class: rviz/TF
       Enabled: false
@@ -121,7 +118,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /uav60/control_manager/mpc_tracker/setpoint_odom
+          Topic: /uav63/control_manager/mpc_tracker/setpoint_odom
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -137,12 +134,12 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
-          Topic: /uav60/control_manager/mpc_tracker/predicted_trajectory_debugging
+          Topic: /uav63/control_manager/mpc_tracker/predicted_trajectory_debugging
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/control_manager/mpc_tracker/debug_trajectory_marker
+          Marker Topic: /uav63/control_manager/mpc_tracker/debug_trajectory_marker
           Name: debug_trajectory
           Namespaces:
             {}
@@ -161,7 +158,7 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
-          Topic: /uav60/control_manager/mpc_tracker/debug_set_trajectory
+          Topic: /uav63/control_manager/mpc_tracker/debug_set_trajectory
           Unreliable: false
           Value: true
       Enabled: true
@@ -169,13 +166,13 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /uav60/control_manager/disturbances_markers
+          Enabled: false
+          Marker Topic: /uav63/control_manager/disturbances_markers
           Name: disturbances
           Namespaces:
-            control_manager: true
+            {}
           Queue Size: 100
-          Value: true
+          Value: false
         - Angle Tolerance: 0.009999999776482582
           Class: rviz/Odometry
           Covariance:
@@ -207,12 +204,12 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Arrow
-          Topic: /uav60/control_manager/cmd_odom
+          Topic: /uav63/control_manager/cmd_odom
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/control_manager/safety_area_markers
+          Marker Topic: /uav63/control_manager/safety_area_markers
           Name: SafetyArea
           Namespaces:
             "": true
@@ -229,7 +226,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestBlue
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_blue_debugging
+          Topic: /uav63/brick_estimation/closest_blue_debugging
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -239,7 +236,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestRed
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_red_debuggin
+          Topic: /uav63/brick_estimation/closest_red_debuggin
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -249,7 +246,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestGreen
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_red_debuggin
+          Topic: /uav63/brick_estimation/closest_red_debuggin
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -259,7 +256,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestAny
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_red_debuggin
+          Topic: /uav63/brick_estimation/closest_red_debuggin
           Unreliable: false
           Value: true
       Enabled: true
@@ -297,7 +294,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Arrow
-          Topic: /uav60/odometry/odom_main
+          Topic: /uav63/odometry/odom_main
           Unreliable: false
           Value: true
       Enabled: true
@@ -316,7 +313,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
-          Topic: /uav60/brick_grasping/current_target_debug
+          Topic: /uav63/brick_grasping/current_target_debug
           Unreliable: false
           Value: true
       Enabled: true
@@ -325,10 +322,10 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/balloon_circle_destroy/rviz_out
+          Marker Topic: /uav63/balloon_circle_destroy/rviz_out
           Name: BalloonArea
           Namespaces:
-            mtsp: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 1
@@ -358,7 +355,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Arrow
-          Topic: /uav60/balloon_filter/balloon_chosen_out
+          Topic: /uav63/balloon_filter/balloon_chosen_out
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -388,7 +385,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Arrow
-          Topic: /uav60/balloon_filter/balloon_detection_used
+          Topic: /uav63/balloon_filter/balloon_detection_used
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -416,7 +413,7 @@ Visualization Manager:
           Size (Pixels): 36
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /uav60/object_detect/detected_balls_pcl
+          Topic: /uav63/object_detect/detected_balls_pcl
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -427,8 +424,8 @@ Visualization Manager:
   Global Options:
     Background Color: 255; 255; 255
     Default Light: true
-    Fixed Frame: uav60/gps_origin
-    Frame Rate: 60
+    Fixed Frame: uav63/gps_origin
+    Frame Rate: 30
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -451,25 +448,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 4.400811672210693
+      Distance: 13.849468231201172
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.5283584594726562
-        Y: 0.11120343208312988
-        Z: 4.76837158203125e-7
+        X: -3.397770881652832
+        Y: -1.0319299697875977
+        Z: -9.5367431640625e-7
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4047960042953491
-      Target Frame: uav60/fcu
+      Pitch: 0.34979620575904846
+      Target Frame: uav63/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.030399799346924
+      Yaw: 2.995394468307495
     Saved: ~
 Window Geometry:
   Displays:
