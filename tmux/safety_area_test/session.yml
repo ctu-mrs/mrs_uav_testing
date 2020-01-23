@@ -31,8 +31,9 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=control_manager.yaml config_uav_manager:=uav_manager.yaml WORLD_FILE:=./world.yaml
-        - waitForOdometry; roslaunch mrs_testing random_flier.launch
+        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml WORLD_FILE:=./world.yaml
+        # - waitForOdometry; roslaunch mrs_testing random_flier.launch
+        - waitForOdometry; roslaunch mrs_testing trajectory_flier.launch
   - takeoff:
       layout: even-vertical
       panes:

@@ -455,8 +455,11 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
         wait.sleep();
 
         if (takeoff_num == 1) {
+
           changeState(SET_REFERENCE_TOPIC_STATE);  // after the first takeoff
-          /* changeState(TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE); */
+          /* changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE); */
+          /* changeState(TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE); */
+
         } else if (takeoff_num == 2) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
         }
