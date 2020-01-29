@@ -4,7 +4,7 @@
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 UAV_NAME=$1
-SESSION_NAME=monitor_$UAV_NAME
+PROJECT_NAME=monitor_$UAV_NAME
 
 ~/.i3/detacher.sh 1 "~/.scripts/set_ros_master_uri.sh $UAV_NAME"
 
@@ -14,15 +14,17 @@ pre_input="export UAV_NAME=$UAV_NAME"
 # define commands
 # 'name' 'command'
 input=(
-  'RVIZ' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/odometry.rviz
-  "
-  'Juggler' "waitForRos; sleep 2;  ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; i3 workspace "9"; rosrun plotjuggler PlotJuggler -l ${SCRIPT_PATH}/../plot_juggler/odometry.xml
-  "
-  'Reconfigure' " waitForRos; rosrun rqt_reconfigure rqt_reconfigure
-  "
-  'Layout' "waitForRos; i3 workspace '9'; sleep 10;  ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/layout-RVIZ_RQT_JUGGLER.json
-  "
+  'Rviz' "waitForRos; unset ROS_IP; roscd mrs_testing; ${SCRIPT_PATH}/change_uav_control.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/remote_log.rviz
+"
+  'RvizInterface' "waitForRos; unset ROS_IP; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
+"
+  'Juggler' "waitForRos; unset ROS_IP; sleep 2;  ${SCRIPT_PATH}/change_uav.sh $UAV_NAME; i3 workspace "9"; rosrun plotjuggler PlotJuggler -l ${SCRIPT_PATH}/../plot_juggler/odometry.xml"
+  'Reconfigure' " waitForRos; unset ROS_IP; rosrun rqt_reconfigure rqt_reconfigure"
+  # 'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh"
+  'Layout' "waitForRos; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json"
 )
+
+init_window="Rosout"
 
 ###########################
 ### DO NOT MODIFY BELOW ###
