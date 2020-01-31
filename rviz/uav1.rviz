@@ -8,7 +8,7 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.3983666002750397
-    Tree Height: 290
+    Tree Height: 373
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -392,25 +392,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 16.725297927856445
+      Distance: 5.57738733291626
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.5178413391113281
-        Y: -1.3310763835906982
+        X: -1.1741414070129395
+        Y: 0.8667480945587158
         Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.47039854526519775
+      Pitch: 0.22039896249771118
       Target Frame: uav1/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 2.9953973293304443
+      Yaw: 1.720397710800171
     Saved: ~
 Window Geometry:
   Displays:

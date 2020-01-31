@@ -4,12 +4,11 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
+        - /TF1
         - /TF1/Frames1
-        - /BrickEstimator1
-      Splitter Ratio: 0.75
-    Tree Height: 443
+        - /rviz_interface1/ClickedPoint1
+      Splitter Ratio: 0.6038544178009033
+    Tree Height: 893
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -52,7 +51,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 100
-      Reference Frame: uav60/gps_origin
+      Reference Frame: uav67/gps_origin
       Value: true
     - Alpha: 1
       Cell Size: 5
@@ -70,27 +69,80 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 20
-      Reference Frame: uav60/gps_origin
+      Reference Frame: uav67/gps_origin
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        brick_cam_uav67:
+          Value: false
+        uav67/bluefox_optflow_optical:
+          Value: false
+        uav67/brick_origin:
+          Value: false
+        uav67/fcu:
+          Value: false
+        uav67/fcu_untilted:
+          Value: false
+        uav67/garmin:
+          Value: false
+        uav67/gps_origin:
+          Value: true
+        uav67/local_origin:
+          Value: true
+        uav67/rs_d435/color:
+          Value: false
+        uav67/rs_d435/color_optical:
+          Value: false
+        uav67/rs_d435/depth:
+          Value: false
+        uav67/rs_d435/depth_optical:
+          Value: false
+        uav67/rs_d435/link:
+          Value: false
+        uav67/rs_d435/tmp_optical:
+          Value: false
+        uav67/utm_origin:
+          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        uav67/fcu:
+          brick_cam_uav67:
+            {}
+          uav67/bluefox_optflow_optical:
+            {}
+          uav67/brick_origin:
+            {}
+          uav67/fcu_untilted:
+            {}
+          uav67/garmin:
+            {}
+          uav67/gps_origin:
+            uav67/utm_origin:
+              {}
+          uav67/local_origin:
+            {}
+          uav67/rs_d435/tmp_optical:
+            uav67/rs_d435/link:
+              uav67/rs_d435/color:
+                uav67/rs_d435/color_optical:
+                  {}
+              uav67/rs_d435/depth:
+                uav67/rs_d435/depth_optical:
+                  {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Class: rviz/Group
       Displays:
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav60/rs_d435/depth/image_rect_raw
+          Image Topic: /uav67/rs_d435/depth/image_rect_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -102,7 +154,7 @@ Visualization Manager:
           Value: false
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav60/bluefox_brick/image_raw
+          Image Topic: /uav67/bluefox_brick/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -125,7 +177,7 @@ Visualization Manager:
           Name: MRS_Bumper
           Show sectors with no data: false
           Show undetected obstacles: true
-          Topic: /uav60/bumper/obstacle_sectors
+          Topic: /uav67/bumper/obstacle_sectors
           Unreliable: false
           Value: false
           Vertical collision threshold: 1.2000000476837158
@@ -138,30 +190,30 @@ Visualization Manager:
           Axis: Z
           Channel Name: intensity
           Class: rviz/LaserScan
-          Color: 255; 255; 255
-          Color Transformer: Intensity
+          Color: 0; 0; 0
+          Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 47
+          Max Intensity: 15
           Min Color: 0; 0; 0
-          Min Intensity: 47
+          Min Intensity: 9
           Name: RPLidar
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /uav60/rplidar/scan
+          Size (m): 0.10000000149011612
+          Style: Spheres
+          Topic: /uav67/rplidar/scan
           Unreliable: false
           Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
+          Use rainbow: false
+          Value: true
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav60/rs_d435/color/image_raw
+          Image Topic: /uav67/rs_d435/color/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -171,7 +223,7 @@ Visualization Manager:
           Transport Hint: raw
           Unreliable: false
           Value: false
-      Enabled: false
+      Enabled: true
       Name: Sensors
     - Class: rviz/Group
       Displays:
@@ -206,7 +258,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /uav60/control_manager/mpc_tracker/setpoint_odom
+          Topic: /uav67/control_manager/mpc_tracker/setpoint_odom
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -222,14 +274,14 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
-          Topic: /uav60/control_manager/mpc_tracker/predicted_trajectory_debugging
+          Topic: /uav67/control_manager/mpc_tracker/predicted_trajectory_debugging
           Unreliable: false
           Value: true
         - Class: rviz/Group
           Displays:
             - Class: rviz/MarkerArray
               Enabled: false
-              Marker Topic: /uav60/control_manager/mpc_tracker/trajectory_original/markers
+              Marker Topic: /uav67/control_manager/mpc_tracker/trajectory_original/markers
               Name: MarkerArray
               Namespaces:
                 {}
@@ -248,7 +300,7 @@ Visualization Manager:
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
-              Topic: /uav60/control_manager/mpc_tracker/trajectory_original/poses
+              Topic: /uav67/control_manager/mpc_tracker/trajectory_original/poses
               Unreliable: false
               Value: false
           Enabled: false
@@ -257,10 +309,10 @@ Visualization Manager:
           Displays:
             - Class: rviz/MarkerArray
               Enabled: true
-              Marker Topic: /uav60/control_manager/mpc_tracker/trajectory_processed/markers
+              Marker Topic: /uav67/control_manager/mpc_tracker/trajectory_processed/markers
               Name: MarkerArray
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Alpha: 1
@@ -276,7 +328,7 @@ Visualization Manager:
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
-              Topic: /uav60/control_manager/mpc_tracker/trajectory_processed/poses
+              Topic: /uav67/control_manager/mpc_tracker/trajectory_processed/poses
               Unreliable: false
               Value: true
           Enabled: true
@@ -287,7 +339,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /uav60/control_manager/disturbances_markers
+          Marker Topic: /uav67/control_manager/disturbances_markers
           Name: disturbances
           Namespaces:
             {}
@@ -324,17 +376,42 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Arrow
-          Topic: /uav60/control_manager/cmd_odom
+          Topic: /uav67/control_manager/cmd_odom
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/control_manager/safety_area_markers
+          Marker Topic: /uav67/control_manager/safety_area_markers
           Name: SafetyArea
           Namespaces:
             "": true
           Queue Size: 100
           Value: true
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /uav67/control_manager/safety_area_coordinates_markers
+          Name: SafetyAreaCoordinates
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Alpha: 0.10000000149011612
+          Class: mrs_rviz_plugins/MRS_Bumper
+          Collision alpha: 0.5
+          Collision color: 255; 0; 0
+          Color: 204; 51; 204
+          Colorize collisions: true
+          Display mode: sensor types
+          Enabled: true
+          History Length: 1
+          Horizontal collision threshold: 1
+          Name: MRS_Bumper
+          Show sectors with no data: false
+          Show undetected obstacles: true
+          Topic: /uav67/bumper/obstacle_sectors
+          Unreliable: false
+          Value: true
+          Vertical collision threshold: 1
       Enabled: true
       Name: ControlManager
     - Class: rviz/Group
@@ -346,7 +423,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestBlue
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_blue_debugging
+          Topic: /uav67/brick_estimation/closest_blue_debugging
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -356,7 +433,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestRed
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_red_debugging
+          Topic: /uav67/brick_estimation/closest_red_debugging
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -366,7 +443,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestGreen
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_green_debugging
+          Topic: /uav67/brick_estimation/closest_green_debugging
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -376,7 +453,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosestAny
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_any_debugging
+          Topic: /uav67/brick_estimation/closest_any_debugging
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -392,7 +469,7 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Axes
-          Topic: /uav60/brick_estimation/debug_active
+          Topic: /uav67/brick_estimation/debug_active
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -402,7 +479,7 @@ Visualization Manager:
           History Length: 1
           Name: ClosetWall
           Radius: 0.20000000298023224
-          Topic: /uav60/brick_estimation/closest_wall_debugging
+          Topic: /uav67/brick_estimation/closest_wall_debugging
           Unreliable: false
           Value: false
       Enabled: true
@@ -440,7 +517,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Arrow
-          Topic: /uav60/odometry/odom_main
+          Topic: /uav67/odometry/odom_main
           Unreliable: false
           Value: true
       Enabled: true
@@ -459,7 +536,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
-          Topic: /uav60/brick_grasping/current_target_debug
+          Topic: /uav67/brick_grasping/current_target_debug
           Unreliable: false
           Value: false
       Enabled: false
@@ -468,7 +545,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/window_detector_nodelet/window_dbg
+          Marker Topic: /uav67/window_detector_nodelet/window_dbg
           Name: MarkerArray
           Namespaces:
             {}
@@ -480,7 +557,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav60/wall_following/markers
+          Marker Topic: /uav67/wall_following/markers
           Name: MarkerArray
           Namespaces:
             {}
@@ -496,8 +573,8 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: PointStamped
-          Radius: 0.20000000298023224
-          Topic: /uav60/balloon_circle_destroy/ref_out
+          Radius: 1
+          Topic: /uav67/balloon_circle_destroy/ref_out
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -507,7 +584,7 @@ Visualization Manager:
           History Length: 1
           Name: PointStamped
           Radius: 0.20000000298023224
-          Topic: /uav60/balloon_circle_destroy/ball_out
+          Topic: /uav67/balloon_circle_destroy/ball_out
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -535,18 +612,32 @@ Visualization Manager:
           Size (Pixels): 36
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /uav60/object_detect/detected_balls_pcl
+          Topic: /uav67/object_detect/detected_balls_pcl
           Unreliable: true
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
       Enabled: true
       Name: BalloonDetect
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Class: rviz/PointStamped
+          Color: 204; 41; 204
+          Enabled: true
+          History Length: 1
+          Name: ClickedPoint
+          Radius: 0.5
+          Topic: /clicked_point
+          Unreliable: false
+          Value: true
+      Enabled: true
+      Name: rviz_interface
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
     Default Light: true
-    Fixed Frame: uav60/gps_origin
+    Fixed Frame: uav67/gps_origin
     Frame Rate: 60
   Name: root
   Tools:
@@ -570,33 +661,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 8.889294624328613
+      Distance: 15.693999290466309
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -5.753776550292969
-        Y: 1.186122179031372
-        Z: 4.76837158203125e-7
+        X: 0.37772321701049805
+        Y: 1.104797124862671
+        Z: -5.586505722021684e-6
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3697971701622009
-      Target Frame: uav60/fcu
+      Pitch: 0.5297958850860596
+      Target Frame: uav67/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.6854169368743896
+      Yaw: 2.7904202938079834
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: true
+    collapsed: false
   Height: 1038
-  Hide Left Dock: true
+  Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000018e000003b8fc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b000003b8000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001a0062006c007500650066006f0078005f0062007200690063006b00000001e60000020d0000001600fffffffb0000000a0049006d00610067006501000002770000017c0000000000000000fb0000001000720073005f0064006500700074006800000001ee000000fe0000001600fffffffb0000001a0062006c007500650066006f0078005f0062007200690063006b0000000291000001620000000000000000fb0000000a0049006d0061006700650100000236000000bd0000000000000000fb0000001000720073005f0063006f006c006f00720000000327000000cc0000001600ffffff0000000100000116000003b8fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b000003b8000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d00650000000000000007800000023f00fffffffb0000000800540069006d0065010000000000000450000000000000000000000780000003b800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000190000003b8fc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b000003b8000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001a0062006c007500650066006f0078005f0062007200690063006b00000001e60000020d0000001600fffffffb0000000a0049006d00610067006501000002770000017c0000000000000000fb0000001000720073005f0064006500700074006800000001ee000000fe0000001600fffffffb0000001a0062006c007500650066006f0078005f0062007200690063006b0000000291000001620000000000000000fb0000000a0049006d0061006700650100000236000000bd0000000000000000fb0000001000720073005f0063006f006c006f00720000000327000000cc0000001600ffffff0000000100000116000003b8fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b000003b8000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d00650000000000000007800000023f00fffffffb0000000800540069006d00650100000000000004500000000000000000000005ea000003b800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
