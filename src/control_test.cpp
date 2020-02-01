@@ -26,6 +26,8 @@
 
 #include <mutex>
 
+#include <mrs_lib/mutex.h>
+
 #include <tf/transform_datatypes.h>
 
 #include <mrs_lib/ParamLoader.h>
@@ -58,6 +60,7 @@ typedef enum
   TRAJECTORY_START_FOLLOWING_SERVICE_STATE,
   TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE,
   TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE,
+  TRAJECTORY_CIRCLE_LOOP,
   TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE,
   TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE,
   TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE,
@@ -67,7 +70,7 @@ typedef enum
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[25] = {
+const char *state_names[26] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "CHANGE_TRACKER_STATE",
@@ -86,6 +89,7 @@ const char *state_names[25] = {
     "TRAJECTORY_START_FOLLOWING_SERVICE_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE",
+    "TRAJECTORY_CIRCLE_LOOP",
     "TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE",
     "TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE",
     "TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE",
@@ -110,18 +114,18 @@ private:
 
 private:
   ros::Subscriber    subscriber_odometry;
-  bool               got_odometry = false;
-  nav_msgs::Odometry odometry;
-  std::mutex         mutex_odometry;
-  double             odometry_yaw, odometry_pitch, odometry_roll;
-  double             odometry_x, odometry_y, odometry_z;
+  bool               got_odometry_ = false;
+  nav_msgs::Odometry odometry_;
+  std::mutex         mutex_odometry_;
+  double             odometry_yaw_, odometry_pitch_, odometry_roll_;
+  double             odometry_x_, odometry_y_, odometry_z_;
 
 private:
   ros::Subscriber           subscriber_position_command;
-  bool                      got_position_command = false;
-  mrs_msgs::PositionCommand position_command;
-  double                    cmd_x, cmd_y, cmd_z, cmd_yaw;
-  std::mutex                mutex_cmd;
+  bool                      got_position_command_ = false;
+  mrs_msgs::PositionCommand position_command_;
+  double                    cmd_x_, cmd_y_, cmd_z_, cmd_yaw_;
+  std::mutex                mutex_position_command_;
 
 private:
   ros::Subscriber                     subscriber_control_manager_diagnostics;
@@ -216,6 +220,10 @@ private:
 
 private:
   ros::Time timeout;
+
+  // | ---------------- looped trajectory testing --------------- |
+
+  ros::Time looping_start_time;
 };
 
 //}
@@ -335,21 +343,21 @@ void ControlTest::callbackOdometry(const nav_msgs::OdometryConstPtr &msg) {
   if (!is_initialized)
     return;
 
-  got_odometry = true;
+  got_odometry_ = true;
 
   {
-    std::scoped_lock lock(mutex_odometry);
+    std::scoped_lock lock(mutex_odometry_);
 
-    odometry   = *msg;
-    odometry_x = odometry.pose.pose.position.x;
-    odometry_y = odometry.pose.pose.position.y;
-    odometry_z = odometry.pose.pose.position.z;
+    odometry_   = *msg;
+    odometry_x_ = msg->pose.pose.position.x;
+    odometry_y_ = msg->pose.pose.position.y;
+    odometry_z_ = msg->pose.pose.position.z;
 
     // calculate the euler angles
     tf::Quaternion quaternion_odometry;
-    quaternionMsgToTF(odometry.pose.pose.orientation, quaternion_odometry);
+    quaternionMsgToTF(msg->pose.pose.orientation, quaternion_odometry);
     tf::Matrix3x3 m(quaternion_odometry);
-    m.getRPY(odometry_roll, odometry_pitch, odometry_yaw);
+    m.getRPY(odometry_roll_, odometry_pitch_, odometry_yaw_);
   }
 }
 
@@ -362,17 +370,17 @@ void ControlTest::callbackPositionCommand(const mrs_msgs::PositionCommandConstPt
   if (!is_initialized)
     return;
 
-  got_position_command = true;
+  got_position_command_ = true;
 
   {
-    std::scoped_lock lock(mutex_cmd);
+    std::scoped_lock lock(mutex_position_command_);
 
-    position_command = *msg;
+    position_command_ = *msg;
 
-    cmd_x   = position_command.position.x;
-    cmd_y   = position_command.position.y;
-    cmd_z   = position_command.position.z;
-    cmd_yaw = position_command.yaw;
+    cmd_x_   = msg->position.x;
+    cmd_y_   = msg->position.y;
+    cmd_z_   = msg->position.z;
+    cmd_yaw_ = msg->yaw;
   }
 }
 
@@ -406,13 +414,16 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
   if (!is_initialized)
     return;
 
-  if (!got_odometry) {
-    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for data, got_odometry: %s", got_odometry ? "YES" : "NO");
+  if (!got_odometry_) {
+    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for data, got_odometry: %s", got_odometry_ ? "YES" : "NO");
     return;
   }
 
+  auto [cmd_x, cmd_y, cmd_z, cmd_yaw] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_yaw_);
+  auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
+
   ROS_INFO_THROTTLE(5.0, " ");
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: dessired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %f %f %f %f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
   ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
   ROS_INFO_THROTTLE(5.0, " ");
@@ -459,6 +470,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
           changeState(SET_REFERENCE_TOPIC_STATE);  // after the first takeoff
           /* changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE); */
           /* changeState(TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE); */
+          /* changeState(TRAJECTORY_CIRCLE_LOOP); */
 
         } else if (takeoff_num == 2) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
@@ -566,6 +578,17 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       }
       break;
 
+    case TRAJECTORY_CIRCLE_LOOP:
+
+      if ((ros::Time::now() - looping_start_time).toSec() > 30.0) {
+
+        if (dist3d(odometry_x, cmd_x, odometry_y, cmd_y, odometry_z, cmd_z) < 2.0) {
+
+          changeState(ControlState_t(int(current_state) + 1));
+        }
+      }
+      break;
+
     case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE:
 
       changeState(ControlState_t(int(current_state) + 1));
@@ -629,6 +652,9 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 /* //{ changeState() */
 
 void ControlTest::changeState(ControlState_t new_state) {
+
+  auto [odometry_x, odometry_y] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_);
+  auto [cmd_x, cmd_y, cmd_z, cmd_yaw] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_yaw_);
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state], state_names[new_state]);
 
@@ -774,7 +800,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
 
       {
-        std::scoped_lock lock(mutex_cmd);
+        std::scoped_lock lock(mutex_position_command_);
 
         des_x   = cmd_x + goal_vec4.request.goal[0];
         des_y   = cmd_y + goal_vec4.request.goal[1];
@@ -823,7 +849,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_vec1.request.goal = sanitizeYaw(genYaw());
 
       {
-        std::scoped_lock lock(mutex_cmd);
+        std::scoped_lock lock(mutex_position_command_);
 
         des_yaw = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
       }
@@ -1068,6 +1094,67 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       break;
 
+    case TRAJECTORY_CIRCLE_LOOP: {
+
+      /* //{ load trajectory for testing the headless following */
+
+      activateTracker("MpcTracker");
+
+      goal_trajectory_topic.fly_now         = true;
+      goal_trajectory_topic.header.frame_id = "";
+      goal_trajectory_topic.header.stamp    = ros::Time::now();
+      goal_trajectory_topic.loop            = true;
+      goal_trajectory_topic.use_yaw         = true;
+
+      double radius = 15.0;
+      double speed  = 8.0;
+      double angle  = 0;
+
+      goal_tracker_point.x   = radius;
+      goal_tracker_point.y   = 0;
+      goal_tracker_point.z   = min_z_;
+      goal_tracker_point.yaw = 1.57;
+      goal_trajectory_topic.points.push_back(goal_tracker_point);
+
+      double trajectory_time   = (radius * 2 * M_PI) / speed;
+      int    trajectory_length = floor(trajectory_time * 5.0);
+      double angular_step      = (2 * M_PI) / trajectory_length;
+
+      double last_x = goal_tracker_point.x;
+      double last_y = goal_tracker_point.y;
+
+      for (int i = 0; i < trajectory_length; i++) {
+
+        angle += angular_step;
+
+        goal_tracker_point.x   = radius * cos(angle);
+        goal_tracker_point.y   = radius * sin(angle);
+        goal_tracker_point.z   = min_z_;
+        goal_tracker_point.yaw = atan2(goal_tracker_point.y - last_y, goal_tracker_point.x - last_x);
+
+        last_x = goal_tracker_point.x;
+        last_y = goal_tracker_point.y;
+
+        goal_trajectory_topic.points.push_back(goal_tracker_point);
+      }
+
+      looping_start_time = ros::Time::now();
+
+      try {
+        publisher_set_trajectory.publish(goal_trajectory_topic);
+      }
+      catch (...) {
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory.getTopic().c_str());
+      }
+
+      wait.sleep();
+
+    }
+
+    //}
+
+    break;
+
     case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE: {
 
       /* //{ load trajectory for testing the headless following */
@@ -1101,7 +1188,7 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        angle += (2 * 3.141592653) / trajectory_length;
+        angle += (2 * M_PI) / trajectory_length;
 
         goal_tracker_point.x   = radius * cos(angle);
         goal_tracker_point.y   = radius * sin(angle);
@@ -1350,8 +1437,7 @@ double ControlTest::angleDist(const double in1, const double in2) {
 
 bool ControlTest::inDesiredState(void) {
 
-  {
-    std::scoped_lock lock(mutex_odometry);
+  auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
 
     // TODO: uncoment
     if (dist3d(odometry_x, des_x, odometry_y, des_y, odometry_z, des_z) < 0.15 && (headless || angleDist(odometry_yaw, sanitizeYaw(des_yaw)) < 0.15)) {
@@ -1360,7 +1446,6 @@ bool ControlTest::inDesiredState(void) {
       ros::Duration(1.0).sleep();
       return true;
     }
-  }
 
   return false;
 }
