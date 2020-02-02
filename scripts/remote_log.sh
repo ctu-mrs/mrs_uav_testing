@@ -20,6 +20,8 @@ input=(
 "
   # 'Rosout' "waitForRos; rostopic echo /rosout"
   # 'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh"
+  'Rviz_interface' 'waitForRos; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
+'
   'Layout' "waitForRos; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
 "
 )

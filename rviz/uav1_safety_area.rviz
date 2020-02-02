@@ -6,13 +6,13 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /odom_main1
         - /odom_main1/Shape1
-        - /position_cmd1
-        - /SafetyArea1
         - /Odometry1/Shape1
+        - /MpcTracker1
+        - /MpcTracker1/OriginalReference1
+        - /MpcTracker1/ProcessedReference1
       Splitter Ratio: 0.5
-    Tree Height: 291
+    Tree Height: 373
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -64,38 +64,6 @@ Visualization Manager:
       Plane Cell Count: 100
       Reference Frame: local_origin
       Value: false
-    - Alpha: 1
-      Arrow Length: 0.30000001192092896
-      Axes Length: 0.30000001192092896
-      Axes Radius: 0.009999999776482582
-      Class: rviz/PoseArray
-      Color: 0; 0; 255
-      Enabled: true
-      Head Length: 0.07000000029802322
-      Head Radius: 0.029999999329447746
-      Name: MpcPrediction
-      Shaft Length: 0.23000000417232513
-      Shaft Radius: 0.009999999776482582
-      Shape: Arrow (Flat)
-      Topic: /uav1/control_manager/mpc_tracker/predicted_trajectory_debugging
-      Unreliable: true
-      Value: true
-    - Alpha: 1
-      Arrow Length: 0.30000001192092896
-      Axes Length: 0.30000001192092896
-      Axes Radius: 0.009999999776482582
-      Class: rviz/PoseArray
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.07000000029802322
-      Head Radius: 0.029999999329447746
-      Name: MpcReference
-      Shaft Length: 0.23000000417232513
-      Shaft Radius: 0.009999999776482582
-      Shape: Arrow (Flat)
-      Topic: /uav1/control_manager/mpc_tracker/debug_set_trajectory
-      Unreliable: false
-      Value: true
     - Angle Tolerance: 1
       Class: rviz/Odometry
       Covariance:
@@ -278,7 +246,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100000
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -294,7 +262,87 @@ Visualization Manager:
         Value: Arrow
       Topic: /uav1/control_manager/mpc_tracker/setpoint_odom
       Unreliable: false
-      Value: true
+      Value: false
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.30000001192092896
+          Axes Radius: 0.009999999776482582
+          Class: rviz/PoseArray
+          Color: 0; 0; 255
+          Enabled: true
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
+          Name: MpcPrediction
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
+          Shape: Arrow (Flat)
+          Topic: /uav1/control_manager/mpc_tracker/predicted_trajectory_debugging
+          Unreliable: true
+          Value: true
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Length: 0.30000001192092896
+              Axes Length: 0.30000001192092896
+              Axes Radius: 0.009999999776482582
+              Class: rviz/PoseArray
+              Color: 255; 25; 0
+              Enabled: true
+              Head Length: 0.07000000029802322
+              Head Radius: 0.029999999329447746
+              Name: PoseArray
+              Shaft Length: 0.23000000417232513
+              Shaft Radius: 0.009999999776482582
+              Shape: Arrow (Flat)
+              Topic: /uav1/control_manager/mpc_tracker/trajectory_original/poses
+              Unreliable: false
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /uav1/control_manager/mpc_tracker/trajectory_original/markers
+              Name: MarkerArray
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: OriginalReference
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Arrow Length: 0.30000001192092896
+              Axes Length: 0.30000001192092896
+              Axes Radius: 0.009999999776482582
+              Class: rviz/PoseArray
+              Color: 255; 25; 0
+              Enabled: true
+              Head Length: 0.07000000029802322
+              Head Radius: 0.029999999329447746
+              Name: PoseArray
+              Shaft Length: 0.23000000417232513
+              Shaft Radius: 0.009999999776482582
+              Shape: Arrow (Flat)
+              Topic: /uav1/control_manager/mpc_tracker/trajectory_processed/poses
+              Unreliable: false
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /uav1/control_manager/mpc_tracker/trajectory_processed/markers
+              Name: MarkerArray
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: ProcessedReference
+      Enabled: true
+      Name: MpcTracker
+    - Class: rviz/Group
+      Displays: ~
+      Enabled: true
+      Name: ControlManager
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -322,7 +370,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.341104507446289e-7
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -332,21 +380,21 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 3.5479648113250732
+      Scale: 22.99217987060547
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 0
-      Y: 0
+      X: -0.9389626979827881
+      Y: -3.9395294189453125
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: true
-  Height: 506
+  Height: 1080
   Hide Left Dock: true
   Hide Right Dock: true
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000217000001a4fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b000001a4000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000115000000c90000001600ffffff0000000100000116000003e2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b000003e2000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000023f00fffffffb0000000800540069006d00650100000000000004500000000000000000000003a8000001a400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000217000001a3fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b000001a3000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000115000000c90000001600ffffff0000000100000116000003e2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b000003e2000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000023f00fffffffb0000000800540069006d0065010000000000000450000000000000000000000780000003e200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -355,6 +403,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 936
-  X: 12
-  Y: 556
+  Width: 1920
+  X: 0
+  Y: 0

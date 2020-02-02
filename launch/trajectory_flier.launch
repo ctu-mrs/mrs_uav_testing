@@ -8,7 +8,7 @@
 
       <rosparam file="$(find mrs_testing)/config/trajectory_flier.yaml" />
 
-      <param name="uav_name" value="$(arg uav_name)" />
+      <param name="uav_name" value="$(arg UAV_NAME)" />
 
         <!-- Subscribers -->
       <remap from="~control_cmd_in" to="control_manager/cmd_odom" />
