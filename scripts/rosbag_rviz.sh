@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ -f /usr/local/bin/tmux ]; then
+  TMUX_BIN=/usr/local/bin/tmux
+else
+  TMUX_BIN=/usr/bin/tmux
+fi
+
 # get path to script
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
@@ -35,7 +41,7 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 if [ -z ${TMUX} ];
 then
-  TMUX= /usr/bin/tmux new-session -s "$SESSION_NAME" -d
+  TMUX= $TMUX_BIN new-session -s "$SESSION_NAME" -d
   echo "Starting new session."
 else
   echo "Already in tmux, leave it first."
@@ -52,7 +58,7 @@ done
 # run tmux windows
 for ((i=0; i < ${#names[*]}; i++));
 do
-  /usr/bin/tmux new-window -t $SESSION_NAME:$(($i+1)) -n "${names[$i]}"
+  $TMUX_BIN new-window -t $SESSION_NAME:$(($i+1)) -n "${names[$i]}"
 done
 
 sleep 1
@@ -72,6 +78,6 @@ do
   fi
 done
 
-/usr/bin/tmux -2 attach-session -t $SESSION_NAME
+$TMUX_BIN -2 attach-session -t $SESSION_NAME
 
 clear
