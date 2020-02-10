@@ -22,6 +22,8 @@ pre_input="export UAV_NAME=$UAV_NAME"
 input=(
   'Rviz' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav_control.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/remote_log.rviz
 "
+  'RvizInterface' "waitForRos; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
+"
   # 'Rosout' "waitForRos; rostopic echo /rosout"
   # 'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh"
   'Rviz_interface' 'waitForRos; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
