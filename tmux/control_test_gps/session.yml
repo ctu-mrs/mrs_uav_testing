@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
 startup_window: control_test
 windows:
   - roscore:
