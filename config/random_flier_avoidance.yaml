@@ -1,0 +1,5 @@
+active: true
+main_timer_rate: 10
+max_distance: 10
+height: 1.5
+randomize_distance: false
