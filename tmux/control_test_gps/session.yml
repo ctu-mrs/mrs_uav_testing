@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
 startup_window: control_test
 windows:
   - roscore:
@@ -16,6 +16,7 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch mrs_testing rviz_control_test.launch
+        - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
       layout: even-vertical
       panes:
@@ -31,7 +32,7 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=control_manager.yaml config_uav_manager:=uav_manager.yaml config_constraint_manager:=constraint_manager.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
   - control_test:
       layout: even-vertical
       panes:

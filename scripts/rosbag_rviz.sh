@@ -12,8 +12,6 @@ SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 UAV_NAME=$1
 PROJECT_NAME=monitor_$UAV_NAME
 
-~/.i3/detacher.sh 1 "~/.scripts/set_ros_master_uri.sh $UAV_NAME"
-
 # following commands will be executed first, in each window
 pre_input="export UAV_NAME=$UAV_NAME"
 
@@ -22,10 +20,6 @@ pre_input="export UAV_NAME=$UAV_NAME"
 input=(
   'Rviz' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav_control.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/remote_log.rviz
 "
-  'RvizInterface' "waitForRos; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
-"
-  # 'Rosout' "waitForRos; rostopic echo /rosout"
-  # 'Rosbag' "waitForRos; rosrun mrs_testing record_remote.sh"
   'Layout' "waitForRos; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
 "
 )
@@ -54,33 +48,6 @@ else
   exit
 fi
 
-# get the iterator
-ITERATOR_FILE="$MAIN_DIR/$PROJECT_NAME"/iterator.txt
-if [ -e "$ITERATOR_FILE" ]
-then
-  ITERATOR=`cat "$ITERATOR_FILE"`
-  ITERATOR=$(($ITERATOR+1))
-else
-  echo "iterator.txt does not exist, creating it"
-  touch "$ITERATOR_FILE"
-  ITERATOR="1"
-fi
-echo "$ITERATOR" > "$ITERATOR_FILE"
-
-# create file for logging terminals' output
-LOG_DIR="$MAIN_DIR/$PROJECT_NAME/"
-SUFFIX=$(date +"%Y_%m_%d_%H_%M_%S")
-SUBLOG_DIR="$LOG_DIR/"$ITERATOR"_"$SUFFIX""
-TMUX_DIR="$SUBLOG_DIR/tmux"
-mkdir -p "$SUBLOG_DIR"
-mkdir -p "$TMUX_DIR"
-
-# link the "latest" folder to the recently created one
-rm "$LOG_DIR/latest"
-rm "$MAIN_DIR/latest"
-ln -sf "$SUBLOG_DIR" "$LOG_DIR/latest"
-ln -sf "$SUBLOG_DIR" "$MAIN_DIR/latest"
-
 # create arrays of names and commands
 for ((i=0; i < ${#input[*]}; i++));
 do
@@ -95,12 +62,6 @@ do
 done
 
 sleep 1
-
-# start loggers
-for ((i=0; i < ${#names[*]}; i++));
-do
-  $TMUX_BIN pipe-pane -t $SESSION_NAME:$(($i+1)) -o "ts | cat >> $TMUX_DIR/$(($i+1))_${names[$i]}.log"
-done
 
 # send commands
 for ((i=0; i < ${#cmds[*]}; i++));
