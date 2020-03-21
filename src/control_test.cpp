@@ -423,9 +423,9 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
   auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
 
   ROS_INFO_THROTTLE(5.0, " ");
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %f %f %f %f", des_x, des_y, des_z, des_yaw);
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %f %f %f %f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %f %f %f %f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x, des_y, des_z, des_yaw);
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %.2f %.2f %.2f %.2f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %.2f %.2f %.2f %.2f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
   ROS_INFO_THROTTLE(5.0, " ");
 
   if ((ros::Time::now() - timeout).toSec() > 180.0) {
@@ -444,7 +444,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
       std::scoped_lock lock(mutex_control_manager_diagnostics);
 
-      if (control_manager_diagnostics.tracker_status.tracker.compare("MpcTracker") == 0 && trackerReady()) {
+      if (control_manager_diagnostics.tracker_status.tracker == "MpcTracker" && trackerReady()) {
 
         ROS_INFO("[ControlTest]: takeoff_num %d", takeoff_num);
 
@@ -612,7 +612,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
     case LAND_HOME_STATE: {
       std::scoped_lock lock(mutex_control_manager_diagnostics);
 
-      if (control_manager_diagnostics.tracker_status.tracker.compare("NullTracker") == 0 && dist2d(home_x, odometry_x, home_y, odometry_y) < 1.0) {
+      if (control_manager_diagnostics.tracker_status.tracker == "NullTracker" && dist2d(home_x, odometry_x, home_y, odometry_y) < 1.0) {
         ROS_INFO("[ControlTest]: %s", control_manager_diagnostics.tracker_status.tracker.c_str());
         changeState(TAKEOFF_STATE);
       }
@@ -632,7 +632,7 @@ void ControlTest::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
     case LAND_STATE: {
       std::scoped_lock lock(mutex_control_manager_diagnostics);
 
-      if (control_manager_diagnostics.tracker_status.tracker.compare("NullTracker") == 0 && dist2d(des_x, odometry_x, des_y, odometry_y) < 1.0) {
+      if (control_manager_diagnostics.tracker_status.tracker == "NullTracker" && dist2d(des_x, odometry_x, des_y, odometry_y) < 1.0) {
         changeState(ControlState_t(int(current_state) + 1));
       }
     } break;

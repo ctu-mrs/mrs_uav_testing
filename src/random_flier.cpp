@@ -32,15 +32,14 @@ class RandomFlier : public nodelet::Nodelet {
 public:
   virtual void onInit();
 
+private:
   bool is_initialized = false;
 
-private:
   void   callbackControlCmd(const nav_msgs::OdometryConstPtr& msg);
   bool   callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   void   mainTimer(const ros::TimerEvent& event);
   double randd(double from, double to);
 
-private:
   ros::Subscriber    subscriber_control_cmd;
   ros::ServiceServer service_server_activate;
   ros::ServiceClient service_client_reference;
@@ -82,6 +81,11 @@ void RandomFlier::onInit(void) {
   param_loader.load_param("randomize_distance", randomize_distance_);
   param_loader.load_param("max_distance", max_distance_);
 
+  if (!param_loader.loaded_successfully()) {
+    ROS_ERROR("[RandomFlier]: Could not load all parameters!");
+    ros::shutdown();
+  }
+
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &RandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
   service_server_activate  = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
@@ -97,14 +101,9 @@ void RandomFlier::onInit(void) {
 
   // | ----------------------- finish init ---------------------- |
 
-  if (!param_loader.loaded_successfully()) {
-    ROS_ERROR("[UavManager]: Could not load all parameters!");
-    ros::shutdown();
-  }
-
   is_initialized = true;
 
-  ROS_INFO("[RandomFlier]: initialized");
+  ROS_INFO_ONCE("[RandomFlier]: initialized");
 }
 
 //}
@@ -164,13 +163,13 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!active) {
 
-    ROS_INFO("waiting for activation");
+    ROS_INFO_THROTTLE(1.0, "[RandomFlier]: waiting for activation");
     return;
   }
 
   if (!got_control_cmd) {
 
-    ROS_INFO_THROTTLE(1.0, "waiting for data");
+    ROS_INFO_THROTTLE(1.0, "[RandomFlier]: waiting for data");
     return;
   }
 
@@ -207,7 +206,7 @@ void RandomFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
           if (new_point.response.success) {
 
-            ROS_INFO("New goal: %2.2f %2.2f", new_point.request.reference.position.x, new_point.request.reference.position.y);
+            ROS_INFO("New goal: %.2f %.2f", new_point.request.reference.position.x, new_point.request.reference.position.y);
 
             last_successfull_command = ros::Time::now();
             break;

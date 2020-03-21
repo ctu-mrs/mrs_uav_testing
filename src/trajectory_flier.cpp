@@ -34,15 +34,14 @@ class TrajectoryFlier : public nodelet::Nodelet {
 public:
   virtual void onInit();
 
+private:
   bool is_initialized = false;
 
-private:
   void   callbackControlCmd(const nav_msgs::OdometryConstPtr& msg);
   bool   callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   void   mainTimer(const ros::TimerEvent& event);
   double randd(double from, double to);
 
-private:
   ros::Subscriber    subscriber_control_cmd;
   ros::Publisher     publisher_goto;
   ros::ServiceServer service_server_activate;
@@ -91,6 +90,11 @@ void TrajectoryFlier::onInit(void) {
   param_loader.load_param("jerk", jerk_);
   param_loader.load_param("max_distance", max_distance_);
 
+  if (!param_loader.loaded_successfully()) {
+    ROS_ERROR("[TrajectoryFlier]: Could not load all parameters!");
+    ros::shutdown();
+  }
+
   subscriber_control_cmd = nh_.subscribe("control_cmd_in", 1, &TrajectoryFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
   service_server_activate   = nh_.advertiseService("activate_in", &TrajectoryFlier::callbackActivate, this);
@@ -105,11 +109,6 @@ void TrajectoryFlier::onInit(void) {
   main_timer = nh_.createTimer(ros::Rate(main_timer_rate_), &TrajectoryFlier::mainTimer, this);
 
   // | ----------------------- finish init ---------------------- |
-
-  if (!param_loader.loaded_successfully()) {
-    ROS_ERROR("[UavManager]: Could not load all parameters!");
-    ros::shutdown();
-  }
 
   is_initialized = true;
 
@@ -173,7 +172,7 @@ void TrajectoryFlier::mainTimer([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!active) {
 
-    ROS_INFO("waiting for activation");
+    ROS_INFO_ONCE("[TrajectoryFlier]: waiting for initialization");
     return;
   }
 
