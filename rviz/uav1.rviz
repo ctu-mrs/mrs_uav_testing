@@ -7,6 +7,9 @@ Panels:
         - /Global Options1
         - /TF1/Frames1
         - /TF1/Tree1
+        - /Odometry1
+        - /Odometry1/odom_main1
+        - /Odometry1/odom_main1/Shape1
       Splitter Ratio: 0.3983666002750397
     Tree Height: 291
   - Class: rviz/Selection
@@ -112,26 +115,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        uav1/fcu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/arms:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/props:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        uav1/fcu/uav_marker:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: UAVModel
       Robot Description: /uav1/robot_model
       TF Prefix: ""
@@ -252,8 +235,8 @@ Visualization Manager:
               Color: 204; 51; 204
               Scale: 1
               Value: true
-            Value: true
-          Enabled: false
+            Value: false
+          Enabled: true
           Keep: 1
           Name: odom_main
           Position Tolerance: 0.009999999776482582
@@ -262,14 +245,14 @@ Visualization Manager:
             Axes Length: 1
             Axes Radius: 0.10000000149011612
             Color: 0; 25; 255
-            Head Length: 0.30000001192092896
-            Head Radius: 0.10000000149011612
+            Head Length: 1
+            Head Radius: 0.30000001192092896
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Arrow
           Topic: /uav1/odometry/odom_main
           Unreliable: true
-          Value: false
+          Value: true
       Enabled: true
       Name: Odometry
     - Class: rviz/Group
@@ -426,25 +409,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 8.303963661193848
+      Distance: 5.948418140411377
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.0294008255004883
-        Y: 0.5273032188415527
+        X: -1.0399420261383057
+        Y: 0.1816064566373825
         Z: 2.384185791015625e-7
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6153979301452637
+      Pitch: 0.6647975444793701
       Target Frame: uav1/fcu
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.750404119491577
+      Yaw: 3.215398073196411
     Saved: ~
 Window Geometry:
   Displays:
@@ -462,5 +445,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 936
-  X: 5446
+  X: 966
   Y: 392
