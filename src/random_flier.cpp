@@ -128,7 +128,7 @@ void RandomFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) {
 
   got_control_cmd_ = true;
 
-  ROS_INFO_ONCE("[RandomFlier]: getting control_cmd_");
+  ROS_INFO_ONCE("[RandomFlier]: getting control_cmd");
 }
 
 //}

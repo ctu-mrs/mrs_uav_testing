@@ -86,7 +86,7 @@ void TrajectoryFlier::onInit(void) {
   // load parameters from config file
   param_loader.load_param("main_timer_rate", _main_timer_rate_);
   param_loader.load_param("height", _height_);
-  param_loader.load_param("active_", active_);
+  param_loader.load_param("active", active_);
   param_loader.load_param("randomize_distance", _randomize_distance_);
   param_loader.load_param("speed", _speed_);
   param_loader.load_param("acceleration", _acceleration_);
