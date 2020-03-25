@@ -191,7 +191,7 @@ private:
   bool   trackerReady(void);
   void   activateTracker(std::string tracker_name);
 
-  int active_tracker_ = 0;
+  int active_tracker_ = 1;
   int takeoff_num_    = 0;
 
   mrs_msgs::TrackerPoint goal_tracker_point_;
@@ -646,7 +646,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 //}
 
 // --------------------------------------------------------------
-// |                       other methodsd                       |
+// |                        other methods                       |
 // --------------------------------------------------------------
 
 /* //{ changeState() */
