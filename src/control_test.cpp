@@ -10,8 +10,8 @@
 
 #include <mrs_msgs/ReferenceStamped.h>
 #include <mrs_msgs/TrackerPoint.h>
-#include <mrs_msgs/TrackerTrajectory.h>
-#include <mrs_msgs/TrackerTrajectorySrv.h>
+#include <mrs_msgs/TrajectoryReference.h>
+#include <mrs_msgs/TrajectoryReferenceSrv.h>
 #include <mrs_msgs/ReferenceStampedSrv.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/Vec1.h>
@@ -39,6 +39,9 @@ namespace mrs_testing
 
 /* //{ state machine states */
 
+#define TRACKER_LINE 0
+#define TRACKER_MPC 1
+
 // state machine
 typedef enum
 {
@@ -53,8 +56,8 @@ typedef enum
   SET_YAW_SERVICE_STATE,
   SET_YAW_RELATIVE_SERVICE_STATE,
   TRAJECTORY_LOAD_STATIC_TOPIC_STATE,
-  TRAJECTORY_FLY_TO_START_TOPIC_STATE,
-  TRAJECTORY_START_FOLLOWING_TOPIC_STATE,
+  TRAJECTORY_GOTO_START_STATE,
+  TRAJECTORY_START_TRACKING_STATE,
   TRAJECTORY_LOAD_STATIC_SERVICE_STATE,
   TRAJECTORY_FLY_TO_START_SERVICE_STATE,
   TRAJECTORY_START_FOLLOWING_SERVICE_STATE,
@@ -82,8 +85,8 @@ const char *state_names[26] = {
     "SET_YAW_SERVICE_STATE",
     "SET_YAW_RELATIVE_SERVICE_STATE",
     "TRAJECTORY_LOAD_STATIC_TOPIC_STATE",
-    "TRAJECTORY_FLY_TO_START_TOPIC_STATE",
-    "TRAJECTORY_START_FOLLOWING_TOPIC_STATE",
+    "TRAJECTORY_GOTO_START_STATE",
+    "TRAJECTORY_START_TRACKING_STATE",
     "TRAJECTORY_LOAD_STATIC_SERVICE_STATE",
     "TRAJECTORY_FLY_TO_START_SERVICE_STATE",
     "TRAJECTORY_START_FOLLOWING_SERVICE_STATE",
@@ -112,32 +115,55 @@ private:
   ros::NodeHandle nh_;
   bool            is_initialized_ = false;
 
-private:
-  ros::Subscriber    subscriber_odometry_;
-  bool               got_odometry_ = false;
+  // | ------------------------ odometry ------------------------ |
+
+  ros::Subscriber subscriber_odometry_;
+  bool            got_odometry_ = false;
+  std::mutex      mutex_odometry_;
+
   nav_msgs::Odometry odometry_;
-  std::mutex         mutex_odometry_;
-  double             odometry_yaw_, odometry_pitch_, odometry_roll_;
-  double             odometry_x_, odometry_y_, odometry_z_;
 
-private:
-  ros::Subscriber           subscriber_position_command_;
-  bool                      got_position_command_ = false;
+  double odometry_yaw_;
+  double odometry_pitch_;
+  double odometry_roll_;
+  double odometry_x_;
+  double odometry_y_;
+  double odometry_z_;
+
+  void callbackOdometry(const nav_msgs::OdometryConstPtr &msg);
+
+  // | -------------------- position command -------------------- |
+
+  ros::Subscriber subscriber_position_command_;
+  bool            got_position_command_ = false;
+  std::mutex      mutex_position_command_;
+
   mrs_msgs::PositionCommand position_command_;
-  double                    cmd_x_, cmd_y_, cmd_z_, cmd_yaw_;
-  std::mutex                mutex_position_command_;
 
-private:
-  ros::Subscriber                     subscriber_control_manager_diagnostics_;
-  bool                                got_control_manager_diagnostics_ = false;
+  double cmd_x_;
+  double cmd_y_;
+  double cmd_z_;
+  double cmd_yaw_;
+
+  void callbackPositionCommand(const mrs_msgs::PositionCommandConstPtr &msg);
+
+  // | --------------- control manager diagnostics -------------- |
+
+  ros::Subscriber subscriber_control_manager_diagnostics_;
+  bool            got_control_manager_diagnostics_ = false;
+  std::mutex      mutex_control_manager_diagnostics_;
+
   mrs_msgs::ControlManagerDiagnostics control_manager_diagnostics_;
-  std::mutex                          mutex_control_manager_diagnostics_;
 
-private:
+  void callbackControlManagerDiagnostics(const mrs_msgs::ControlManagerDiagnosticsConstPtr &msg);
+
+  // | ----------------------- publishers ----------------------- |
+
   ros::Publisher publisher_reference_;
-  ros::Publisher publisher_set_trajectory_;
+  ros::Publisher publisher_trajectory_reference_;
 
-private:
+  // | --------------------- service clients -------------------- |
+
   ros::ServiceClient service_client_switch_tracker_;
   ros::ServiceClient service_client_arm_;
   ros::ServiceClient service_client_offboard_;
@@ -145,33 +171,33 @@ private:
   ros::ServiceClient service_client_land_;
   ros::ServiceClient service_client_land_home_;
   ros::ServiceClient service_client_motors_;
-
-private:
   ros::ServiceClient service_client_set_reference_;
   ros::ServiceClient service_client_goto_;
   ros::ServiceClient service_client_goto_relative_;
   ros::ServiceClient service_client_goto_altitude_;
   ros::ServiceClient service_client_set_yaw_;
   ros::ServiceClient service_client_set_yaw_relative_;
-  ros::ServiceClient service_client_trajectory_;
-  ros::ServiceClient service_client_fly_to_start_;
-  ros::ServiceClient service_client_start_following_;
 
-private:
-  void callbackOdometry(const nav_msgs::OdometryConstPtr &msg);
-  void callbackPositionCommand(const mrs_msgs::PositionCommandConstPtr &msg);
-  void callbackControlManagerDiagnostics(const mrs_msgs::ControlManagerDiagnosticsConstPtr &msg);
+  // trajectory tracking
+  ros::ServiceClient service_client_trajectory_reference_;
+  ros::ServiceClient service_client_goto_trajectory_start_;
+  ros::ServiceClient service_client_start_trajectory_tracking_;
+  ros::ServiceClient service_client_resume_trajectory_tracking_;
+  ros::ServiceClient service_client_stop_trajectory_tracking_;
 
-private:
+  // | ----------------------- main timer ----------------------- |
+
   ros::Timer timer_main_;
   void       timerMain(const ros::TimerEvent &event);
 
-private:
+  // | ---------------------- state machine --------------------- |
+
   ControlState_t current_state_  = IDLE_STATE;
   ControlState_t previous_state_ = IDLE_STATE;
-  void           changeState(ControlState_t new_state);
+  void           changeState(const ControlState_t new_state);
 
-private:
+  // | ------------------------- params ------------------------- |
+
   double _max_xy_;
   double _min_xy_;
   double _max_z_;
@@ -179,9 +205,23 @@ private:
   double _max_yaw_;
   double _min_yaw_;
 
-  double dist3d(double x1, double x2, double y1, double y2, double z1, double z2);
-  double dist2d(double x1, double x2, double y1, double y2);
-  double randd(double from, double to);
+  double _trajectory_p1_;
+  double _trajectory_p2_;
+  double _trajectory_speed_;
+  double _trajectory_yaw_rate_;
+  double _trajectory_dt_;
+
+  double _goto_relative_altitude_down_;
+  double _goto_relative_altitude_up_;
+
+  bool _test_line_tracker_ = false;
+  bool _test_mpc_gotos_    = true;
+
+  // | ------------------------ routines ------------------------ |
+
+  double dist3d(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
+  double dist2d(const double x1, const double x2, const double y1, const double y2);
+  double randd(const double from, const double to);
   double genYaw(void);
   double genXY(void);
   double genZ(void);
@@ -189,41 +229,31 @@ private:
   double angleDist(const double in1, const double in2);
   bool   inDesiredState(void);
   bool   trackerReady(void);
-  void   activateTracker(std::string tracker_name);
+  void   switchTracker(const std::string tracker_name);
+  void   startTrajectoryTracking(void);
+  void   stopTrajectoryTracking(void);
+  void   resumeTrajectoryTracking(void);
+  void   gotoTrajectoryStart(void);
+  void   setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory);
 
-  int active_tracker_ = 1;
+  // | ----------------------- global vars ---------------------- |
+
+  int active_tracker_ = -1;
   int takeoff_num_    = 0;
 
-  mrs_msgs::TrackerPoint goal_tracker_point_;
-
-  // | -------------------- for goto testing -------------------- |
-private:
   double des_x_;
   double des_y_;
   double des_z_;
   double des_yaw_;
+
   double home_x_;
   double home_y_;
 
-  // | ------------------ goto relative testing ----------------- |
-
-private:
-  double goto_relative_altitude_down_;
-  double goto_relative_altitude_up_;
-
-private:
-  double _trajectory_p1_;
-  double _trajectory_p2_;
-  double _trajectory_speed_;
-  double _trajectory_yaw_rate_;
-  double _trajectory_dt_;
-
-private:
   ros::Time timeout_;
 
-  // | ---------------- looped trajectory testing --------------- |
-
   ros::Time looping_start_time_;
+
+  mrs_msgs::Reference goal_tracker_point_;
 };
 
 //}
@@ -252,8 +282,8 @@ void ControlTest::onInit() {
   param_loader.load_param("min_z", _min_z_);
   param_loader.load_param("max_yaw", _max_yaw_);
   param_loader.load_param("min_yaw", _min_yaw_);
-  param_loader.load_param("goto_relative_altitude_down", goto_relative_altitude_down_);
-  param_loader.load_param("goto_relative_altitude_up", goto_relative_altitude_up_);
+  param_loader.load_param("goto_relative_altitude_down", _goto_relative_altitude_down_);
+  param_loader.load_param("goto_relative_altitude_up", _goto_relative_altitude_up_);
 
   param_loader.load_param("trajectory/p1", _trajectory_p1_);
   param_loader.load_param("trajectory/p2", _trajectory_p2_);
@@ -261,20 +291,23 @@ void ControlTest::onInit() {
   param_loader.load_param("trajectory/yaw_rate", _trajectory_yaw_rate_);
   param_loader.load_param("trajectory/dt", _trajectory_dt_);
 
+  param_loader.load_param("test_line_tracker", _test_line_tracker_);
+  param_loader.load_param("test_mpc_gotos", _test_mpc_gotos_);
+
+  if (!param_loader.loaded_successfully()) {
+    ros::shutdown();
+  }
+
+  // | ------------- calculate stuff from the params ------------ |
+
   _trajectory_speed_ = _trajectory_speed_ / 1.414;
 
-  // --------------------------------------------------------------
-  // |                         subscribers                        |
-  // --------------------------------------------------------------
+  // | ----------------------- subscribers ---------------------- |
 
   subscriber_odometry_         = nh_.subscribe("odometry_in", 1, &ControlTest::callbackOdometry, this, ros::TransportHints().tcpNoDelay());
   subscriber_position_command_ = nh_.subscribe("position_command_in", 1, &ControlTest::callbackPositionCommand, this, ros::TransportHints().tcpNoDelay());
   subscriber_control_manager_diagnostics_ =
       nh_.subscribe("control_manager_diagnostics_in", 1, &ControlTest::callbackControlManagerDiagnostics, this, ros::TransportHints().tcpNoDelay());
-
-  // --------------------------------------------------------------
-  // |                         publishers                         |
-  // --------------------------------------------------------------
 
   // | ------------------- std tracker topics ------------------- |
 
@@ -282,13 +315,9 @@ void ControlTest::onInit() {
 
   // | --------------- additional tracker topics ---------------- |
 
-  publisher_set_trajectory_ = nh_.advertise<mrs_msgs::TrackerTrajectory>("set_trajectory_out", 1);
+  publisher_trajectory_reference_ = nh_.advertise<mrs_msgs::TrajectoryReference>("trajectory_reference_out", 1);
 
-  // --------------------------------------------------------------
-  // |                          services                          |
-  // --------------------------------------------------------------
-
-  // | -------------------- takeoff and land -------------------- |
+  // | ---------------- takeoff/landing services ---------------- |
 
   service_client_switch_tracker_ = nh_.serviceClient<mrs_msgs::String>("switch_tracker_out");
   service_client_motors_         = nh_.serviceClient<std_srvs::SetBool>("motors_out");
@@ -298,33 +327,25 @@ void ControlTest::onInit() {
   service_client_land_           = nh_.serviceClient<std_srvs::Trigger>("land_out");
   service_client_land_home_      = nh_.serviceClient<std_srvs::Trigger>("land_home_out");
 
-  // | ------------------ std tracker services ------------------ |
+  // | ----------- control manager reference interface ---------- |
 
-  service_client_set_reference_ = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("set_reference_out");
+  service_client_set_reference_              = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("reference_out");
+  service_client_goto_                       = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
+  service_client_goto_relative_              = nh_.serviceClient<mrs_msgs::Vec4>("goto_relative_out");
+  service_client_goto_altitude_              = nh_.serviceClient<mrs_msgs::Vec1>("goto_altitude_out");
+  service_client_set_yaw_                    = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_out");
+  service_client_set_yaw_relative_           = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_relative_out");
+  service_client_trajectory_reference_       = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
+  service_client_goto_trajectory_start_      = nh_.serviceClient<std_srvs::Trigger>("goto_trajectory_start_out");
+  service_client_start_trajectory_tracking_  = nh_.serviceClient<std_srvs::Trigger>("start_trajectory_tracking_out");
+  service_client_stop_trajectory_tracking_   = nh_.serviceClient<std_srvs::Trigger>("stop_trajectory_tracking_out");
+  service_client_resume_trajectory_tracking_ = nh_.serviceClient<std_srvs::Trigger>("resume_trajectory_tracking_out");
 
-  service_client_goto_             = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
-  service_client_goto_relative_    = nh_.serviceClient<mrs_msgs::Vec4>("goto_relative_out");
-  service_client_goto_altitude_    = nh_.serviceClient<mrs_msgs::Vec1>("goto_altitude_out");
-  service_client_set_yaw_          = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_out");
-  service_client_set_yaw_relative_ = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_relative");
-
-  // | -------------- additional trackers services -------------- |
-
-  service_client_trajectory_      = nh_.serviceClient<mrs_msgs::TrackerTrajectorySrv>("set_trajectory_out");
-  service_client_fly_to_start_    = nh_.serviceClient<std_srvs::Trigger>("fly_to_start_out");
-  service_client_start_following_ = nh_.serviceClient<std_srvs::Trigger>("start_following_out");
-
-  // --------------------------------------------------------------
-  // |                           timers                           |
-  // --------------------------------------------------------------
+  // | ------------------------- timers ------------------------- |
 
   timer_main_ = nh_.createTimer(ros::Rate(10), &ControlTest::timerMain, this);
 
   // | ---------------------- finish inint ---------------------- |
-
-  if (!param_loader.loaded_successfully()) {
-    ros::shutdown();
-  }
 
   is_initialized_ = true;
 
@@ -436,10 +457,11 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
   switch (current_state_) {
 
-    case IDLE_STATE:
+    case IDLE_STATE: {
 
       changeState(ControlState_t(int(current_state_) + 1));
       break;
+    }
 
     case TAKEOFF_STATE: {
 
@@ -447,139 +469,178 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
       if (control_manager_diagnostics_.tracker_status.tracker == "MpcTracker" && trackerReady()) {
 
-        ROS_INFO("[ControlTest]: takeoff_num_ %d", takeoff_num_);
+        ROS_INFO("[ControlTest]: takeoff_num=%d", takeoff_num_);
 
         takeoff_num_++;
 
         changeState(CHANGE_TRACKER_STATE);
-
-        ros::Duration wait(1.0);
-        wait.sleep();
       }
+
       break;
     }
 
-    case CHANGE_TRACKER_STATE:
+    case CHANGE_TRACKER_STATE: {
 
       if (trackerReady()) {
 
-        ros::Duration wait(1.0);
-        wait.sleep();
-
+        // after the first takeoff
         if (takeoff_num_ == 1) {
 
-          changeState(SET_REFERENCE_TOPIC_STATE);  // after the first takeoff
-          /* changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE); */
-          /* changeState(TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE); */
-          /* changeState(TRAJECTORY_CIRCLE_LOOP); */
+          if (active_tracker_ == TRACKER_MPC) {
+            if (_test_mpc_gotos_) {
+              changeState(SET_REFERENCE_TOPIC_STATE);
+            } else {
+              changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
+            }
+          } else {
+            changeState(SET_REFERENCE_TOPIC_STATE);
+          }
 
         } else if (takeoff_num_ == 2) {
           changeState(GOTO_ORIGIN_STATE);  // after testing land_home
         }
-
-        wait.sleep();
       }
-      break;
 
-    case SET_REFERENCE_TOPIC_STATE:
+      break;
+    }
+
+    case SET_REFERENCE_TOPIC_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case SET_REFERENCE_SERVICE_STATE:
+      break;
+    }
+
+    case SET_REFERENCE_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case GOTO_SERVICE_STATE:
+      break;
+    }
+
+    case GOTO_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case GOTO_RELATIVE_SERVICE_STATE:
+      break;
+    }
+
+    case GOTO_RELATIVE_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case GOTO_ALTITUDE_SERVICE_STATE:
+      break;
+    }
+
+    case GOTO_ALTITUDE_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case SET_YAW_SERVICE_STATE:
+      break;
+    }
+
+    case SET_YAW_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case SET_YAW_RELATIVE_SERVICE_STATE:
+      break;
+    }
+
+    case SET_YAW_RELATIVE_SERVICE_STATE: {
+
       if (inDesiredState() && trackerReady()) {
-        if (active_tracker_ == 1) {
+
+        if (active_tracker_ == TRACKER_LINE) {
           changeState(CHANGE_TRACKER_STATE);
-        } else if (active_tracker_ == 2) {
+        } else if (active_tracker_ == TRACKER_MPC) {
           changeState(TRAJECTORY_LOAD_STATIC_TOPIC_STATE);
         }
       }
-      break;
 
-    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE:
+      break;
+    }
+
+    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE: {
 
       changeState(ControlState_t(int(current_state_) + 1));
-      break;
 
-    case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
+      break;
+    }
+
+    case TRAJECTORY_GOTO_START_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
+      break;
+    }
+
+    case TRAJECTORY_START_TRACKING_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE: {
 
       changeState(ControlState_t(int(current_state_) + 1));
-      break;
 
-    case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_FLY_TO_START_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+      break;
+    }
+
+    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_CIRCLE_LOOP:
+      break;
+    }
+
+    case TRAJECTORY_CIRCLE_LOOP: {
 
       if ((ros::Time::now() - looping_start_time_).toSec() > 30.0) {
 
@@ -588,37 +649,48 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
-      break;
 
-    case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE: {
 
       changeState(ControlState_t(int(current_state_) + 1));
-      break;
 
-    case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-      break;
 
-    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE:
+      break;
+    }
+
+    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(GOTO_ORIGIN_STATE);
       }
+
       break;
+    }
 
     case LAND_HOME_STATE: {
+
       std::scoped_lock lock(mutex_control_manager_diagnostics_);
 
       if (control_manager_diagnostics_.tracker_status.tracker == "NullTracker" && dist2d(home_x_, odometry_x, home_y_, odometry_y) < 1.0) {
         ROS_INFO("[ControlTest]: %s", control_manager_diagnostics_.tracker_status.tracker.c_str());
         changeState(TAKEOFF_STATE);
       }
-    } break;
 
-    case GOTO_ORIGIN_STATE:
+      break;
+    }
+
+    case GOTO_ORIGIN_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         if (takeoff_num_ == 1) {
@@ -627,19 +699,25 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
           changeState(LAND_STATE);
         }
       }
+
       break;
+    }
 
     case LAND_STATE: {
+
       std::scoped_lock lock(mutex_control_manager_diagnostics_);
 
       if (control_manager_diagnostics_.tracker_status.tracker == "NullTracker" && dist2d(des_x_, odometry_x, des_y_, odometry_y) < 1.0) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
-    } break;
-
-    case FINISHED_STATE:
 
       break;
+    }
+
+    case FINISHED_STATE: {
+
+      break;
+    }
   }
 }
 
@@ -651,7 +729,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
 /* //{ changeState() */
 
-void ControlTest::changeState(ControlState_t new_state) {
+void ControlTest::changeState(const ControlState_t new_state) {
 
   auto [odometry_x, odometry_y]       = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_);
   auto [cmd_x, cmd_y, cmd_z, cmd_yaw] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_yaw_);
@@ -661,27 +739,27 @@ void ControlTest::changeState(ControlState_t new_state) {
   previous_state_ = current_state_;
   current_state_  = new_state;
 
-  mrs_msgs::ReferenceStamped     goal_reference_stamped_topic;
-  mrs_msgs::ReferenceStampedSrv  goal_reference_stamped_srv;
-  std_msgs::Float64              goal_float64;
-  mrs_msgs::Vec4                 goal_vec4;
-  mrs_msgs::Vec1                 goal_vec1;
-  std_srvs::SetBool              goal_bool;
-  mavros_msgs::CommandBool       goal_mavros_commandbool;
-  mavros_msgs::SetMode           goal_mavros_set_mode;
-  std_srvs::Trigger              goal_trigger;
-  mrs_msgs::TrackerTrajectory    goal_trajectory_topic;
-  mrs_msgs::TrackerTrajectorySrv goal_trajectory_srv;
-  double                         trajectory_length;
+  mrs_msgs::ReferenceStamped    goal_reference_stamped_topic;
+  mrs_msgs::ReferenceStampedSrv goal_reference_stamped_srv;
+  std_msgs::Float64             goal_float64;
+  mrs_msgs::Vec4                goal_vec4;
+  mrs_msgs::Vec1                goal_vec1;
+  std_srvs::SetBool             goal_bool;
+  mavros_msgs::CommandBool      goal_mavros_commandbool;
+  mavros_msgs::SetMode          goal_mavros_set_mode;
+  std_srvs::Trigger             goal_trigger;
+  mrs_msgs::TrajectoryReference goal_trajectory;
+  double                        trajectory_length;
 
   ros::Duration wait(1.0);
 
   switch (new_state) {
 
-    case IDLE_STATE:
+    case IDLE_STATE: {
       break;
+    }
 
-    case TAKEOFF_STATE:
+    case TAKEOFF_STATE: {
 
       /* //{ testing takeoff */
       // | ------------------------- motors ------------------------- |
@@ -705,26 +783,37 @@ void ControlTest::changeState(ControlState_t new_state) {
       home_x_ = odometry_x;
       home_y_ = odometry_y;
 
-      wait.sleep();
+      break;
 
       //}
-
-      break;
+    }
 
     case CHANGE_TRACKER_STATE: {
 
-      if (active_tracker_ == 0) {
-        activateTracker("LineTracker");
-        active_tracker_++;
-      } else if (active_tracker_ == 1) {
-        activateTracker("MpcTracker");
-        active_tracker_++;
+      /* change the tracker //{ */
+
+      if (active_tracker_ == TRACKER_LINE) {
+
+        switchTracker("MpcTracker");
+        active_tracker_ = TRACKER_MPC;
+
+      } else {
+
+        if (_test_line_tracker_) {
+          switchTracker("LineTracker");
+          active_tracker_ = TRACKER_LINE;
+        } else {
+          switchTracker("MpcTracker");
+          active_tracker_ = TRACKER_MPC;
+        }
       }
 
       break;
+
+      //}
     }
 
-    case SET_REFERENCE_TOPIC_STATE:
+    case SET_REFERENCE_TOPIC_STATE: {
 
       /* //{ test set reference topic */
 
@@ -747,11 +836,12 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_reference_.getTopic().c_str());
       }
 
-      //}
-
       break;
 
-    case SET_REFERENCE_SERVICE_STATE:
+      //}
+    }
+
+    case SET_REFERENCE_SERVICE_STATE: {
 
       /* //{ test set reference service */
 
@@ -767,10 +857,12 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_set_reference_.call(goal_reference_stamped_srv);
 
+      break;
+
       //}
+    }
 
-
-    case GOTO_SERVICE_STATE:
+    case GOTO_SERVICE_STATE: {
 
       /* //{ test goto service */
 
@@ -786,17 +878,18 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_goto_.call(goal_vec4);
 
-      //}
-
       break;
 
-    case GOTO_RELATIVE_SERVICE_STATE:
+      //}
+    }
+
+    case GOTO_RELATIVE_SERVICE_STATE: {
 
       /* //{ test goto_relative service */
 
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
-      goal_vec4.request.goal[2] = randd(goto_relative_altitude_down_, goto_relative_altitude_up_);
+      goal_vec4.request.goal[2] = randd(_goto_relative_altitude_down_, _goto_relative_altitude_up_);
       goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
 
       {
@@ -810,11 +903,12 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_goto_relative_.call(goal_vec4);
 
-      //}
-
       break;
 
-    case GOTO_ALTITUDE_SERVICE_STATE:
+      //}
+    }
+
+    case GOTO_ALTITUDE_SERVICE_STATE: {
 
       /* //{ test goto_altitude service */
 
@@ -824,25 +918,30 @@ void ControlTest::changeState(ControlState_t new_state) {
 
       service_client_goto_altitude_.call(goal_vec1);
 
-      //}
-
       break;
 
-    case SET_YAW_SERVICE_STATE:
+      //}
+    }
+
+    case SET_YAW_SERVICE_STATE: {
 
       /* //{ test set_yaw service */
 
       goal_vec1.request.goal = sanitizeYaw(genYaw());
 
+      des_x_   = cmd_x_;
+      des_y_   = cmd_y_;
+      des_z_   = cmd_z_;
       des_yaw_ = goal_vec1.request.goal;
 
       service_client_set_yaw_.call(goal_vec1);
 
-      //}
-
       break;
 
-    case SET_YAW_RELATIVE_SERVICE_STATE:
+      //}
+    }
+
+    case SET_YAW_RELATIVE_SERVICE_STATE: {
 
       /* //{ test set_yaw_relative service */
 
@@ -851,343 +950,331 @@ void ControlTest::changeState(ControlState_t new_state) {
       {
         std::scoped_lock lock(mutex_position_command_);
 
+        des_x_   = cmd_x_;
+        des_y_   = cmd_y_;
+        des_z_   = cmd_z_;
         des_yaw_ = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
       }
 
       service_client_set_yaw_relative_.call(goal_vec1);
 
-      //}
-
       break;
 
-    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE:
+      //}
+    }
+
+    case TRAJECTORY_LOAD_STATIC_TOPIC_STATE: {
 
       /* //{ test set_trajectory topic */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = false;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = false;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = false;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = _trajectory_p1_;
-      goal_tracker_point_.y   = _trajectory_p1_;
-      goal_tracker_point_.z   = _min_z_;
-      goal_tracker_point_.yaw = 1.57;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = _trajectory_p1_;
+      goal_tracker_point_.position.y = _trajectory_p1_;
+      goal_tracker_point_.position.z = _min_z_;
+      goal_tracker_point_.yaw        = 1.57;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
+      // remember the first point so we can test if we reached the final state
+      des_x_   = goal_tracker_point_.position.x;
+      des_y_   = goal_tracker_point_.position.y;
+      des_z_   = goal_tracker_point_.position.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
       trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.z += (_max_z_ - _min_z_) / trajectory_length;
+        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.z += (_max_z_ - _min_z_) / trajectory_length;
         goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
-        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       try {
-        publisher_set_trajectory_.publish(goal_trajectory_topic);
+        publisher_trajectory_reference_.publish(goal_trajectory);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory_.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
       }
-
-      wait.sleep();
-
-      //}
 
       break;
 
-    case TRAJECTORY_FLY_TO_START_TOPIC_STATE:
+      //}
+    }
+
+    case TRAJECTORY_GOTO_START_STATE: {
 
       /* //{ test fly_to_start_out service */
 
-      service_client_fly_to_start_.call(goal_trigger);
-
-      //}
+      gotoTrajectoryStart();
 
       break;
 
-    case TRAJECTORY_START_FOLLOWING_TOPIC_STATE:
+      //}
+    }
+
+    case TRAJECTORY_START_TRACKING_STATE: {
 
       /* //{ test start_following_out service */
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      service_client_start_following_.call(goal_trigger);
-
-      //}
+      startTrajectoryTracking();
 
       break;
 
-    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE:
+      //}
+    }
+
+    case TRAJECTORY_LOAD_STATIC_SERVICE_STATE: {
 
       /* //{ test trajectory loading using service */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = false;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = false;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = false;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = _trajectory_p1_;
-      goal_tracker_point_.y   = _trajectory_p1_;
-      goal_tracker_point_.z   = _max_z_;
-      goal_tracker_point_.yaw = 1.57;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = _trajectory_p1_;
+      goal_tracker_point_.position.y = _trajectory_p1_;
+      goal_tracker_point_.position.z = _max_z_;
+      goal_tracker_point_.yaw        = 1.57;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
+      // remember the first point so we can test if we reached the final state
+      des_x_   = goal_tracker_point_.position.x;
+      des_y_   = goal_tracker_point_.position.y;
+      des_z_   = goal_tracker_point_.position.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
       trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.z -= (_max_z_ - _min_z_) / trajectory_length;
+        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.z -= (_max_z_ - _min_z_) / trajectory_length;
         goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
-        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
-      goal_trajectory_srv.request.trajectory_msg = goal_trajectory_topic;
-
-      service_client_trajectory_.call(goal_trajectory_srv);
-
-      wait.sleep();
-
-      //}
+      setTrajectorySrv(goal_trajectory);
 
       break;
 
-    case TRAJECTORY_FLY_TO_START_SERVICE_STATE:
+      //}
+    }
+
+    case TRAJECTORY_FLY_TO_START_SERVICE_STATE: {
 
       /* //{ test fly_to_start_out service */
 
-      service_client_fly_to_start_.call(goal_trigger);
-
-      //}
+      gotoTrajectoryStart();
 
       break;
 
-    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE:
+      //}
+    }
+
+    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE: {
 
       /* //{ test start_following_out service */
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      service_client_start_following_.call(goal_trigger);
-
-      //}
+      startTrajectoryTracking();
 
       break;
 
-    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE:
+      //}
+    }
+
+    case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE: {
 
       /* //{ test set_trajectory topic with fly_now */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = true;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = false;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = true;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = false;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = _trajectory_p2_;
-      goal_tracker_point_.y   = _trajectory_p2_;
-      goal_tracker_point_.z   = _min_z_;
-      goal_tracker_point_.yaw = 0;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = _trajectory_p2_;
+      goal_tracker_point_.position.y = _trajectory_p2_;
+      goal_tracker_point_.position.z = _min_z_;
+      goal_tracker_point_.yaw        = 0;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
       trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x -= _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.y -= _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.z += (_max_z_ - _min_z_) / trajectory_length;
+        goal_tracker_point_.position.x -= _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.y -= _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.z += (_max_z_ - _min_z_) / trajectory_length;
         goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
-        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
+      // remember the last point so we can test if we reached the final state
+      des_x_   = goal_tracker_point_.position.x;
+      des_y_   = goal_tracker_point_.position.y;
+      des_z_   = goal_tracker_point_.position.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
       try {
-        publisher_set_trajectory_.publish(goal_trajectory_topic);
+        publisher_trajectory_reference_.publish(goal_trajectory);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory_.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
       }
-
-      /* wait.sleep(); */
-
-      //}
 
       break;
 
-    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE:
+      //}
+    }
+
+    case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE: {
 
       /* //{ test trajectory loading using service */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = true;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = false;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = true;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = false;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = _trajectory_p1_;
-      goal_tracker_point_.y   = _trajectory_p1_;
-      goal_tracker_point_.z   = _max_z_;
-      goal_tracker_point_.yaw = 1.57;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = _trajectory_p1_;
+      goal_tracker_point_.position.y = _trajectory_p1_;
+      goal_tracker_point_.position.z = _max_z_;
+      goal_tracker_point_.yaw        = 1.57;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
       trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.z -= (_max_z_ - _min_z_) / trajectory_length;
+        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.position.z -= (_max_z_ - _min_z_) / trajectory_length;
         goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
-        /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
+      // remember the last point so we can test if we reached the final state
+      des_x_   = goal_tracker_point_.position.x;
+      des_y_   = goal_tracker_point_.position.y;
+      des_z_   = goal_tracker_point_.position.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
-      goal_trajectory_srv.request.trajectory_msg = goal_trajectory_topic;
-
-      service_client_trajectory_.call(goal_trajectory_srv);
-
-      //}
+      setTrajectorySrv(goal_trajectory);
 
       break;
+
+      //}
+    }
 
     case TRAJECTORY_CIRCLE_LOOP: {
 
       /* //{ load trajectory for testing the headless following */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = true;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = true;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = true;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = true;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
       double radius = 15.0;
       double speed  = 8.0;
       double angle  = 0;
 
-      goal_tracker_point_.x   = radius;
-      goal_tracker_point_.y   = 0;
-      goal_tracker_point_.z   = _min_z_;
-      goal_tracker_point_.yaw = 1.57;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = radius;
+      goal_tracker_point_.position.y = 0;
+      goal_tracker_point_.position.z = _min_z_;
+      goal_tracker_point_.yaw        = 1.57;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
       double trajectory_time   = (radius * 2 * M_PI) / speed;
       int    trajectory_length = floor(trajectory_time * (1 / _trajectory_dt_));
       double angular_step      = (2 * M_PI) / trajectory_length;
 
-      double last_x = goal_tracker_point_.x;
-      double last_y = goal_tracker_point_.y;
+      double last_x = goal_tracker_point_.position.x;
+      double last_y = goal_tracker_point_.position.y;
 
       for (int i = 0; i < trajectory_length; i++) {
 
         angle += angular_step;
 
-        goal_tracker_point_.x   = radius * cos(angle);
-        goal_tracker_point_.y   = radius * sin(angle);
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = atan2(goal_tracker_point_.y - last_y, goal_tracker_point_.x - last_x);
+        goal_tracker_point_.position.x = radius * cos(angle);
+        goal_tracker_point_.position.y = radius * sin(angle);
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = atan2(goal_tracker_point_.position.y - last_y, goal_tracker_point_.position.x - last_x);
 
-        last_x = goal_tracker_point_.x;
-        last_y = goal_tracker_point_.y;
+        last_x = goal_tracker_point_.position.x;
+        last_y = goal_tracker_point_.position.y;
 
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       looping_start_time_ = ros::Time::now();
 
       try {
-        publisher_set_trajectory_.publish(goal_trajectory_topic);
+        publisher_trajectory_reference_.publish(goal_trajectory);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory_.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
       }
 
-      wait.sleep();
+      break;
 
+      //}
     }
-
-    //}
-
-    break;
 
     case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE: {
 
       /* //{ load trajectory for testing the headless following */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
-      goal_trajectory_topic.fly_now         = false;
-      goal_trajectory_topic.header.frame_id = "";
-      goal_trajectory_topic.header.stamp    = ros::Time::now();
-      goal_trajectory_topic.loop            = false;
-      goal_trajectory_topic.use_yaw         = true;
-      goal_trajectory_topic.dt              = _trajectory_dt_;
+      goal_trajectory.fly_now         = false;
+      goal_trajectory.header.frame_id = "";
+      goal_trajectory.header.stamp    = ros::Time::now();
+      goal_trajectory.loop            = false;
+      goal_trajectory.use_yaw         = true;
+      goal_trajectory.dt              = _trajectory_dt_;
 
       double radius = 5;
 
-      goal_tracker_point_.x   = radius;
-      goal_tracker_point_.y   = 0;
-      goal_tracker_point_.z   = _min_z_;
-      goal_tracker_point_.yaw = 0;
-      goal_trajectory_topic.points.push_back(goal_tracker_point_);
+      goal_tracker_point_.position.x = radius;
+      goal_tracker_point_.position.y = 0;
+      goal_tracker_point_.position.z = _min_z_;
+      goal_tracker_point_.yaw        = 0;
+      goal_trajectory.points.push_back(goal_tracker_point_);
 
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
+      des_x_   = goal_tracker_point_.position.x;
+      des_y_   = goal_tracker_point_.position.y;
+      des_z_   = goal_tracker_point_.position.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
       trajectory_length = 10 * (1 / _trajectory_dt_);
-      ;
 
       double angle = 0;
 
@@ -1195,105 +1282,101 @@ void ControlTest::changeState(ControlState_t new_state) {
 
         angle += (2 * M_PI) / trajectory_length;
 
-        goal_tracker_point_.x   = radius * cos(angle);
-        goal_tracker_point_.y   = radius * sin(angle);
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = 0;
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_tracker_point_.position.x = radius * cos(angle);
+        goal_tracker_point_.position.y = radius * sin(angle);
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = 0;
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       trajectory_length = 5 * (1 / _trajectory_dt_);
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x   = radius;
-        goal_tracker_point_.y   = -radius + i * (2 * radius / trajectory_length);
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = 0;
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_tracker_point_.position.x = radius;
+        goal_tracker_point_.position.y = -radius + i * (2 * radius / trajectory_length);
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = 0;
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x   = radius - i * (2 * radius / trajectory_length);
-        goal_tracker_point_.y   = radius;
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = 0;
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_tracker_point_.position.x = radius - i * (2 * radius / trajectory_length);
+        goal_tracker_point_.position.y = radius;
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = 0;
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x   = -radius;
-        goal_tracker_point_.y   = radius - i * (2 * radius / trajectory_length);
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = 0;
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_tracker_point_.position.x = -radius;
+        goal_tracker_point_.position.y = radius - i * (2 * radius / trajectory_length);
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = 0;
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x   = -radius + i * (2 * radius / trajectory_length);
-        goal_tracker_point_.y   = -radius;
-        goal_tracker_point_.z   = _min_z_;
-        goal_tracker_point_.yaw = 0;
-        goal_trajectory_topic.points.push_back(goal_tracker_point_);
+        goal_tracker_point_.position.x = -radius + i * (2 * radius / trajectory_length);
+        goal_tracker_point_.position.y = -radius;
+        goal_tracker_point_.position.z = _min_z_;
+        goal_tracker_point_.yaw        = 0;
+        goal_trajectory.points.push_back(goal_tracker_point_);
       }
 
       try {
-        publisher_set_trajectory_.publish(goal_trajectory_topic);
+        publisher_trajectory_reference_.publish(goal_trajectory);
       }
       catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_set_trajectory_.getTopic().c_str());
+        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
       }
 
-      wait.sleep();
+      break;
 
+      //}
     }
 
-    //}
-
-    break;
-
-    case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE:
+    case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE: {
 
       /* //{ test fly_to_start_out service */
 
-      service_client_fly_to_start_.call(goal_trigger);
-
-      //}
+      gotoTrajectoryStart();
 
       break;
 
-    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE:
-
-      /* //{ test start_following_out service */
-
-      des_x_   = goal_tracker_point_.x;
-      des_y_   = goal_tracker_point_.y;
-      des_z_   = goal_tracker_point_.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      service_client_start_following_.call(goal_trigger);
-
       //}
+    }
+
+    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE: {
+
+      /* start trajectory tracking //{ */
+
+      startTrajectoryTracking();
 
       break;
-    case LAND_HOME_STATE:
+
+      //}
+    }
+
+    case LAND_HOME_STATE: {
 
       /* //{ test land_home service */
 
       service_client_land_home_.call(goal_trigger);
 
-      //}
-
       break;
 
-    case GOTO_ORIGIN_STATE:
+      //}
+    }
+
+    case GOTO_ORIGIN_STATE: {
 
       /* //{ go to origin */
 
-      activateTracker("MpcTracker");
+      switchTracker("MpcTracker");
 
       goal_reference_stamped_topic.reference.position.x = 0;
       goal_reference_stamped_topic.reference.position.y = 0;
@@ -1312,21 +1395,23 @@ void ControlTest::changeState(ControlState_t new_state) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_reference_.getTopic().c_str());
       }
 
-      //}
-
       break;
 
-    case LAND_STATE:
+      //}
+    }
+
+    case LAND_STATE: {
 
       /* //{ test land service */
 
       service_client_land_.call(goal_trigger);
 
-      //}
-
       break;
 
-    case FINISHED_STATE:
+      //}
+    }
+
+    case FINISHED_STATE: {
 
       /* //{ finish and end the node */
 
@@ -1334,10 +1419,13 @@ void ControlTest::changeState(ControlState_t new_state) {
       ROS_INFO("[ControlTest]: TEST FINISHED");
       ros::shutdown();
 
-      //}
-
       break;
+
+      //}
+    }
   }
+
+  wait.sleep();
 
   timeout_ = ros::Time::now();
 }
@@ -1346,7 +1434,7 @@ void ControlTest::changeState(ControlState_t new_state) {
 
 /* //{ randd() */
 
-double ControlTest::randd(double from, double to) {
+double ControlTest::randd(const double from, const double to) {
 
   double zero_to_one = double((float)rand()) / double(RAND_MAX);
 
@@ -1384,7 +1472,7 @@ double ControlTest::genZ(void) {
 
 /* //{ dist3d() */
 
-double ControlTest::dist3d(double x1, double x2, double y1, double y2, double z1, double z2) {
+double ControlTest::dist3d(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2) {
 
   return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
 }
@@ -1393,7 +1481,7 @@ double ControlTest::dist3d(double x1, double x2, double y1, double y2, double z1
 
 /* //{ dist2d() */
 
-double ControlTest::dist2d(double x1, double x2, double y1, double y2) {
+double ControlTest::dist2d(const double x1, const double x2, const double y1, const double y2) {
 
   return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
@@ -1444,10 +1532,9 @@ bool ControlTest::inDesiredState(void) {
 
   auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
 
-  if (dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.15 && angleDist(odometry_yaw, sanitizeYaw(des_yaw_)) < 0.15) {
+  if (dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 && angleDist(odometry_yaw, sanitizeYaw(des_yaw_)) < 0.10) {
 
     ROS_WARN("[ControlTest]: The goal has been reached.");
-    ros::Duration(1.0).sleep();
     return true;
   }
 
@@ -1465,17 +1552,152 @@ bool ControlTest::trackerReady(void) {
 
 //}
 
-/* //{ activateTracker() */
+// | ----------------- service client wrappers ---------------- |
 
-void ControlTest::activateTracker(std::string tracker_name) {
+/* //{ startTrajectoryTracking() */
 
-  mrs_msgs::String goal_switch_tracker;
-  goal_switch_tracker.request.value = tracker_name;
+void ControlTest::startTrajectoryTracking(void) {
 
-  ROS_INFO("[ControlTest]: switching to %s", goal_switch_tracker.request.value.c_str());
-  service_client_switch_tracker_.call(goal_switch_tracker);
-  ros::Duration wait(1.0);
-  wait.sleep();
+  // remember the last point so we can test if we reached the final state
+  des_x_   = goal_tracker_point_.position.x;
+  des_y_   = goal_tracker_point_.position.y;
+  des_z_   = goal_tracker_point_.position.z;
+  des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
+
+  std_srvs::Trigger srv;
+
+  bool success = service_client_start_trajectory_tracking_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for starting trajectory tracking failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for starting trajectory tracking failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ stopTrajectoryTracking() */
+
+void ControlTest::stopTrajectoryTracking(void) {
+
+  std_srvs::Trigger srv;
+
+  bool success = service_client_stop_trajectory_tracking_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for stopping trajectory tracking failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for stopping trajectory tracking failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ resumeTrajectoryTracking() */
+
+void ControlTest::resumeTrajectoryTracking(void) {
+
+  std_srvs::Trigger srv;
+
+  bool success = service_client_resume_trajectory_tracking_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for resume trajectory tracking failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for resume trajectory tracking failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ gotoTrajectoryStart() */
+
+void ControlTest::gotoTrajectoryStart(void) {
+
+  std_srvs::Trigger srv;
+
+  bool success = service_client_goto_trajectory_start_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for flying to trajectory start failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for flying to trajectory start failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* setTrajectorySrv() //{ */
+
+void ControlTest::setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory) {
+
+  mrs_msgs::TrajectoryReferenceSrv srv;
+  srv.request.trajectory = trajectory;
+
+  bool success = service_client_trajectory_reference_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for setting trajectory failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for setting trajectory failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ switchTracker() */
+
+void ControlTest::switchTracker(const std::string tracker_name) {
+
+  mrs_msgs::String srv;
+  srv.request.value = tracker_name;
+
+  ROS_INFO("[ControlTest]: switching to %s", srv.request.value.c_str());
+
+  bool success = service_client_switch_tracker_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for switching the tracker failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for switching the tracker failed");
+    ros::shutdown();
+  }
 }
 
 //}

@@ -36,7 +36,7 @@ windows:
   - control_test:
       layout: even-vertical
       panes:
-        - waitForControl; roslaunch mrs_testing control_test_gps.launch
+        - waitForControl; roslaunch mrs_testing control_test.launch
   - gazebo_camera_follow:
       layout: even-vertical
       panes:
