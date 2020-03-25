@@ -198,11 +198,12 @@ private:
 
   // | -------------------- for goto testing -------------------- |
 private:
-  double des_x_   = 0;
-  double des_y_   = 0;
-  double des_z_   = 0;
-  double des_yaw_ = 0;
-  double home_x_, home_y_;
+  double des_x_;
+  double des_y_;
+  double des_z_;
+  double des_yaw_;
+  double home_x_;
+  double home_y_;
 
   // | ------------------ goto relative testing ----------------- |
 
@@ -211,9 +212,11 @@ private:
   double goto_relative_altitude_up_;
 
 private:
-  double trajectory_p1_;
-  double trajectory_p2_;
-  double trajectory_speed_;
+  double _trajectory_p1_;
+  double _trajectory_p2_;
+  double _trajectory_speed_;
+  double _trajectory_yaw_rate_;
+  double _trajectory_dt_;
 
 private:
   ros::Time timeout_;
@@ -252,11 +255,13 @@ void ControlTest::onInit() {
   param_loader.load_param("goto_relative_altitude_down", goto_relative_altitude_down_);
   param_loader.load_param("goto_relative_altitude_up", goto_relative_altitude_up_);
 
-  param_loader.load_param("trajectory/p1", trajectory_p1_);
-  param_loader.load_param("trajectory/p2", trajectory_p2_);
-  param_loader.load_param("trajectory/speed", trajectory_speed_);
+  param_loader.load_param("trajectory/p1", _trajectory_p1_);
+  param_loader.load_param("trajectory/p2", _trajectory_p2_);
+  param_loader.load_param("trajectory/speed", _trajectory_speed_);
+  param_loader.load_param("trajectory/yaw_rate", _trajectory_yaw_rate_);
+  param_loader.load_param("trajectory/dt", _trajectory_dt_);
 
-  trajectory_speed_ = trajectory_speed_ / 1.414;
+  _trajectory_speed_ = _trajectory_speed_ / 1.414;
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -866,9 +871,10 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = trajectory_p1_;
-      goal_tracker_point_.y   = trajectory_p1_;
+      goal_tracker_point_.x   = _trajectory_p1_;
+      goal_tracker_point_.y   = _trajectory_p1_;
       goal_tracker_point_.z   = _min_z_;
       goal_tracker_point_.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point_);
@@ -878,14 +884,14 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z_   = goal_tracker_point_.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
-      trajectory_length = int(1.414 * (5 * fabs(trajectory_p2_ - trajectory_p1_)) / (trajectory_speed_));
+      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += trajectory_speed_ / 5;
-        goal_tracker_point_.y += trajectory_speed_ / 5;
+        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
         goal_tracker_point_.z += (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + 0.1);
+        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point_);
       }
@@ -939,9 +945,10 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = trajectory_p1_;
-      goal_tracker_point_.y   = trajectory_p1_;
+      goal_tracker_point_.x   = _trajectory_p1_;
+      goal_tracker_point_.y   = _trajectory_p1_;
       goal_tracker_point_.z   = _max_z_;
       goal_tracker_point_.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point_);
@@ -951,14 +958,14 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z_   = goal_tracker_point_.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
-      trajectory_length = int(1.414 * (5 * fabs(trajectory_p2_ - trajectory_p1_)) / (trajectory_speed_));
+      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += trajectory_speed_ / 5;
-        goal_tracker_point_.y += trajectory_speed_ / 5;
+        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
         goal_tracker_point_.z -= (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - 0.1);
+        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point_);
       }
@@ -1009,21 +1016,22 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = trajectory_p2_;
-      goal_tracker_point_.y   = trajectory_p2_;
+      goal_tracker_point_.x   = _trajectory_p2_;
+      goal_tracker_point_.y   = _trajectory_p2_;
       goal_tracker_point_.z   = _min_z_;
       goal_tracker_point_.yaw = 0;
       goal_trajectory_topic.points.push_back(goal_tracker_point_);
 
-      trajectory_length = int(1.414 * (5 * fabs(trajectory_p2_ - trajectory_p1_)) / (trajectory_speed_));
+      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x -= trajectory_speed_ / 5;
-        goal_tracker_point_.y -= trajectory_speed_ / 5;
+        goal_tracker_point_.x -= _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.y -= _trajectory_speed_ * _trajectory_dt_;
         goal_tracker_point_.z += (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + 0.1);
+        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point_);
       }
@@ -1057,21 +1065,22 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
-      goal_tracker_point_.x   = trajectory_p1_;
-      goal_tracker_point_.y   = trajectory_p1_;
+      goal_tracker_point_.x   = _trajectory_p1_;
+      goal_tracker_point_.y   = _trajectory_p1_;
       goal_tracker_point_.z   = _max_z_;
       goal_tracker_point_.yaw = 1.57;
       goal_trajectory_topic.points.push_back(goal_tracker_point_);
 
-      trajectory_length = int(1.414 * (5 * fabs(trajectory_p2_ - trajectory_p1_)) / (trajectory_speed_));
+      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
 
       for (int i = 0; i < trajectory_length; i++) {
 
-        goal_tracker_point_.x += trajectory_speed_ / 5;
-        goal_tracker_point_.y += trajectory_speed_ / 5;
+        goal_tracker_point_.x += _trajectory_speed_ * _trajectory_dt_;
+        goal_tracker_point_.y += _trajectory_speed_ * _trajectory_dt_;
         goal_tracker_point_.z -= (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - 0.1);
+        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
         /* ROS_INFO("[ControlTest]: x %f y %f z %f yaw %f", goal_tracker_point_.x, goal_tracker_point_.y, goal_tracker_point_.z, goal_tracker_point_.yaw); */
         goal_trajectory_topic.points.push_back(goal_tracker_point_);
       }
@@ -1100,6 +1109,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = true;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
       double radius = 15.0;
       double speed  = 8.0;
@@ -1112,7 +1122,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.points.push_back(goal_tracker_point_);
 
       double trajectory_time   = (radius * 2 * M_PI) / speed;
-      int    trajectory_length = floor(trajectory_time * 5.0);
+      int    trajectory_length = floor(trajectory_time * (1 / _trajectory_dt_));
       double angular_step      = (2 * M_PI) / trajectory_length;
 
       double last_x = goal_tracker_point_.x;
@@ -1161,6 +1171,7 @@ void ControlTest::changeState(ControlState_t new_state) {
       goal_trajectory_topic.header.stamp    = ros::Time::now();
       goal_trajectory_topic.loop            = false;
       goal_trajectory_topic.use_yaw         = true;
+      goal_trajectory_topic.dt              = _trajectory_dt_;
 
       double radius = 5;
 
@@ -1175,7 +1186,8 @@ void ControlTest::changeState(ControlState_t new_state) {
       des_z_   = goal_tracker_point_.z;
       des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
 
-      trajectory_length = 100;
+      trajectory_length = 10 * (1 / _trajectory_dt_);
+      ;
 
       double angle = 0;
 
@@ -1190,7 +1202,7 @@ void ControlTest::changeState(ControlState_t new_state) {
         goal_trajectory_topic.points.push_back(goal_tracker_point_);
       }
 
-      trajectory_length = 25;
+      trajectory_length = 5 * (1 / _trajectory_dt_);
 
       for (int i = 0; i < trajectory_length; i++) {
 
