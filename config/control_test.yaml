@@ -10,8 +10,8 @@ min_yaw: -3.14 # [rad]
 goto_relative_altitude_up: 1.0 # [m]
 goto_relative_altitude_down: 1.0 # [m]
 
-test_line_tracker: false
-test_mpc_gotos: false
+test_line_tracker: true
+test_mpc_gotos: true
 
 trajectory_dt: 0.1 # [s]
 
