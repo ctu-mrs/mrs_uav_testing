@@ -1,25 +1,31 @@
-max_xy: 10.0
-min_xy: -10.0
+max_xy: 10.0 # [m]
+min_xy: -10.0 # [m]
 
-min_z: 2.0
-max_z: 6.0
+min_z: 2.0 # [m]
+max_z: 6.0 # [m]
 
-max_yaw: 3.14
-min_yaw: -3.14
+max_yaw: 3.14 # [rad]
+min_yaw: -3.14 # [rad]
 
-goto_relative_altitude_up: 1.0
-goto_relative_altitude_down: 1.0
+goto_relative_altitude_up: 1.0 # [m]
+goto_relative_altitude_down: 1.0 # [m]
 
 test_line_tracker: true
 test_mpc_gotos: true
 
-trajectory:
+trajectory_dt: 0.1 # [s]
 
-  p1: -5.0
-  p2: 5.0
+line_trajectory:
 
-  speed: 3.0
+  p1: -5.0 # [m]
+  p2: 5.0 # [m]
 
-  yaw_rate: 1.0
+  speed: 3.0 # [m/s]
 
-  dt: 0.1
+  yaw_rate: 1.0 # [rad/s]
+
+looping_circle_trajectory:
+
+  radius: 15.0 # [m]
+  speed: 8.0 # [m/s]
+  duration: 30.0 # [s]

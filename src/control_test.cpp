@@ -58,21 +58,25 @@ typedef enum
   TRAJECTORY_GOTO_START_STATE,
   TRAJECTORY_START_TRACKING_STATE,
   TRAJECTORY_LOAD_STATIC_SERVICE_STATE,
-  TRAJECTORY_FLY_TO_START_SERVICE_STATE,
-  TRAJECTORY_START_FOLLOWING_SERVICE_STATE,
+  TRAJECTORY_GOTO_START_SERVICE_STATE,
+  TRAJECTORY_START_TRACKING_SERVICE_STATE,
   TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE,
   TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE,
+  TRAJECTORY_NOT_USE_YAW_STATE,
   TRAJECTORY_CIRCLE_LOOP,
+  TRAJECTORY_CIRCLE_PRE_PAUSE,
+  TRAJECTORY_CIRCLE_PAUSE,
+  TRAJECTORY_CIRCLE_POST_PAUSE,
   TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE,
   TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE,
-  TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE,
+  TRAJECTORY_HEADLESS_START_TRACKING_SERVICE_STATE,
   LAND_HOME_STATE,
   GOTO_ORIGIN_STATE,
   LAND_STATE,
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[26] = {
+const char *state_names[30] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "CHANGE_TRACKER_STATE",
@@ -87,14 +91,18 @@ const char *state_names[26] = {
     "TRAJECTORY_GOTO_START_STATE",
     "TRAJECTORY_START_TRACKING_STATE",
     "TRAJECTORY_LOAD_STATIC_SERVICE_STATE",
-    "TRAJECTORY_FLY_TO_START_SERVICE_STATE",
-    "TRAJECTORY_START_FOLLOWING_SERVICE_STATE",
+    "TRAJECTORY_GOTO_START_SERVICE_STATE",
+    "TRAJECTORY_START_TRACKING_SERVICE_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE",
+    "TRAJECTORY_NOT_USE_YAW_STATE",
     "TRAJECTORY_CIRCLE_LOOP",
+    "TRAJECTORY_CIRCLE_PRE_PAUSE",
+    "TRAJECTORY_CIRCLE_PAUSE",
+    "TRAJECTORY_CIRCLE_POST_PAUSE",
     "TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE",
     "TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE",
-    "TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE",
+    "TRAJECTORY_HEADLESS_START_TRACKING_SERVICE_STATE",
     "LAND_HOME_STATE",
     "GOTO_ORIGIN_STATE",
     "LAND_STATE",
@@ -204,11 +212,16 @@ private:
   double _max_yaw_;
   double _min_yaw_;
 
-  double _trajectory_p1_;
-  double _trajectory_p2_;
-  double _trajectory_speed_;
-  double _trajectory_yaw_rate_;
   double _trajectory_dt_;
+
+  double _line_trajectory_p1_;
+  double _line_trajectory_p2_;
+  double _line_trajectory_speed_;
+  double _line_trajectory_yaw_rate_;
+
+  double _looping_circle_speed_;
+  double _looping_circle_radius_;
+  double _looping_circle_duration_;
 
   double _goto_relative_altitude_down_;
   double _goto_relative_altitude_up_;
@@ -227,6 +240,7 @@ private:
   double sanitizeYaw(const double yaw_in);
   double angleDist(const double in1, const double in2);
   bool   inDesiredState(void);
+  bool   isStationary(void);
   bool   trackerReady(void);
   void   switchTracker(const std::string tracker_name);
   void   startTrajectoryTracking(void);
@@ -234,6 +248,10 @@ private:
   void   resumeTrajectoryTracking(void);
   void   gotoTrajectoryStart(void);
   void   setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory);
+
+  mrs_msgs::TrajectoryReference createLoopingCircleTrajectory();
+  mrs_msgs::TrajectoryReference createLineTrajectory(const bool ascending, const bool fly_now, const bool use_yaw);
+  mrs_msgs::TrajectoryReference createHeadlessTrajectory();
 
   // | ----------------------- global vars ---------------------- |
 
@@ -252,7 +270,7 @@ private:
 
   ros::Time looping_start_time_;
 
-  mrs_msgs::Reference goal_tracker_point_;
+  mrs_msgs::TrajectoryReference goal_trajectory_;
 };
 
 //}
@@ -284,11 +302,16 @@ void ControlTest::onInit() {
   param_loader.load_param("goto_relative_altitude_down", _goto_relative_altitude_down_);
   param_loader.load_param("goto_relative_altitude_up", _goto_relative_altitude_up_);
 
-  param_loader.load_param("trajectory/p1", _trajectory_p1_);
-  param_loader.load_param("trajectory/p2", _trajectory_p2_);
-  param_loader.load_param("trajectory/speed", _trajectory_speed_);
-  param_loader.load_param("trajectory/yaw_rate", _trajectory_yaw_rate_);
-  param_loader.load_param("trajectory/dt", _trajectory_dt_);
+  param_loader.load_param("trajectory_dt", _trajectory_dt_);
+
+  param_loader.load_param("line_trajectory/p1", _line_trajectory_p1_);
+  param_loader.load_param("line_trajectory/p2", _line_trajectory_p2_);
+  param_loader.load_param("line_trajectory/speed", _line_trajectory_speed_);
+  param_loader.load_param("line_trajectory/yaw_rate", _line_trajectory_yaw_rate_);
+
+  param_loader.load_param("looping_circle_trajectory/radius", _looping_circle_radius_);
+  param_loader.load_param("looping_circle_trajectory/speed", _looping_circle_speed_);
+  param_loader.load_param("looping_circle_trajectory/duration", _looping_circle_duration_);
 
   param_loader.load_param("test_line_tracker", _test_line_tracker_);
   param_loader.load_param("test_mpc_gotos", _test_mpc_gotos_);
@@ -299,7 +322,7 @@ void ControlTest::onInit() {
 
   // | ------------- calculate stuff from the params ------------ |
 
-  _trajectory_speed_ = _trajectory_speed_ / 1.414;
+  _line_trajectory_speed_ = _line_trajectory_speed_ / 1.414;
 
   // | ----------------------- subscribers ---------------------- |
 
@@ -450,7 +473,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
   ROS_INFO_THROTTLE(5.0, " ");
 
   if ((ros::Time::now() - timeout_).toSec() > 180.0) {
-    ROS_ERROR("[ControlTest]: TIMEOUT_, TEST FAILED!!");
+    ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
     ros::shutdown();
   }
 
@@ -603,7 +626,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case TRAJECTORY_FLY_TO_START_SERVICE_STATE: {
+    case TRAJECTORY_GOTO_START_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
@@ -612,7 +635,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE: {
+    case TRAJECTORY_START_TRACKING_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
@@ -639,12 +662,48 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
+    case TRAJECTORY_NOT_USE_YAW_STATE: {
+
+      if (inDesiredState() && trackerReady()) {
+        changeState(ControlState_t(int(current_state_) + 1));
+      }
+
+      break;
+    }
+
     case TRAJECTORY_CIRCLE_LOOP: {
 
-      if ((ros::Time::now() - looping_start_time_).toSec() > 30.0) {
-
+      if ((ros::Time::now() - looping_start_time_).toSec() > _looping_circle_duration_) {
         if (dist3d(odometry_x, cmd_x, odometry_y, cmd_y, odometry_z, cmd_z) < 2.0) {
+          changeState(ControlState_t(int(current_state_) + 1));
+        }
+      }
 
+      break;
+    }
+
+    case TRAJECTORY_CIRCLE_PRE_PAUSE: {
+
+      if ((ros::Time::now() - looping_start_time_).toSec() > 10.0) {
+        changeState(ControlState_t(int(current_state_) + 1));
+      }
+
+      break;
+    }
+
+    case TRAJECTORY_CIRCLE_PAUSE: {
+
+      if (isStationary() && trackerReady()) {
+        changeState(ControlState_t(int(current_state_) + 1));
+      }
+
+      break;
+    }
+
+    case TRAJECTORY_CIRCLE_POST_PAUSE: {
+
+      if ((ros::Time::now() - looping_start_time_).toSec() > 20.0) {
+        if (dist3d(odometry_x, cmd_x, odometry_y, cmd_y, odometry_z, cmd_z) < 2.0) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
@@ -668,7 +727,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE: {
+    case TRAJECTORY_HEADLESS_START_TRACKING_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(GOTO_ORIGIN_STATE);
@@ -747,8 +806,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
   mavros_msgs::CommandBool      goal_mavros_commandbool;
   mavros_msgs::SetMode          goal_mavros_set_mode;
   std_srvs::Trigger             goal_trigger;
-  mrs_msgs::TrajectoryReference goal_trajectory;
-  double                        trajectory_length;
+  mrs_msgs::Reference           trajectory_point;
 
   ros::Duration wait(1.0);
 
@@ -760,7 +818,8 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TAKEOFF_STATE: {
 
-      /* //{ testing takeoff */
+      /* //{ test the full takeoff sequence */
+
       // | ------------------------- motors ------------------------- |
       goal_bool.request.data = 1;
       service_client_motors_.call(goal_bool);
@@ -964,42 +1023,14 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_LOAD_STATIC_TOPIC_STATE: {
 
-      /* //{ test set_trajectory topic */
+      /* //{ test trajectory_reference topic */
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = false;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = false;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
-
-      goal_tracker_point_.position.x = _trajectory_p1_;
-      goal_tracker_point_.position.y = _trajectory_p1_;
-      goal_tracker_point_.position.z = _min_z_;
-      goal_tracker_point_.yaw        = 1.57;
-      goal_trajectory.points.push_back(goal_tracker_point_);
-
-      // remember the first point so we can test if we reached the final state
-      des_x_   = goal_tracker_point_.position.x;
-      des_y_   = goal_tracker_point_.position.y;
-      des_z_   = goal_tracker_point_.position.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.z += (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
+      goal_trajectory_ = createLineTrajectory(true, false, true);
 
       try {
-        publisher_trajectory_reference_.publish(goal_trajectory);
+        publisher_trajectory_reference_.publish(goal_trajectory_);
       }
       catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
@@ -1012,7 +1043,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_GOTO_START_STATE: {
 
-      /* //{ test fly_to_start_out service */
+      /* //{ test goto_trajectory_start service */
 
       gotoTrajectoryStart();
 
@@ -1023,7 +1054,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_START_TRACKING_STATE: {
 
-      /* //{ test start_following_out service */
+      /* //{ test start_trajectory_tracking service */
 
       startTrajectoryTracking();
 
@@ -1038,46 +1069,18 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = false;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = false;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
+      goal_trajectory_ = createLineTrajectory(false, false, true);
 
-      goal_tracker_point_.position.x = _trajectory_p1_;
-      goal_tracker_point_.position.y = _trajectory_p1_;
-      goal_tracker_point_.position.z = _max_z_;
-      goal_tracker_point_.yaw        = 1.57;
-      goal_trajectory.points.push_back(goal_tracker_point_);
-
-      // remember the first point so we can test if we reached the final state
-      des_x_   = goal_tracker_point_.position.x;
-      des_y_   = goal_tracker_point_.position.y;
-      des_z_   = goal_tracker_point_.position.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.z -= (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      setTrajectorySrv(goal_trajectory);
+      setTrajectorySrv(goal_trajectory_);
 
       break;
 
       //}
     }
 
-    case TRAJECTORY_FLY_TO_START_SERVICE_STATE: {
+    case TRAJECTORY_GOTO_START_SERVICE_STATE: {
 
-      /* //{ test fly_to_start_out service */
+      /* //{ test goto_trajectory_start service */
 
       gotoTrajectoryStart();
 
@@ -1086,9 +1089,9 @@ void ControlTest::changeState(const ControlState_t new_state) {
       //}
     }
 
-    case TRAJECTORY_START_FOLLOWING_SERVICE_STATE: {
+    case TRAJECTORY_START_TRACKING_SERVICE_STATE: {
 
-      /* //{ test start_following_out service */
+      /* //{ test start_trajectory_tracking service */
 
       startTrajectoryTracking();
 
@@ -1099,42 +1102,19 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE: {
 
-      /* //{ test set_trajectory topic with fly_now */
+      /* //{ test setting trajectory via topic with fly_now */
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = true;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = false;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
+      goal_trajectory_ = createLineTrajectory(true, true, true);
 
-      goal_tracker_point_.position.x = _trajectory_p2_;
-      goal_tracker_point_.position.y = _trajectory_p2_;
-      goal_tracker_point_.position.z = _min_z_;
-      goal_tracker_point_.yaw        = 0;
-      goal_trajectory.points.push_back(goal_tracker_point_);
-
-      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x -= _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.y -= _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.z += (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw + _trajectory_yaw_rate_ * _trajectory_dt_);
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      // remember the last point so we can test if we reached the final state
-      des_x_   = goal_tracker_point_.position.x;
-      des_y_   = goal_tracker_point_.position.y;
-      des_z_   = goal_tracker_point_.position.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
+      des_x_   = goal_trajectory_.points.back().position.x;
+      des_y_   = goal_trajectory_.points.back().position.y;
+      des_z_   = goal_trajectory_.points.back().position.z;
+      des_yaw_ = goal_trajectory_.points.back().yaw;
 
       try {
-        publisher_trajectory_reference_.publish(goal_trajectory);
+        publisher_trajectory_reference_.publish(goal_trajectory_);
       }
       catch (...) {
         ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
@@ -1147,41 +1127,38 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE: {
 
-      /* //{ test trajectory loading using service */
+      /* //{ test setting trajectory via service with fly_now */
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = true;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = false;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
+      goal_trajectory_ = createLineTrajectory(false, true, true);
 
-      goal_tracker_point_.position.x = _trajectory_p1_;
-      goal_tracker_point_.position.y = _trajectory_p1_;
-      goal_tracker_point_.position.z = _max_z_;
-      goal_tracker_point_.yaw        = 1.57;
-      goal_trajectory.points.push_back(goal_tracker_point_);
+      des_x_   = goal_trajectory_.points.back().position.x;
+      des_y_   = goal_trajectory_.points.back().position.y;
+      des_z_   = goal_trajectory_.points.back().position.z;
+      des_yaw_ = goal_trajectory_.points.back().yaw;
 
-      trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_trajectory_p2_ - _trajectory_p1_)) / (_trajectory_speed_));
+      setTrajectorySrv(goal_trajectory_);
 
-      for (int i = 0; i < trajectory_length; i++) {
+      break;
 
-        goal_tracker_point_.position.x += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.y += _trajectory_speed_ * _trajectory_dt_;
-        goal_tracker_point_.position.z -= (_max_z_ - _min_z_) / trajectory_length;
-        goal_tracker_point_.yaw = sanitizeYaw(goal_tracker_point_.yaw - _trajectory_yaw_rate_ * _trajectory_dt_);
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
+      //}
+    }
 
-      // remember the last point so we can test if we reached the final state
-      des_x_   = goal_tracker_point_.position.x;
-      des_y_   = goal_tracker_point_.position.y;
-      des_z_   = goal_tracker_point_.position.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
+    case TRAJECTORY_NOT_USE_YAW_STATE: {
 
-      setTrajectorySrv(goal_trajectory);
+      /* //{ test setting trajectory with use_yaw=false */
+
+      switchTracker("MpcTracker");
+
+      goal_trajectory_ = createLineTrajectory(true, true, false);
+
+      des_x_   = goal_trajectory_.points.back().position.x;
+      des_y_   = goal_trajectory_.points.back().position.y;
+      des_z_   = goal_trajectory_.points.back().position.z;
+      des_yaw_ = cmd_yaw_;
+
+      setTrajectorySrv(goal_trajectory_);
 
       break;
 
@@ -1190,57 +1167,59 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_CIRCLE_LOOP: {
 
-      /* //{ load trajectory for testing the headless following */
+      /* //{ load trajectory for testing the trajectory looping */
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = true;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = true;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
-
-      double radius = 15.0;
-      double speed  = 8.0;
-      double angle  = 0;
-
-      goal_tracker_point_.position.x = radius;
-      goal_tracker_point_.position.y = 0;
-      goal_tracker_point_.position.z = _min_z_;
-      goal_tracker_point_.yaw        = 1.57;
-      goal_trajectory.points.push_back(goal_tracker_point_);
-
-      double trajectory_time   = (radius * 2 * M_PI) / speed;
-      int    trajectory_length = floor(trajectory_time * (1 / _trajectory_dt_));
-      double angular_step      = (2 * M_PI) / trajectory_length;
-
-      double last_x = goal_tracker_point_.position.x;
-      double last_y = goal_tracker_point_.position.y;
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        angle += angular_step;
-
-        goal_tracker_point_.position.x = radius * cos(angle);
-        goal_tracker_point_.position.y = radius * sin(angle);
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = atan2(goal_tracker_point_.position.y - last_y, goal_tracker_point_.position.x - last_x);
-
-        last_x = goal_tracker_point_.position.x;
-        last_y = goal_tracker_point_.position.y;
-
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
+      goal_trajectory_ = createLoopingCircleTrajectory();
 
       looping_start_time_ = ros::Time::now();
 
-      try {
-        publisher_trajectory_reference_.publish(goal_trajectory);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
-      }
+      setTrajectorySrv(goal_trajectory_);
+
+      break;
+
+      //}
+    }
+
+    case TRAJECTORY_CIRCLE_PRE_PAUSE: {
+
+      /* //{ load trajectory for testing the trajectory pausing */
+
+      switchTracker("MpcTracker");
+
+      goal_trajectory_ = createLoopingCircleTrajectory();
+
+      looping_start_time_ = ros::Time::now();
+
+      setTrajectorySrv(goal_trajectory_);
+
+      break;
+
+      //}
+    }
+
+    case TRAJECTORY_CIRCLE_PAUSE: {
+
+      /* pause the trajectory tracking //{ */
+
+      stopTrajectoryTracking();
+
+      break;
+
+      //}
+    }
+
+    case TRAJECTORY_CIRCLE_POST_PAUSE: {
+
+      /* resume the trajectory tracking //{ */
+
+      resumeTrajectoryTracking();
+
+      des_x_   = goal_trajectory_.points.back().position.x;
+      des_y_   = goal_trajectory_.points.back().position.y;
+      des_z_   = goal_trajectory_.points.back().position.z;
+      des_yaw_ = goal_trajectory_.points.back().yaw;
 
       break;
 
@@ -1249,89 +1228,13 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_HEADLESS_LOAD_SERVICE_STATE: {
 
-      /* //{ load trajectory for testing the headless following */
+      /* //{ load trajectory for testing the headless tracking */
 
       switchTracker("MpcTracker");
 
-      goal_trajectory.fly_now         = false;
-      goal_trajectory.header.frame_id = "";
-      goal_trajectory.header.stamp    = ros::Time::now();
-      goal_trajectory.loop            = false;
-      goal_trajectory.use_yaw         = true;
-      goal_trajectory.dt              = _trajectory_dt_;
+      goal_trajectory_ = createHeadlessTrajectory();
 
-      double radius = 5;
-
-      goal_tracker_point_.position.x = radius;
-      goal_tracker_point_.position.y = 0;
-      goal_tracker_point_.position.z = _min_z_;
-      goal_tracker_point_.yaw        = 0;
-      goal_trajectory.points.push_back(goal_tracker_point_);
-
-      des_x_   = goal_tracker_point_.position.x;
-      des_y_   = goal_tracker_point_.position.y;
-      des_z_   = goal_tracker_point_.position.z;
-      des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
-
-      trajectory_length = 10 * (1 / _trajectory_dt_);
-
-      double angle = 0;
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        angle += (2 * M_PI) / trajectory_length;
-
-        goal_tracker_point_.position.x = radius * cos(angle);
-        goal_tracker_point_.position.y = radius * sin(angle);
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = 0;
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      trajectory_length = 5 * (1 / _trajectory_dt_);
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x = radius;
-        goal_tracker_point_.position.y = -radius + i * (2 * radius / trajectory_length);
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = 0;
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x = radius - i * (2 * radius / trajectory_length);
-        goal_tracker_point_.position.y = radius;
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = 0;
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x = -radius;
-        goal_tracker_point_.position.y = radius - i * (2 * radius / trajectory_length);
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = 0;
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      for (int i = 0; i < trajectory_length; i++) {
-
-        goal_tracker_point_.position.x = -radius + i * (2 * radius / trajectory_length);
-        goal_tracker_point_.position.y = -radius;
-        goal_tracker_point_.position.z = _min_z_;
-        goal_tracker_point_.yaw        = 0;
-        goal_trajectory.points.push_back(goal_tracker_point_);
-      }
-
-      try {
-        publisher_trajectory_reference_.publish(goal_trajectory);
-      }
-      catch (...) {
-        ROS_ERROR("Exception caught during publishing topic %s.", publisher_trajectory_reference_.getTopic().c_str());
-      }
+      setTrajectorySrv(goal_trajectory_);
 
       break;
 
@@ -1340,7 +1243,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case TRAJECTORY_HEADLESS_FLY_TO_START_SERVICE_STATE: {
 
-      /* //{ test fly_to_start_out service */
+      /* //{ goto_trajectory_start */
 
       gotoTrajectoryStart();
 
@@ -1349,9 +1252,14 @@ void ControlTest::changeState(const ControlState_t new_state) {
       //}
     }
 
-    case TRAJECTORY_HEADLESS_START_FOLLOWING_SERVICE_STATE: {
+    case TRAJECTORY_HEADLESS_START_TRACKING_SERVICE_STATE: {
 
       /* start trajectory tracking //{ */
+
+      des_x_   = goal_trajectory_.points.back().position.x;
+      des_y_   = goal_trajectory_.points.back().position.y;
+      des_z_   = goal_trajectory_.points.back().position.z;
+      des_yaw_ = goal_trajectory_.points.back().yaw;
 
       startTrajectoryTracking();
 
@@ -1531,9 +1439,27 @@ bool ControlTest::inDesiredState(void) {
 
   auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
 
-  if (dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 && angleDist(odometry_yaw, sanitizeYaw(des_yaw_)) < 0.10) {
+  if (isStationary() && dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 && angleDist(odometry_yaw, sanitizeYaw(des_yaw_)) < 0.10) {
 
-    ROS_WARN("[ControlTest]: The goal has been reached.");
+    ROS_WARN("[ControlTest]: the goal has been reached.");
+    return true;
+  }
+
+  return false;
+}
+
+//}
+
+/* //{ isStationary() */
+
+bool ControlTest::isStationary(void) {
+
+  auto odometry = mrs_lib::get_mutexed(mutex_odometry_, odometry_);
+
+  if (abs(odometry.twist.twist.linear.x) < 0.1 && abs(odometry.twist.twist.linear.y) < 0.1 && abs(odometry.twist.twist.linear.z) < 0.1 &&
+      abs(odometry.twist.twist.angular.z) < 0.1) {
+
+    ROS_WARN_THROTTLE(1.0, "[ControlTest]: the UAV is statinary");
     return true;
   }
 
@@ -1551,17 +1477,188 @@ bool ControlTest::trackerReady(void) {
 
 //}
 
+/* createLineTrajectory() //{ */
+
+mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascending, const bool fly_now, const bool use_yaw) {
+
+  mrs_msgs::TrajectoryReference trajectory;
+
+  trajectory.fly_now         = fly_now;
+  trajectory.header.frame_id = "";
+  trajectory.header.stamp    = ros::Time::now();
+  trajectory.loop            = false;
+  trajectory.use_yaw         = use_yaw;
+  trajectory.dt              = _trajectory_dt_;
+
+  mrs_msgs::Reference trajectory_point;
+
+  double trajectory_length = int(1.414 * ((1 / _trajectory_dt_) * fabs(_line_trajectory_p2_ - _line_trajectory_p1_)) / (_line_trajectory_speed_));
+
+  double start_z = ascending ? _min_z_ : _max_z_;
+  double end_z   = ascending ? _max_z_ : _min_z_;
+  double z_step  = (end_z - start_z) / trajectory_length;
+
+  trajectory_point.position.x = _line_trajectory_p1_;
+  trajectory_point.position.y = _line_trajectory_p1_;
+  trajectory_point.position.z = start_z;
+  trajectory_point.yaw        = 1.57;
+  trajectory.points.push_back(trajectory_point);
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    trajectory_point.position.x += _line_trajectory_speed_ * _trajectory_dt_;
+    trajectory_point.position.y += _line_trajectory_speed_ * _trajectory_dt_;
+    trajectory_point.position.z += z_step;
+    trajectory_point.yaw = sanitizeYaw(trajectory_point.yaw + _line_trajectory_yaw_rate_ * _trajectory_dt_);
+
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  return trajectory;
+}
+
+//}
+
+/* createLoopingCircleTrajectory() //{ */
+
+mrs_msgs::TrajectoryReference ControlTest::createLoopingCircleTrajectory() {
+
+  mrs_msgs::TrajectoryReference trajectory;
+
+  trajectory.fly_now         = true;
+  trajectory.header.frame_id = "";
+  trajectory.header.stamp    = ros::Time::now();
+  trajectory.loop            = true;
+  trajectory.use_yaw         = true;
+  trajectory.dt              = _trajectory_dt_;
+
+  double angle = 0;
+
+  mrs_msgs::Reference trajectory_point;
+
+  trajectory_point.position.x = _looping_circle_radius_;
+  trajectory_point.position.y = 0;
+  trajectory_point.position.z = _min_z_;
+  trajectory_point.yaw        = 1.57;
+  trajectory.points.push_back(trajectory_point);
+
+  double trajectory_time   = (_looping_circle_radius_ * 2 * M_PI) / _looping_circle_speed_;
+  int    trajectory_length = floor(trajectory_time * (1 / _trajectory_dt_));
+  double angular_step      = (2 * M_PI) / trajectory_length;
+
+  double last_x = trajectory_point.position.x;
+  double last_y = trajectory_point.position.y;
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    angle += angular_step;
+
+    trajectory_point.position.x = _looping_circle_radius_ * cos(angle);
+    trajectory_point.position.y = _looping_circle_radius_ * sin(angle);
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = atan2(trajectory_point.position.y - last_y, trajectory_point.position.x - last_x);
+
+    last_x = trajectory_point.position.x;
+    last_y = trajectory_point.position.y;
+
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  return trajectory;
+}
+
+//}
+
+/* createHeadlessTrajectory() //{ */
+
+mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
+
+  mrs_msgs::TrajectoryReference trajectory;
+
+  trajectory.fly_now         = false;
+  trajectory.header.frame_id = "";
+  trajectory.header.stamp    = ros::Time::now();
+  trajectory.loop            = false;
+  trajectory.use_yaw         = true;
+  trajectory.dt              = _trajectory_dt_;
+
+  mrs_msgs::Reference trajectory_point;
+
+  double radius            = 5.0;
+  double trajectory_length = 10 * (1.0 / _trajectory_dt_);
+
+  trajectory_point.position.x = radius;
+  trajectory_point.position.y = 0;
+  trajectory_point.position.z = _min_z_;
+  trajectory_point.yaw        = 0;
+  trajectory.points.push_back(trajectory_point);
+
+  double angle = 0;
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    angle += (2 * M_PI) / trajectory_length;
+
+    trajectory_point.position.x = radius * cos(angle);
+    trajectory_point.position.y = radius * sin(angle);
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = 0;
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  trajectory_length = 5 * (1.0 / _trajectory_dt_);
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    trajectory_point.position.x = radius;
+    trajectory_point.position.y = -radius + i * (2 * radius / trajectory_length);
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = 0;
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    trajectory_point.position.x = radius - i * (2 * radius / trajectory_length);
+    trajectory_point.position.y = radius;
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = 0;
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    trajectory_point.position.x = -radius;
+    trajectory_point.position.y = radius - i * (2 * radius / trajectory_length);
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = 0;
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  for (int i = 0; i < trajectory_length; i++) {
+
+    trajectory_point.position.x = -radius + i * (2 * radius / trajectory_length);
+    trajectory_point.position.y = -radius;
+    trajectory_point.position.z = _min_z_;
+    trajectory_point.yaw        = 0;
+    trajectory.points.push_back(trajectory_point);
+  }
+
+  return trajectory;
+}
+
+//}
+
 // | ----------------- service client wrappers ---------------- |
 
 /* //{ startTrajectoryTracking() */
 
 void ControlTest::startTrajectoryTracking(void) {
 
-  // remember the last point so we can test if we reached the final state
-  des_x_   = goal_tracker_point_.position.x;
-  des_y_   = goal_tracker_point_.position.y;
-  des_z_   = goal_tracker_point_.position.z;
-  des_yaw_ = sanitizeYaw(goal_tracker_point_.yaw);
+  des_x_   = goal_trajectory_.points.back().position.x;
+  des_y_   = goal_trajectory_.points.back().position.y;
+  des_z_   = goal_trajectory_.points.back().position.z;
+  des_yaw_ = goal_trajectory_.points.back().yaw;
 
   std_srvs::Trigger srv;
 
@@ -1631,6 +1728,11 @@ void ControlTest::resumeTrajectoryTracking(void) {
 /* //{ gotoTrajectoryStart() */
 
 void ControlTest::gotoTrajectoryStart(void) {
+
+  des_x_   = goal_trajectory_.points.front().position.x;
+  des_y_   = goal_trajectory_.points.front().position.y;
+  des_z_   = goal_trajectory_.points.front().position.z;
+  des_yaw_ = goal_trajectory_.points.front().yaw;
 
   std_srvs::Trigger srv;
 
