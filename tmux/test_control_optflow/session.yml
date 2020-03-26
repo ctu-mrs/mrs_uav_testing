@@ -32,11 +32,11 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./uav_manager.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./custom_configs/uav_manager.yaml
   - control_test:
       layout: even-vertical
       panes:
-        - waitForControl; roslaunch mrs_testing control_test_optic_flow.launch
+        - waitForControl; roslaunch mrs_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
   - gazebo_camera_follow:
       layout: even-vertical
       panes:

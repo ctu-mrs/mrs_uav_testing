@@ -9,7 +9,6 @@
 #include <std_msgs/Float64.h>
 
 #include <mrs_msgs/ReferenceStamped.h>
-#include <mrs_msgs/TrackerPoint.h>
 #include <mrs_msgs/TrajectoryReference.h>
 #include <mrs_msgs/TrajectoryReferenceSrv.h>
 #include <mrs_msgs/ReferenceStampedSrv.h>

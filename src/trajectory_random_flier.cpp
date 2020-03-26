@@ -13,8 +13,7 @@
 
 #include <nav_msgs/Odometry.h>
 #include <mrs_msgs/Vec4.h>
-#include <mrs_msgs/TrackerTrajectorySrv.h>  // ros message to set desired goal
-#include <mrs_msgs/TrackerPoint.h>          // ros message to set desired goal
+#include <mrs_msgs/TrajectoryReferenceSrv.h>
 
 #include <mrs_lib/ParamLoader.h>
 
@@ -27,9 +26,9 @@
 namespace mrs_testing
 {
 
-/* class TrajectoryFlier //{ */
+/* class TrajectoryRandomFlier //{ */
 
-class TrajectoryFlier : public nodelet::Nodelet {
+class TrajectoryRandomFlier : public nodelet::Nodelet {
 
 public:
   virtual void onInit();
@@ -41,6 +40,7 @@ private:
   bool   callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   void   timerMain(const ros::TimerEvent& event);
   double randd(double from, double to);
+  bool   setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory);
 
   ros::Subscriber subscriber_control_cmd_;
 
@@ -60,6 +60,7 @@ private:
   double _acceleration_;
   double _jerk_;
   double _max_distance_;
+  double _trajectory_dt_;
   bool   _randomize_distance_ = false;
 
   bool active_ = true;
@@ -75,13 +76,13 @@ private:
 
 /* onInit() //{ */
 
-void TrajectoryFlier::onInit(void) {
+void TrajectoryRandomFlier::onInit(void) {
 
   ros::NodeHandle nh_ = nodelet::Nodelet::getMTPrivateNodeHandle();
 
   ros::Time::waitForValid();
 
-  mrs_lib::ParamLoader param_loader(nh_, "TrajectoryFlier");
+  mrs_lib::ParamLoader param_loader(nh_, "TrajectoryRandomFlier");
 
   // load parameters from config file
   param_loader.load_param("main_timer_rate", _main_timer_rate_);
@@ -92,16 +93,17 @@ void TrajectoryFlier::onInit(void) {
   param_loader.load_param("acceleration", _acceleration_);
   param_loader.load_param("jerk", _jerk_);
   param_loader.load_param("max_distance", _max_distance_);
+  param_loader.load_param("trajectory_dt", _trajectory_dt_);
 
   if (!param_loader.loaded_successfully()) {
-    ROS_ERROR("[TrajectoryFlier]: Could not load all parameters!");
+    ROS_ERROR("[TrajectoryRandomFlier]: Could not load all parameters!");
     ros::shutdown();
   }
 
-  subscriber_control_cmd_ = nh_.subscribe("control_cmd_in", 1, &TrajectoryFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
+  subscriber_control_cmd_ = nh_.subscribe("control_cmd_in", 1, &TrajectoryRandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
 
-  service_server_activate_   = nh_.advertiseService("activate_in", &TrajectoryFlier::callbackActivate, this);
-  service_client_trajectory_ = nh_.serviceClient<mrs_msgs::TrackerTrajectorySrv>("trajectory_out");
+  service_server_activate_   = nh_.advertiseService("activate_in", &TrajectoryRandomFlier::callbackActivate, this);
+  service_client_trajectory_ = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
 
   // initialize the random number generator
   /* srand(static_cast<unsigned int>(time(0))); */
@@ -109,24 +111,22 @@ void TrajectoryFlier::onInit(void) {
 
   last_successfull_command_ = ros::Time(0);
 
-  timer_main_ = nh_.createTimer(ros::Rate(_main_timer_rate_), &TrajectoryFlier::timerMain, this);
+  timer_main_ = nh_.createTimer(ros::Rate(_main_timer_rate_), &TrajectoryRandomFlier::timerMain, this);
 
   // | ----------------------- finish init ---------------------- |
 
   is_initialized_ = true;
 
-  ROS_INFO("[TrajectoryFlier]: initialized");
+  ROS_INFO("[TrajectoryRandomFlier]: initialized");
 }
 
 //}
 
-// --------------------------------------------------------------
-// |                          callbacks                         |
-// --------------------------------------------------------------
+// | ------------------------ callbacks ----------------------- |
 
 /* callbackControlCmd() //{ */
 
-void TrajectoryFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) {
+void TrajectoryRandomFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) {
 
   if (!is_initialized_) {
     return;
@@ -138,14 +138,14 @@ void TrajectoryFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) 
 
   got_control_cmd_ = true;
 
-  ROS_INFO_ONCE("[TrajectoryFlier]: getting control_cmd");
+  ROS_INFO_ONCE("[TrajectoryRandomFlier]: getting control_cmd");
 }
 
 //}
 
 /* callbackActivate() //{ */
 
-bool TrajectoryFlier::callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
+bool TrajectoryRandomFlier::callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
 
   if (!is_initialized_) {
     return false;
@@ -154,20 +154,18 @@ bool TrajectoryFlier::callbackActivate([[maybe_unused]] std_srvs::Trigger::Reque
   active_ = true;
 
   res.success = true;
-  res.message = "home reseted";
+  res.message = "activated";
 
   return true;
 }
 
 //}
 
-// --------------------------------------------------------------
-// |                           timers                           |
-// --------------------------------------------------------------
+// | ------------------------- timers ------------------------- |
 
 /* timerMain() //{ */
 
-void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
+void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!is_initialized_) {
     return;
@@ -175,7 +173,7 @@ void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!active_) {
 
-    ROS_INFO_ONCE("[TrajectoryFlier]: waiting for initialization");
+    ROS_INFO_ONCE("[TrajectoryRandomFlier]: waiting for initialization");
     return;
   }
 
@@ -189,15 +187,15 @@ void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   {
     std::scoped_lock lock(mutex_control_cmd_);
 
-    // if the uav reach the previousy set destination
+    // if the uav reached the previousy set destination
     if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(control_cmd.twist.twist.linear.x) < 0.01 &&
         fabs(control_cmd.twist.twist.linear.y) < 0.01) {
 
       // create new point to fly to
-      mrs_msgs::TrackerTrajectorySrv trajectory;
-      trajectory.request.trajectory_msg.fly_now = true;
-      trajectory.request.trajectory_msg.use_yaw = false;
-      trajectory.request.trajectory_msg.use_yaw = false;
+      mrs_msgs::TrajectoryReference trajectory;
+      trajectory.fly_now = true;
+      trajectory.dt      = _trajectory_dt_;
+      trajectory.use_yaw = false;
 
       double dist, direction;
 
@@ -209,7 +207,7 @@ void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       direction = randd(-M_PI, M_PI);
 
-      int n_points = (dist / _speed_) * 5.0;
+      int n_points = (dist / _speed_) / _trajectory_dt_;
 
       double speed        = 0;
       double acceleration = 0;
@@ -218,40 +216,35 @@ void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       for (int it = 0; it < n_points; it++) {
 
-        acceleration += (_jerk_ * 0.2);
+        acceleration += (_jerk_ * _trajectory_dt_);
 
         if (acceleration >= _acceleration_) {
           acceleration = _acceleration_;
         }
 
-        speed += (acceleration * 0.2);
+        speed += (acceleration * _trajectory_dt_);
 
         if (speed >= _speed_) {
           speed = _speed_;
         }
 
-        ROS_INFO("[TrajectoryFlier]: jerk %.2f acceleration %.2f speed %.2f", _jerk_, acceleration, speed);
+        pos_x += cos(direction) * (speed * _trajectory_dt_);
+        pos_y += sin(direction) * (speed * _trajectory_dt_);
 
-        pos_x += cos(direction) * (speed * 0.2);
-        pos_y += sin(direction) * (speed * 0.2);
+        mrs_msgs::Reference new_point;
+        new_point.position.x = pos_x;
+        new_point.position.y = pos_y;
+        new_point.position.z = _height_;
+        new_point.yaw        = 0;
 
-        mrs_msgs::TrackerPoint new_point;
-        new_point.x   = pos_x;
-        new_point.y   = pos_y;
-        new_point.z   = _height_;
-        new_point.yaw = 0;
-
-        trajectory.request.trajectory_msg.points.push_back(new_point);
+        trajectory.points.push_back(new_point);
       }
 
-      if (service_client_trajectory_.call(trajectory)) {
+      if (setTrajectorySrv(trajectory)) {
 
-        if (trajectory.response.success) {
+        ROS_INFO("[TrajectoryRandomFlier]: trajectory set");
 
-          ROS_INFO("[TrajectoryFlier]: trajectory set");
-
-          last_successfull_command_ = ros::Time::now();
-        }
+        last_successfull_command_ = ros::Time::now();
       }
     }
   }
@@ -259,13 +252,11 @@ void TrajectoryFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
 //}
 
-// --------------------------------------------------------------
-// |                          routines                          |
-// --------------------------------------------------------------
+// | ------------------------ routines ------------------------ |
 
 /* randd() //{ */
 
-double TrajectoryFlier::randd(double from, double to) {
+double TrajectoryRandomFlier::randd(double from, double to) {
 
   double zero_to_one = double((float)rand()) / double(RAND_MAX);
 
@@ -274,7 +265,33 @@ double TrajectoryFlier::randd(double from, double to) {
 
 //}
 
+/* setTrajectorySrv() //{ */
+
+bool TrajectoryRandomFlier::setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory) {
+
+  mrs_msgs::TrajectoryReferenceSrv srv;
+  srv.request.trajectory = trajectory;
+
+  bool success = service_client_trajectory_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for setting trajectory failed: " << srv.response.message);
+      return false;
+    } else {
+      return true;
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for setting trajectory failed");
+    return false;
+  }
+}
+
+//}
+
 }  // namespace mrs_testing
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_testing::TrajectoryFlier, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(mrs_testing::TrajectoryRandomFlier, nodelet::Nodelet)

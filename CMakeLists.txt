@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   CATKIN_DEPENDS nav_msgs mrs_lib std_msgs std_srvs mavros_msgs
-  LIBRARIES ControlTest RandomFlier TrajectoryFlier
+  LIBRARIES ControlTest RandomFlier TrajectoryRandomFlier
   #  DEPENDS system_lib
   )
 
@@ -62,14 +62,14 @@ target_link_libraries(RandomFlier
   )
 
 ## Declare a C++ executable
-add_library(TrajectoryFlier src/trajectory_flier.cpp)
+add_library(TrajectoryRandomFlier src/trajectory_random_flier.cpp)
 
-add_dependencies(TrajectoryFlier
+add_dependencies(TrajectoryRandomFlier
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(TrajectoryFlier
+target_link_libraries(TrajectoryRandomFlier
   ${catkin_LIBRARIES}
   )

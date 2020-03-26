@@ -5,21 +5,21 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node name="RandomFlier" pkg="nodelet" type="nodelet" args="standalone mrs_testing/RandomFlier" output="screen" >
+    <node name="TrajectoryRandomFlier" pkg="nodelet" type="nodelet" args="standalone mrs_testing/TrajectoryRandomFlier" output="screen" >
 
-      <rosparam file="$(find mrs_testing)/config/random_flier.yaml" />
+      <rosparam file="$(find mrs_testing)/config/trajectory_random_flier.yaml" />
 
       <!-- Load a user param file -->
       <rosparam if="$(eval not arg('custom_config') == '')" file="$(arg custom_config)" />
 
+      <param name="uav_name" value="$(arg UAV_NAME)" />
+
         <!-- Subscribers -->
       <remap from="~control_cmd_in" to="control_manager/cmd_odom" />
 
-        <!-- Publishers -->
-      <remap from="~reference_out" to="control_manager/reference" />
-
         <!-- Services -->
       <remap from="~activate_in" to="~activate" />
+      <remap from="~trajectory_reference_out" to="control_manager/trajectory_reference" />
 
     </node>
 

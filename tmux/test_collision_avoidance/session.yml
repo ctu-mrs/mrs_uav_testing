@@ -35,38 +35,41 @@ windows:
         - export UAV_NAME=uav1; waitForOdometry; roslaunch mrs_general core.launch
         - export UAV_NAME=uav2; waitForOdometry; roslaunch mrs_general core.launch
         - export UAV_NAME=uav3; waitForOdometry; roslaunch mrs_general core.launch
+  - autostart:
+      layout: even-vertical
+      panes:
+        - export UAV_NAME=uav1; waitForRos; roslaunch mrs_general automatic_start.launch
+        - export UAV_NAME=uav2; waitForRos; roslaunch mrs_general automatic_start.launch
+        - export UAV_NAME=uav3; waitForRos; roslaunch mrs_general automatic_start.launch
   - random_flier:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForControl; roslaunch mrs_testing random_flier.launch
-        - export UAV_NAME=uav2; waitForControl; roslaunch mrs_testing random_flier.launch
-        - export UAV_NAME=uav3; waitForControl; roslaunch mrs_testing random_flier.launch
+        # - export UAV_NAME=uav1; waitForControl; roslaunch mrs_testing random_flier.launch custom_config:=./custom_configs/random_flier.yaml
+        # - export UAV_NAME=uav2; waitForControl; roslaunch mrs_testing random_flier.launch custom_config:=./custom_configs/random_flier.yaml
+        # - export UAV_NAME=uav3; waitForControl; roslaunch mrs_testing random_flier.launch custom_config:=./custom_configs/random_flier.yaml
+        - export UAV_NAME=uav1; waitForControl; roslaunch mrs_testing trajectory_random_flier.launch
+        - export UAV_NAME=uav2; waitForControl; roslaunch mrs_testing trajectory_random_flier.launch
+        - export UAV_NAME=uav3; waitForControl; roslaunch mrs_testing trajectory_random_flier.launch
   - takeoff:
       layout: even-vertical
       panes:
         # #{ uav1
         - 'export UAV_NAME=uav1;
           waitForControl;
-          rosservice call /$UAV_NAME/control_manager/motors 1;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard;
-          rosservice call /$UAV_NAME/uav_manager/takeoff'
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         # #}
         # #{ uav2
         - 'export UAV_NAME=uav2;
           waitForControl;
-          rosservice call /$UAV_NAME/control_manager/motors 1;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard;
-          rosservice call /$UAV_NAME/uav_manager/takeoff'
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         # #}
         # #{ uav3
         - 'export UAV_NAME=uav3;
           waitForControl;
-          rosservice call /$UAV_NAME/control_manager/motors 1;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard;
-          rosservice call /$UAV_NAME/uav_manager/takeoff'
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         # #}
   - gazebo_camera_follow:
       layout: even-vertical

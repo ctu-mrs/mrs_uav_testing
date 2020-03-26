@@ -10,8 +10,8 @@
   </class>
 </library>
 
-<library path="lib/libTrajectoryFlier">
-  <class name="mrs_testing/TrajectoryFlier" type="mrs_testing::TrajectoryFlier" base_class_type="nodelet::Nodelet">
-    <description>the TrajectoryFlier nodelet</description>
+<library path="lib/libTrajectoryRandomFlier">
+  <class name="mrs_testing/TrajectoryRandomFlier" type="mrs_testing::TrajectoryRandomFlier" base_class_type="nodelet::Nodelet">
+    <description>the TrajectoryRandomFlier nodelet</description>
   </class>
 </library>

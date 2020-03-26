@@ -1,6 +1,5 @@
 name: simulation
 root: ./
-
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
 startup_window: bumper_test
 windows:
@@ -34,16 +33,18 @@ windows:
       panes:
         - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml
         # - waitForOdometry; roslaunch mrs_testing random_flier.launch
-        - waitForOdometry; roslaunch mrs_testing trajectory_flier.launch
+        - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch
+  - autostart:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch mrs_general automatic_start.launch
   - takeoff:
       layout: even-vertical
       panes:
         #{ uav1
         - 'waitForControl;
-          rosservice call /$UAV_NAME/control_manager/motors 1;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard;
-          rosservice call /$UAV_NAME/uav_manager/takeoff'
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         #}
   - gazebo_camera_follow:
       layout: even-vertical

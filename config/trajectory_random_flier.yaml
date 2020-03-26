@@ -8,3 +8,5 @@ jerk: 3.0
 
 height: 1.5
 randomize_distance: true
+
+trajectory_dt: 0.2
