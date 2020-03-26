@@ -277,14 +277,14 @@ bool TrajectoryRandomFlier::setTrajectorySrv(const mrs_msgs::TrajectoryReference
   if (success) {
 
     if (!srv.response.success) {
-      ROS_ERROR_STREAM("[ControlTest]: service call for setting trajectory failed: " << srv.response.message);
+      ROS_ERROR_STREAM_THROTTLE(1.0, "[TrajectoryRandomFlier]: service call for setting trajectory failed: " << srv.response.message);
       return false;
     } else {
       return true;
     }
 
   } else {
-    ROS_ERROR("[ControlTest]: service call for setting trajectory failed");
+    ROS_ERROR_THROTTLE(1.0, "[TrajectoryRandomFlier]: service call for setting trajectory failed");
     return false;
   }
 }

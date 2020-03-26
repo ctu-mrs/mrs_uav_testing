@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
-startup_window: bumper_test
+startup_window: control
 windows:
   - roscore:
       layout: even-vertical
@@ -32,6 +32,9 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml
+  - random_flier:
+      layout: even-vertical
+      panes:
         # - waitForOdometry; roslaunch mrs_testing random_flier.launch
         - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch
   - autostart:
