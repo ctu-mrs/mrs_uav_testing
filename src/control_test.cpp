@@ -489,7 +489,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
       std::scoped_lock lock(mutex_control_manager_diagnostics_);
 
-      if (control_manager_diagnostics_.tracker_status.tracker == "MpcTracker" && trackerReady()) {
+      if (control_manager_diagnostics_.active_tracker == "MpcTracker" && trackerReady()) {
 
         ROS_INFO("[ControlTest]: takeoff_num=%d", takeoff_num_);
 
@@ -740,8 +740,8 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
       std::scoped_lock lock(mutex_control_manager_diagnostics_);
 
-      if (control_manager_diagnostics_.tracker_status.tracker == "NullTracker" && dist2d(home_x_, odometry_x, home_y_, odometry_y) < 1.0) {
-        ROS_INFO("[ControlTest]: %s", control_manager_diagnostics_.tracker_status.tracker.c_str());
+      if (control_manager_diagnostics_.active_tracker == "NullTracker" && dist2d(home_x_, odometry_x, home_y_, odometry_y) < 1.0) {
+        ROS_INFO("[ControlTest]: %s", control_manager_diagnostics_.active_tracker.c_str());
         changeState(TAKEOFF_STATE);
       }
 
@@ -765,7 +765,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
       std::scoped_lock lock(mutex_control_manager_diagnostics_);
 
-      if (control_manager_diagnostics_.tracker_status.tracker == "NullTracker" && dist2d(des_x_, odometry_x, des_y_, odometry_y) < 1.0) {
+      if (control_manager_diagnostics_.active_tracker == "NullTracker" && dist2d(des_x_, odometry_x, des_y_, odometry_y) < 1.0) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
 
@@ -1472,7 +1472,9 @@ bool ControlTest::isStationary(void) {
 
 bool ControlTest::trackerReady(void) {
 
-  return control_manager_diagnostics_.tracker_status.active && control_manager_diagnostics_.tracker_status.callbacks_enabled;
+  mrs_msgs::TrackerStatus status = control_manager_diagnostics_.tracker_status;
+
+  return status.active && status.callbacks_enabled && !status.moving_reference;
 }
 
 //}
