@@ -1474,7 +1474,7 @@ bool ControlTest::trackerReady(void) {
 
   mrs_msgs::TrackerStatus status = control_manager_diagnostics_.tracker_status;
 
-  return status.active && status.callbacks_enabled && !status.moving_reference;
+  return status.active && status.callbacks_enabled && !status.have_goal;
 }
 
 //}
