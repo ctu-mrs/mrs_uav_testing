@@ -4,8 +4,8 @@ min_xy: -10.0
 min_z: 2.0
 max_z: 4.0
 
-max_yaw: 3.14
-min_yaw: -3.14
+max_heading: 3.14
+min_heading: -3.14
 
 goto_relative_altitude_up: 1.0
 goto_relative_altitude_down: 1.0
@@ -20,6 +20,6 @@ trajectory:
 
   speed: 1.0
 
-  yaw_rate: 1.0
+  heading_rate: 1.0
 
   dt: 0.1

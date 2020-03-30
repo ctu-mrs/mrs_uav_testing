@@ -4,8 +4,8 @@ min_xy: -10.0 # [m]
 min_z: 2.0 # [m]
 max_z: 6.0 # [m]
 
-max_yaw: 3.14 # [rad]
-min_yaw: -3.14 # [rad]
+max_heading: 3.14 # [rad]
+min_heading: -3.14 # [rad]
 
 goto_relative_altitude_up: 1.0 # [m]
 goto_relative_altitude_down: 1.0 # [m]
@@ -22,7 +22,7 @@ line_trajectory:
 
   speed: 3.0 # [m/s]
 
-  yaw_rate: 1.0 # [rad/s]
+  heading_rate: 1.0 # [rad/s]
 
 looping_circle_trajectory:
 

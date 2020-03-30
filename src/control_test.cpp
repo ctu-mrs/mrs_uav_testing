@@ -52,8 +52,8 @@ typedef enum
   GOTO_SERVICE_STATE,
   GOTO_RELATIVE_SERVICE_STATE,
   GOTO_ALTITUDE_SERVICE_STATE,
-  SET_YAW_SERVICE_STATE,
-  SET_YAW_RELATIVE_SERVICE_STATE,
+  SET_heading_SERVICE_STATE,
+  SET_heading_RELATIVE_SERVICE_STATE,
   TRAJECTORY_LOAD_STATIC_TOPIC_STATE,
   TRAJECTORY_GOTO_START_STATE,
   TRAJECTORY_START_TRACKING_STATE,
@@ -62,7 +62,7 @@ typedef enum
   TRAJECTORY_START_TRACKING_SERVICE_STATE,
   TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE,
   TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE,
-  TRAJECTORY_NOT_USE_YAW_STATE,
+  TRAJECTORY_NOT_USE_heading_STATE,
   TRAJECTORY_CIRCLE_LOOP,
   TRAJECTORY_CIRCLE_PRE_PAUSE,
   TRAJECTORY_CIRCLE_PAUSE,
@@ -85,8 +85,8 @@ const char *state_names[30] = {
     "GOTO_SERVICE_STATE",
     "GOTO_RELATIVE_SERVICE_STATE",
     "GOTO_ALTITUDE_SERVICE_STATE",
-    "SET_YAW_SERVICE_STATE",
-    "SET_YAW_RELATIVE_SERVICE_STATE",
+    "SET_heading_SERVICE_STATE",
+    "SET_heading_RELATIVE_SERVICE_STATE",
     "TRAJECTORY_LOAD_STATIC_TOPIC_STATE",
     "TRAJECTORY_GOTO_START_STATE",
     "TRAJECTORY_START_TRACKING_STATE",
@@ -95,7 +95,7 @@ const char *state_names[30] = {
     "TRAJECTORY_START_TRACKING_SERVICE_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_TOPIC_STATE",
     "TRAJECTORY_LOAD_DYNAMIC_SERVICE_STATE",
-    "TRAJECTORY_NOT_USE_YAW_STATE",
+    "TRAJECTORY_NOT_USE_heading_STATE",
     "TRAJECTORY_CIRCLE_LOOP",
     "TRAJECTORY_CIRCLE_PRE_PAUSE",
     "TRAJECTORY_CIRCLE_PAUSE",
@@ -130,7 +130,7 @@ private:
 
   nav_msgs::Odometry odometry_;
 
-  double odometry_yaw_;
+  double odometry_heading_;
   double odometry_pitch_;
   double odometry_roll_;
   double odometry_x_;
@@ -150,7 +150,7 @@ private:
   double cmd_x_;
   double cmd_y_;
   double cmd_z_;
-  double cmd_yaw_;
+  double cmd_heading_;
 
   void callbackPositionCommand(const mrs_msgs::PositionCommandConstPtr &msg);
 
@@ -182,8 +182,8 @@ private:
   ros::ServiceClient service_client_goto_;
   ros::ServiceClient service_client_goto_relative_;
   ros::ServiceClient service_client_goto_altitude_;
-  ros::ServiceClient service_client_set_yaw_;
-  ros::ServiceClient service_client_set_yaw_relative_;
+  ros::ServiceClient service_client_set_heading_;
+  ros::ServiceClient service_client_set_heading_relative_;
 
   // trajectory tracking
   ros::ServiceClient service_client_trajectory_reference_;
@@ -209,15 +209,15 @@ private:
   double _min_xy_;
   double _max_z_;
   double _min_z_;
-  double _max_yaw_;
-  double _min_yaw_;
+  double _max_heading_;
+  double _min_heading_;
 
   double _trajectory_dt_;
 
   double _line_trajectory_p1_;
   double _line_trajectory_p2_;
   double _line_trajectory_speed_;
-  double _line_trajectory_yaw_rate_;
+  double _line_trajectory_heading_rate_;
 
   double _looping_circle_speed_;
   double _looping_circle_radius_;
@@ -234,10 +234,10 @@ private:
   double dist3d(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
   double dist2d(const double x1, const double x2, const double y1, const double y2);
   double randd(const double from, const double to);
-  double genYaw(void);
+  double genheading(void);
   double genXY(void);
   double genZ(void);
-  double sanitizeYaw(const double yaw_in);
+  double sanitizeheading(const double heading_in);
   double angleDist(const double in1, const double in2);
   bool   inDesiredState(void);
   bool   isStationary(void);
@@ -250,7 +250,7 @@ private:
   void   setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory);
 
   mrs_msgs::TrajectoryReference createLoopingCircleTrajectory();
-  mrs_msgs::TrajectoryReference createLineTrajectory(const bool ascending, const bool fly_now, const bool use_yaw);
+  mrs_msgs::TrajectoryReference createLineTrajectory(const bool ascending, const bool fly_now, const bool use_heading);
   mrs_msgs::TrajectoryReference createHeadlessTrajectory();
 
   // | ----------------------- global vars ---------------------- |
@@ -261,7 +261,7 @@ private:
   double des_x_;
   double des_y_;
   double des_z_;
-  double des_yaw_;
+  double des_heading_;
 
   double home_x_;
   double home_y_;
@@ -297,8 +297,8 @@ void ControlTest::onInit() {
   param_loader.load_param("min_xy", _min_xy_);
   param_loader.load_param("max_z", _max_z_);
   param_loader.load_param("min_z", _min_z_);
-  param_loader.load_param("max_yaw", _max_yaw_);
-  param_loader.load_param("min_yaw", _min_yaw_);
+  param_loader.load_param("max_heading", _max_heading_);
+  param_loader.load_param("min_heading", _min_heading_);
   param_loader.load_param("goto_relative_altitude_down", _goto_relative_altitude_down_);
   param_loader.load_param("goto_relative_altitude_up", _goto_relative_altitude_up_);
 
@@ -307,7 +307,7 @@ void ControlTest::onInit() {
   param_loader.load_param("line_trajectory/p1", _line_trajectory_p1_);
   param_loader.load_param("line_trajectory/p2", _line_trajectory_p2_);
   param_loader.load_param("line_trajectory/speed", _line_trajectory_speed_);
-  param_loader.load_param("line_trajectory/yaw_rate", _line_trajectory_yaw_rate_);
+  param_loader.load_param("line_trajectory/heading_rate", _line_trajectory_heading_rate_);
 
   param_loader.load_param("looping_circle_trajectory/radius", _looping_circle_radius_);
   param_loader.load_param("looping_circle_trajectory/speed", _looping_circle_speed_);
@@ -355,8 +355,8 @@ void ControlTest::onInit() {
   service_client_goto_                       = nh_.serviceClient<mrs_msgs::Vec4>("goto_out");
   service_client_goto_relative_              = nh_.serviceClient<mrs_msgs::Vec4>("goto_relative_out");
   service_client_goto_altitude_              = nh_.serviceClient<mrs_msgs::Vec1>("goto_altitude_out");
-  service_client_set_yaw_                    = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_out");
-  service_client_set_yaw_relative_           = nh_.serviceClient<mrs_msgs::Vec1>("set_yaw_relative_out");
+  service_client_set_heading_                = nh_.serviceClient<mrs_msgs::Vec1>("set_heading_out");
+  service_client_set_heading_relative_       = nh_.serviceClient<mrs_msgs::Vec1>("set_heading_relative_out");
   service_client_trajectory_reference_       = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
   service_client_goto_trajectory_start_      = nh_.serviceClient<std_srvs::Trigger>("goto_trajectory_start_out");
   service_client_start_trajectory_tracking_  = nh_.serviceClient<std_srvs::Trigger>("start_trajectory_tracking_out");
@@ -401,7 +401,7 @@ void ControlTest::callbackOdometry(const nav_msgs::OdometryConstPtr &msg) {
     tf::Quaternion quaternion_odometry;
     quaternionMsgToTF(msg->pose.pose.orientation, quaternion_odometry);
     tf::Matrix3x3 m(quaternion_odometry);
-    m.getRPY(odometry_roll_, odometry_pitch_, odometry_yaw_);
+    m.getRPY(odometry_roll_, odometry_pitch_, odometry_heading_);
   }
 }
 
@@ -421,10 +421,10 @@ void ControlTest::callbackPositionCommand(const mrs_msgs::PositionCommandConstPt
 
     position_command_ = *msg;
 
-    cmd_x_   = msg->position.x;
-    cmd_y_   = msg->position.y;
-    cmd_z_   = msg->position.z;
-    cmd_yaw_ = msg->yaw;
+    cmd_x_       = msg->position.x;
+    cmd_y_       = msg->position.y;
+    cmd_z_       = msg->position.z;
+    cmd_heading_ = msg->heading;
   }
 }
 
@@ -463,13 +463,13 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
     return;
   }
 
-  auto [cmd_x, cmd_y, cmd_z, cmd_yaw]                     = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_yaw_);
-  auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
+  auto [cmd_x, cmd_y, cmd_z, cmd_heading]                     = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_heading_);
+  auto [odometry_x, odometry_y, odometry_z, odometry_heading] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_heading_);
 
   ROS_INFO_THROTTLE(5.0, " ");
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x_, des_y_, des_z_, des_yaw_);
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %.2f %.2f %.2f %.2f", cmd_x, cmd_y, cmd_z, sanitizeYaw(cmd_yaw));
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %.2f %.2f %.2f %.2f", odometry_x, odometry_y, odometry_z, sanitizeYaw(odometry_yaw));
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x_, des_y_, des_z_, des_heading_);
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %.2f %.2f %.2f %.2f", cmd_x, cmd_y, cmd_z, sanitizeheading(cmd_heading));
+  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %.2f %.2f %.2f %.2f", odometry_x, odometry_y, odometry_z, sanitizeheading(odometry_heading));
   ROS_INFO_THROTTLE(5.0, " ");
 
   if ((ros::Time::now() - timeout_).toSec() > 180.0) {
@@ -571,7 +571,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case SET_YAW_SERVICE_STATE: {
+    case SET_heading_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
@@ -580,7 +580,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case SET_YAW_RELATIVE_SERVICE_STATE: {
+    case SET_heading_RELATIVE_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
 
@@ -662,7 +662,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
       break;
     }
 
-    case TRAJECTORY_NOT_USE_YAW_STATE: {
+    case TRAJECTORY_NOT_USE_heading_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
@@ -789,8 +789,8 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
 void ControlTest::changeState(const ControlState_t new_state) {
 
-  auto [odometry_x, odometry_y]       = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_);
-  auto [cmd_x, cmd_y, cmd_z, cmd_yaw] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_yaw_);
+  auto [odometry_x, odometry_y]           = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_);
+  auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_heading_);
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state_], state_names[new_state]);
 
@@ -880,12 +880,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_reference_stamped_topic.reference.position.x = genXY();
       goal_reference_stamped_topic.reference.position.y = genXY();
       goal_reference_stamped_topic.reference.position.z = genZ();
-      goal_reference_stamped_topic.reference.yaw        = sanitizeYaw(genYaw());
+      goal_reference_stamped_topic.reference.heading    = sanitizeheading(genheading());
 
-      des_x_   = goal_reference_stamped_topic.reference.position.x;
-      des_y_   = goal_reference_stamped_topic.reference.position.y;
-      des_z_   = goal_reference_stamped_topic.reference.position.z;
-      des_yaw_ = goal_reference_stamped_topic.reference.yaw;
+      des_x_       = goal_reference_stamped_topic.reference.position.x;
+      des_y_       = goal_reference_stamped_topic.reference.position.y;
+      des_z_       = goal_reference_stamped_topic.reference.position.z;
+      des_heading_ = goal_reference_stamped_topic.reference.heading;
 
       try {
         publisher_reference_.publish(goal_reference_stamped_topic);
@@ -906,12 +906,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_reference_stamped_srv.request.reference.position.x = genXY();
       goal_reference_stamped_srv.request.reference.position.y = genXY();
       goal_reference_stamped_srv.request.reference.position.z = genZ();
-      goal_reference_stamped_srv.request.reference.yaw        = sanitizeYaw(genYaw());
+      goal_reference_stamped_srv.request.reference.heading    = sanitizeheading(genheading());
 
-      des_x_   = goal_reference_stamped_srv.request.reference.position.x;
-      des_y_   = goal_reference_stamped_srv.request.reference.position.y;
-      des_z_   = goal_reference_stamped_srv.request.reference.position.z;
-      des_yaw_ = goal_reference_stamped_srv.request.reference.yaw;
+      des_x_       = goal_reference_stamped_srv.request.reference.position.x;
+      des_y_       = goal_reference_stamped_srv.request.reference.position.y;
+      des_z_       = goal_reference_stamped_srv.request.reference.position.z;
+      des_heading_ = goal_reference_stamped_srv.request.reference.heading;
 
       service_client_set_reference_.call(goal_reference_stamped_srv);
 
@@ -927,12 +927,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = genZ();
-      goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
+      goal_vec4.request.goal[3] = sanitizeheading(genheading());
 
-      des_x_   = goal_vec4.request.goal[0];
-      des_y_   = goal_vec4.request.goal[1];
-      des_z_   = goal_vec4.request.goal[2];
-      des_yaw_ = goal_vec4.request.goal[3];
+      des_x_       = goal_vec4.request.goal[0];
+      des_y_       = goal_vec4.request.goal[1];
+      des_z_       = goal_vec4.request.goal[2];
+      des_heading_ = goal_vec4.request.goal[3];
 
       service_client_goto_.call(goal_vec4);
 
@@ -948,15 +948,15 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = randd(_goto_relative_altitude_down_, _goto_relative_altitude_up_);
-      goal_vec4.request.goal[3] = sanitizeYaw(genYaw());
+      goal_vec4.request.goal[3] = sanitizeheading(genheading());
 
       {
         std::scoped_lock lock(mutex_position_command_);
 
-        des_x_   = cmd_x + goal_vec4.request.goal[0];
-        des_y_   = cmd_y + goal_vec4.request.goal[1];
-        des_z_   = cmd_z + goal_vec4.request.goal[2];
-        des_yaw_ = sanitizeYaw(cmd_yaw + goal_vec4.request.goal[3]);
+        des_x_       = cmd_x + goal_vec4.request.goal[0];
+        des_y_       = cmd_y + goal_vec4.request.goal[1];
+        des_z_       = cmd_z + goal_vec4.request.goal[2];
+        des_heading_ = sanitizeheading(cmd_heading + goal_vec4.request.goal[3]);
       }
 
       service_client_goto_relative_.call(goal_vec4);
@@ -981,40 +981,40 @@ void ControlTest::changeState(const ControlState_t new_state) {
       //}
     }
 
-    case SET_YAW_SERVICE_STATE: {
+    case SET_heading_SERVICE_STATE: {
 
-      /* //{ test set_yaw service */
+      /* //{ test set_heading service */
 
-      goal_vec1.request.goal = sanitizeYaw(genYaw());
+      goal_vec1.request.goal = sanitizeheading(genheading());
 
-      des_x_   = cmd_x_;
-      des_y_   = cmd_y_;
-      des_z_   = cmd_z_;
-      des_yaw_ = goal_vec1.request.goal;
+      des_x_       = cmd_x_;
+      des_y_       = cmd_y_;
+      des_z_       = cmd_z_;
+      des_heading_ = goal_vec1.request.goal;
 
-      service_client_set_yaw_.call(goal_vec1);
+      service_client_set_heading_.call(goal_vec1);
 
       break;
 
       //}
     }
 
-    case SET_YAW_RELATIVE_SERVICE_STATE: {
+    case SET_heading_RELATIVE_SERVICE_STATE: {
 
-      /* //{ test set_yaw_relative service */
+      /* //{ test set_heading_relative service */
 
-      goal_vec1.request.goal = sanitizeYaw(genYaw());
+      goal_vec1.request.goal = sanitizeheading(genheading());
 
       {
         std::scoped_lock lock(mutex_position_command_);
 
-        des_x_   = cmd_x_;
-        des_y_   = cmd_y_;
-        des_z_   = cmd_z_;
-        des_yaw_ = sanitizeYaw(cmd_yaw + goal_vec1.request.goal);
+        des_x_       = cmd_x_;
+        des_y_       = cmd_y_;
+        des_z_       = cmd_z_;
+        des_heading_ = sanitizeheading(cmd_heading + goal_vec1.request.goal);
       }
 
-      service_client_set_yaw_relative_.call(goal_vec1);
+      service_client_set_heading_relative_.call(goal_vec1);
 
       break;
 
@@ -1108,10 +1108,10 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       goal_trajectory_ = createLineTrajectory(true, true, true);
 
-      des_x_   = goal_trajectory_.points.back().position.x;
-      des_y_   = goal_trajectory_.points.back().position.y;
-      des_z_   = goal_trajectory_.points.back().position.z;
-      des_yaw_ = goal_trajectory_.points.back().yaw;
+      des_x_       = goal_trajectory_.points.back().position.x;
+      des_y_       = goal_trajectory_.points.back().position.y;
+      des_z_       = goal_trajectory_.points.back().position.z;
+      des_heading_ = goal_trajectory_.points.back().heading;
 
       try {
         publisher_trajectory_reference_.publish(goal_trajectory_);
@@ -1133,10 +1133,10 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       goal_trajectory_ = createLineTrajectory(false, true, true);
 
-      des_x_   = goal_trajectory_.points.back().position.x;
-      des_y_   = goal_trajectory_.points.back().position.y;
-      des_z_   = goal_trajectory_.points.back().position.z;
-      des_yaw_ = goal_trajectory_.points.back().yaw;
+      des_x_       = goal_trajectory_.points.back().position.x;
+      des_y_       = goal_trajectory_.points.back().position.y;
+      des_z_       = goal_trajectory_.points.back().position.z;
+      des_heading_ = goal_trajectory_.points.back().heading;
 
       setTrajectorySrv(goal_trajectory_);
 
@@ -1145,18 +1145,18 @@ void ControlTest::changeState(const ControlState_t new_state) {
       //}
     }
 
-    case TRAJECTORY_NOT_USE_YAW_STATE: {
+    case TRAJECTORY_NOT_USE_heading_STATE: {
 
-      /* //{ test setting trajectory with use_yaw=false */
+      /* //{ test setting trajectory with use_heading=false */
 
       switchTracker("MpcTracker");
 
       goal_trajectory_ = createLineTrajectory(true, true, false);
 
-      des_x_   = goal_trajectory_.points.back().position.x;
-      des_y_   = goal_trajectory_.points.back().position.y;
-      des_z_   = goal_trajectory_.points.back().position.z;
-      des_yaw_ = cmd_yaw_;
+      des_x_       = goal_trajectory_.points.back().position.x;
+      des_y_       = goal_trajectory_.points.back().position.y;
+      des_z_       = goal_trajectory_.points.back().position.z;
+      des_heading_ = cmd_heading_;
 
       setTrajectorySrv(goal_trajectory_);
 
@@ -1216,10 +1216,10 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       resumeTrajectoryTracking();
 
-      des_x_   = goal_trajectory_.points.back().position.x;
-      des_y_   = goal_trajectory_.points.back().position.y;
-      des_z_   = goal_trajectory_.points.back().position.z;
-      des_yaw_ = goal_trajectory_.points.back().yaw;
+      des_x_       = goal_trajectory_.points.back().position.x;
+      des_y_       = goal_trajectory_.points.back().position.y;
+      des_z_       = goal_trajectory_.points.back().position.z;
+      des_heading_ = goal_trajectory_.points.back().heading;
 
       break;
 
@@ -1256,10 +1256,10 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       /* start trajectory tracking //{ */
 
-      des_x_   = goal_trajectory_.points.back().position.x;
-      des_y_   = goal_trajectory_.points.back().position.y;
-      des_z_   = goal_trajectory_.points.back().position.z;
-      des_yaw_ = goal_trajectory_.points.back().yaw;
+      des_x_       = goal_trajectory_.points.back().position.x;
+      des_y_       = goal_trajectory_.points.back().position.y;
+      des_z_       = goal_trajectory_.points.back().position.z;
+      des_heading_ = goal_trajectory_.points.back().heading;
 
       startTrajectoryTracking();
 
@@ -1288,12 +1288,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_reference_stamped_topic.reference.position.x = 0;
       goal_reference_stamped_topic.reference.position.y = 0;
       goal_reference_stamped_topic.reference.position.z = 3;
-      goal_reference_stamped_topic.reference.yaw        = 0;
+      goal_reference_stamped_topic.reference.heading    = 0;
 
-      des_x_   = goal_reference_stamped_topic.reference.position.x;
-      des_y_   = goal_reference_stamped_topic.reference.position.y;
-      des_z_   = goal_reference_stamped_topic.reference.position.z;
-      des_yaw_ = goal_reference_stamped_topic.reference.yaw;
+      des_x_       = goal_reference_stamped_topic.reference.position.x;
+      des_y_       = goal_reference_stamped_topic.reference.position.y;
+      des_z_       = goal_reference_stamped_topic.reference.position.z;
+      des_heading_ = goal_reference_stamped_topic.reference.heading;
 
       try {
         publisher_reference_.publish(goal_reference_stamped_topic);
@@ -1350,11 +1350,11 @@ double ControlTest::randd(const double from, const double to) {
 
 //}
 
-/* //{ genYaw() */
+/* //{ genheading() */
 
-double ControlTest::genYaw(void) {
+double ControlTest::genheading(void) {
 
-  return randd(_min_yaw_, _max_yaw_);
+  return randd(_min_heading_, _max_heading_);
 }
 
 //}
@@ -1395,25 +1395,25 @@ double ControlTest::dist2d(const double x1, const double x2, const double y1, co
 
 //}
 
-/* //{ sanitizeYaw() */
+/* //{ sanitizeheading() */
 
-double ControlTest::sanitizeYaw(const double yaw_in) {
+double ControlTest::sanitizeheading(const double heading_in) {
 
-  double yaw_out = yaw_in;
+  double heading_out = heading_in;
 
-  // if desired yaw_out is grater then 2*M_PI mod it
-  if (fabs(yaw_out) > 2 * M_PI) {
-    yaw_out = fmod(yaw_out, 2 * M_PI);
+  // if desired heading_out is grater then 2*M_PI mod it
+  if (fabs(heading_out) > 2 * M_PI) {
+    heading_out = fmod(heading_out, 2 * M_PI);
   }
 
   // move it to its place
-  if (yaw_out > M_PI) {
-    yaw_out -= 2 * M_PI;
-  } else if (yaw_out < -M_PI) {
-    yaw_out += 2 * M_PI;
+  if (heading_out > M_PI) {
+    heading_out -= 2 * M_PI;
+  } else if (heading_out < -M_PI) {
+    heading_out += 2 * M_PI;
   }
 
-  return yaw_out;
+  return heading_out;
 }
 
 //}
@@ -1422,7 +1422,7 @@ double ControlTest::sanitizeYaw(const double yaw_in) {
 
 double ControlTest::angleDist(const double in1, const double in2) {
 
-  double sanitized_difference = fabs(sanitizeYaw(in1) - sanitizeYaw(in2));
+  double sanitized_difference = fabs(sanitizeheading(in1) - sanitizeheading(in2));
 
   if (sanitized_difference > M_PI) {
     sanitized_difference = 2 * M_PI - sanitized_difference;
@@ -1437,9 +1437,10 @@ double ControlTest::angleDist(const double in1, const double in2) {
 
 bool ControlTest::inDesiredState(void) {
 
-  auto [odometry_x, odometry_y, odometry_z, odometry_yaw] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_yaw_);
+  auto [odometry_x, odometry_y, odometry_z, odometry_heading] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_heading_);
 
-  if (isStationary() && dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 && angleDist(odometry_yaw, sanitizeYaw(des_yaw_)) < 0.10) {
+  if (isStationary() && dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 &&
+      angleDist(odometry_heading, sanitizeheading(des_heading_)) < 0.10) {
 
     ROS_WARN("[ControlTest]: the goal has been reached.");
     return true;
@@ -1481,7 +1482,7 @@ bool ControlTest::trackerReady(void) {
 
 /* createLineTrajectory() //{ */
 
-mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascending, const bool fly_now, const bool use_yaw) {
+mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascending, const bool fly_now, const bool use_heading) {
 
   mrs_msgs::TrajectoryReference trajectory;
 
@@ -1489,7 +1490,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascen
   trajectory.header.frame_id = "";
   trajectory.header.stamp    = ros::Time::now();
   trajectory.loop            = false;
-  trajectory.use_yaw         = use_yaw;
+  trajectory.use_heading     = use_heading;
   trajectory.dt              = _trajectory_dt_;
 
   mrs_msgs::Reference trajectory_point;
@@ -1503,7 +1504,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascen
   trajectory_point.position.x = _line_trajectory_p1_;
   trajectory_point.position.y = _line_trajectory_p1_;
   trajectory_point.position.z = start_z;
-  trajectory_point.yaw        = 1.57;
+  trajectory_point.heading    = 1.57;
   trajectory.points.push_back(trajectory_point);
 
   for (int i = 0; i < trajectory_length; i++) {
@@ -1511,7 +1512,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascen
     trajectory_point.position.x += _line_trajectory_speed_ * _trajectory_dt_;
     trajectory_point.position.y += _line_trajectory_speed_ * _trajectory_dt_;
     trajectory_point.position.z += z_step;
-    trajectory_point.yaw = sanitizeYaw(trajectory_point.yaw + _line_trajectory_yaw_rate_ * _trajectory_dt_);
+    trajectory_point.heading = sanitizeheading(trajectory_point.heading + _line_trajectory_heading_rate_ * _trajectory_dt_);
 
     trajectory.points.push_back(trajectory_point);
   }
@@ -1531,7 +1532,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLoopingCircleTrajectory() {
   trajectory.header.frame_id = "";
   trajectory.header.stamp    = ros::Time::now();
   trajectory.loop            = true;
-  trajectory.use_yaw         = true;
+  trajectory.use_heading     = true;
   trajectory.dt              = _trajectory_dt_;
 
   double angle = 0;
@@ -1541,7 +1542,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLoopingCircleTrajectory() {
   trajectory_point.position.x = _looping_circle_radius_;
   trajectory_point.position.y = 0;
   trajectory_point.position.z = _min_z_;
-  trajectory_point.yaw        = 1.57;
+  trajectory_point.heading    = 1.57;
   trajectory.points.push_back(trajectory_point);
 
   double trajectory_time   = (_looping_circle_radius_ * 2 * M_PI) / _looping_circle_speed_;
@@ -1558,7 +1559,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLoopingCircleTrajectory() {
     trajectory_point.position.x = _looping_circle_radius_ * cos(angle);
     trajectory_point.position.y = _looping_circle_radius_ * sin(angle);
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = atan2(trajectory_point.position.y - last_y, trajectory_point.position.x - last_x);
+    trajectory_point.heading    = atan2(trajectory_point.position.y - last_y, trajectory_point.position.x - last_x);
 
     last_x = trajectory_point.position.x;
     last_y = trajectory_point.position.y;
@@ -1581,7 +1582,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
   trajectory.header.frame_id = "";
   trajectory.header.stamp    = ros::Time::now();
   trajectory.loop            = false;
-  trajectory.use_yaw         = true;
+  trajectory.use_heading     = true;
   trajectory.dt              = _trajectory_dt_;
 
   mrs_msgs::Reference trajectory_point;
@@ -1592,7 +1593,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
   trajectory_point.position.x = radius;
   trajectory_point.position.y = 0;
   trajectory_point.position.z = _min_z_;
-  trajectory_point.yaw        = 0;
+  trajectory_point.heading    = 0;
   trajectory.points.push_back(trajectory_point);
 
   double angle = 0;
@@ -1604,7 +1605,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
     trajectory_point.position.x = radius * cos(angle);
     trajectory_point.position.y = radius * sin(angle);
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = 0;
+    trajectory_point.heading    = 0;
     trajectory.points.push_back(trajectory_point);
   }
 
@@ -1615,7 +1616,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
     trajectory_point.position.x = radius;
     trajectory_point.position.y = -radius + i * (2 * radius / trajectory_length);
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = 0;
+    trajectory_point.heading    = 0;
     trajectory.points.push_back(trajectory_point);
   }
 
@@ -1624,7 +1625,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
     trajectory_point.position.x = radius - i * (2 * radius / trajectory_length);
     trajectory_point.position.y = radius;
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = 0;
+    trajectory_point.heading    = 0;
     trajectory.points.push_back(trajectory_point);
   }
 
@@ -1633,7 +1634,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
     trajectory_point.position.x = -radius;
     trajectory_point.position.y = radius - i * (2 * radius / trajectory_length);
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = 0;
+    trajectory_point.heading    = 0;
     trajectory.points.push_back(trajectory_point);
   }
 
@@ -1642,7 +1643,7 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
     trajectory_point.position.x = -radius + i * (2 * radius / trajectory_length);
     trajectory_point.position.y = -radius;
     trajectory_point.position.z = _min_z_;
-    trajectory_point.yaw        = 0;
+    trajectory_point.heading    = 0;
     trajectory.points.push_back(trajectory_point);
   }
 
@@ -1657,10 +1658,10 @@ mrs_msgs::TrajectoryReference ControlTest::createHeadlessTrajectory() {
 
 void ControlTest::startTrajectoryTracking(void) {
 
-  des_x_   = goal_trajectory_.points.back().position.x;
-  des_y_   = goal_trajectory_.points.back().position.y;
-  des_z_   = goal_trajectory_.points.back().position.z;
-  des_yaw_ = goal_trajectory_.points.back().yaw;
+  des_x_       = goal_trajectory_.points.back().position.x;
+  des_y_       = goal_trajectory_.points.back().position.y;
+  des_z_       = goal_trajectory_.points.back().position.z;
+  des_heading_ = goal_trajectory_.points.back().heading;
 
   std_srvs::Trigger srv;
 
@@ -1731,10 +1732,10 @@ void ControlTest::resumeTrajectoryTracking(void) {
 
 void ControlTest::gotoTrajectoryStart(void) {
 
-  des_x_   = goal_trajectory_.points.front().position.x;
-  des_y_   = goal_trajectory_.points.front().position.y;
-  des_z_   = goal_trajectory_.points.front().position.z;
-  des_yaw_ = goal_trajectory_.points.front().yaw;
+  des_x_       = goal_trajectory_.points.front().position.x;
+  des_y_       = goal_trajectory_.points.front().position.y;
+  des_z_       = goal_trajectory_.points.front().position.z;
+  des_heading_ = goal_trajectory_.points.front().heading;
 
   std_srvs::Trigger srv;
 

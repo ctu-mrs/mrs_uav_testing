@@ -202,7 +202,7 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
         new_point.request.reference.position.x = control_cmd_.pose.pose.position.x + cos(direction) * dist;
         new_point.request.reference.position.y = control_cmd_.pose.pose.position.y + sin(direction) * dist;
         new_point.request.reference.position.z = _height_;
-        new_point.request.reference.yaw        = 0;
+        new_point.request.reference.heading    = 0;
 
         if (service_client_reference_.call(new_point)) {
 

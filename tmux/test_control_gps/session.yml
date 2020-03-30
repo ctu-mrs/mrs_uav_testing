@@ -1,6 +1,5 @@
 name: simulation
 root: ./
-
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
 startup_window: control_test
 windows:
@@ -25,14 +24,10 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_status status.launch
-  - bumper:
-      layout: even-vertical
-      panes:
-        - waitForOdometry; roslaunch mrs_bumper bumper.launch
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./custom_configs/uav_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
   - control_test:
       layout: even-vertical
       panes:

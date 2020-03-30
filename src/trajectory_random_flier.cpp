@@ -65,7 +65,7 @@ private:
 
   bool active_ = true;
 
-  nav_msgs::Odometry control_cmd;
+  nav_msgs::Odometry control_cmd_;
   std::mutex         mutex_control_cmd_;
   bool               got_control_cmd_ = false;
 
@@ -134,11 +134,11 @@ void TrajectoryRandomFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr&
 
   std::scoped_lock lock(mutex_control_cmd_);
 
-  control_cmd = *msg;
+  control_cmd_ = *msg;
 
   got_control_cmd_ = true;
 
-  ROS_INFO_ONCE("[TrajectoryRandomFlier]: getting control_cmd");
+  ROS_INFO_ONCE("[TrajectoryRandomFlier]: getting control_cmd_");
 }
 
 //}
@@ -188,14 +188,14 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
     std::scoped_lock lock(mutex_control_cmd_);
 
     // if the uav reached the previousy set destination
-    if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(control_cmd.twist.twist.linear.x) < 0.01 &&
-        fabs(control_cmd.twist.twist.linear.y) < 0.01) {
+    if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(control_cmd_.twist.twist.linear.x) < 0.01 &&
+        fabs(control_cmd_.twist.twist.linear.y) < 0.01) {
 
       // create new point to fly to
       mrs_msgs::TrajectoryReference trajectory;
-      trajectory.fly_now = true;
-      trajectory.dt      = _trajectory_dt_;
-      trajectory.use_yaw = false;
+      trajectory.fly_now     = true;
+      trajectory.dt          = _trajectory_dt_;
+      trajectory.use_heading = false;
 
       double dist, direction;
 
@@ -211,8 +211,10 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
 
       double speed        = 0;
       double acceleration = 0;
-      double pos_x        = control_cmd.pose.pose.position.x;
-      double pos_y        = control_cmd.pose.pose.position.y;
+      double pos_x        = control_cmd_.pose.pose.position.x;
+      double pos_y        = control_cmd_.pose.pose.position.y;
+
+      ROS_INFO("[TrajectoryRandomFlier]: pos_x: %.2f, pos_y: %.2f", pos_x, pos_y);
 
       for (int it = 0; it < n_points; it++) {
 
@@ -235,7 +237,7 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
         new_point.position.x = pos_x;
         new_point.position.y = pos_y;
         new_point.position.z = _height_;
-        new_point.yaw        = 0;
+        new_point.heading    = 0;
 
         trajectory.points.push_back(new_point);
       }

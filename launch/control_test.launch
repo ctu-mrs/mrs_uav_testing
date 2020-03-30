@@ -21,8 +21,8 @@
       <remap from="~goto_out" to="control_manager/goto" />
       <remap from="~goto_relative_out" to="control_manager/goto_relative" />
       <remap from="~goto_altitude_out" to="control_manager/goto_altitude" />
-      <remap from="~set_yaw_out" to="control_manager/set_yaw" />
-      <remap from="~set_yaw_relative_out" to="control_manager/set_yaw_relative" />
+      <remap from="~set_heading_out" to="control_manager/set_heading" />
+      <remap from="~set_heading_relative_out" to="control_manager/set_heading_relative" />
       <remap from="~switch_tracker_out" to="control_manager/switch_tracker" />
       <remap from="~motors_out" to="control_manager/motors" />
       <remap from="~arm_out" to="mavros/cmd/arming" />
