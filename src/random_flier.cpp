@@ -1,22 +1,19 @@
 /* includes //{ */
 
-// some ros includes
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 
-// some std includes
 #include <stdio.h>
 #include <stdlib.h>
 
-// mutexes are good to keep your shared variables our of trouble
-#include <mutex>
-
-#include <nav_msgs/Odometry.h>
+#include <mrs_msgs/PositionCommand.h>
 #include <mrs_msgs/ReferenceStampedSrv.h>
+#include <std_srvs/Trigger.h>
 
 #include <mrs_lib/ParamLoader.h>
-
-#include <std_srvs/Trigger.h>
+#include <mrs_lib/subscribe_handler.h>
+#include <mrs_lib/mutex.h>
+#include <mrs_lib/msg_extractor.h>
 
 #include <random>
 
@@ -35,12 +32,11 @@ public:
 private:
   bool is_initialized_ = false;
 
-  void   callbackControlCmd(const nav_msgs::OdometryConstPtr& msg);
   bool   callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   void   timerMain(const ros::TimerEvent& event);
   double randd(double from, double to);
 
-  ros::Subscriber subscriber_control_cmd_;
+  mrs_lib::SubscribeHandlerPtr<mrs_msgs::PositionCommand> sh_position_cmd_;
 
   ros::ServiceServer service_server_activate_;
 
@@ -56,10 +52,6 @@ private:
   double _max_distance_;
 
   bool active_ = true;
-
-  nav_msgs::Odometry control_cmd_;
-  std::mutex         mutex_control_cmd_;
-  bool               got_control_cmd_ = false;
 
   ros::Time last_successfull_command_;
 };
@@ -88,7 +80,9 @@ void RandomFlier::onInit(void) {
     ros::shutdown();
   }
 
-  subscriber_control_cmd_ = nh_.subscribe("control_cmd_in", 1, &RandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
+  mrs_lib::SubscribeMgr subscriber_manager(nh_);
+
+  sh_position_cmd_ = subscriber_manager.create_handler<mrs_msgs::PositionCommand>("position_command_in", true, true, 10, ros::TransportHints().tcpNoDelay());
 
   service_server_activate_  = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
   service_client_reference_ = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("reference_out");
@@ -110,28 +104,7 @@ void RandomFlier::onInit(void) {
 
 //}
 
-// --------------------------------------------------------------
-// |                          callbacks                         |
-// --------------------------------------------------------------
-
-/* callbackControlCmd() //{ */
-
-void RandomFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) {
-
-  if (!is_initialized_) {
-    return;
-  }
-
-  std::scoped_lock lock(mutex_control_cmd_);
-
-  control_cmd_ = *msg;
-
-  got_control_cmd_ = true;
-
-  ROS_INFO_ONCE("[RandomFlier]: getting control_cmd");
-}
-
-//}
+// | ------------------------ callbacks ----------------------- |
 
 /* callbackActivate() //{ */
 
@@ -151,9 +124,7 @@ bool RandomFlier::callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& 
 
 //}
 
-// --------------------------------------------------------------
-// |                           timers                           |
-// --------------------------------------------------------------
+// | ------------------------- timers ------------------------- |
 
 /* timerMain() //{ */
 
@@ -169,66 +140,63 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     return;
   }
 
-  if (!got_control_cmd_) {
+  if (!sh_position_cmd_->has_data()) {
 
-    ROS_INFO_THROTTLE(1.0, "[RandomFlier]: waiting for data");
+    ROS_INFO_THROTTLE(1.0, "[RandomFlier]: waiting for PositionCommand");
     return;
   }
 
-  // keeps ros in the loop
-  {
-    std::scoped_lock lock(mutex_control_cmd_);
+  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_->get_data());
+  auto [cmd_x, cmd_y, cmd_z, cmd_heading]      = mrs_lib::getPose(sh_position_cmd_->get_data());
 
-    // if the uav reach the previousy set destination
-    if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(control_cmd_.twist.twist.linear.x) < 0.01 &&
-        fabs(control_cmd_.twist.twist.linear.y) < 0.01) {
+  // if the uav reach the previousy set destination
+  if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(cmd_speed_x) < 0.01 && fabs(cmd_speed_y) < 0.01) {
 
-      // create new point to fly to
-      mrs_msgs::ReferenceStampedSrv new_point;
-      new_point.request.header.frame_id = "gps_origin";
+    // create new point to fly to
+    mrs_msgs::ReferenceStampedSrv new_point;
+    new_point.request.header.frame_id = "gps_origin";
 
-      double dist, direction;
+    double dist, direction;
 
-      if (_randomize_distance_) {
-        dist = randd(0, _max_distance_);
-      } else {
-        dist = _max_distance_;
-      }
+    if (_randomize_distance_) {
+      dist = randd(0, _max_distance_);
+    } else {
+      dist = _max_distance_;
+    }
 
-      direction = randd(-M_PI, M_PI);
+    direction = randd(-M_PI, M_PI);
 
-      while (true) {
+    while (true) {
 
-        new_point.request.reference.position.x = control_cmd_.pose.pose.position.x + cos(direction) * dist;
-        new_point.request.reference.position.y = control_cmd_.pose.pose.position.y + sin(direction) * dist;
-        new_point.request.reference.position.z = _height_;
-        new_point.request.reference.heading    = 0;
+      new_point.request.reference.position.x = cmd_x + cos(direction) * dist;
+      new_point.request.reference.position.y = cmd_y + sin(direction) * dist;
+      new_point.request.reference.position.z = _height_;
+      new_point.request.reference.heading    = 0;
 
-        if (service_client_reference_.call(new_point)) {
+      if (service_client_reference_.call(new_point)) {
 
-          if (new_point.response.success) {
+        if (new_point.response.success) {
 
-            ROS_INFO("New goal: %.2f %.2f", new_point.request.reference.position.x, new_point.request.reference.position.y);
+          ROS_INFO("New goal: %.2f %.2f", new_point.request.reference.position.x, new_point.request.reference.position.y);
 
-            last_successfull_command_ = ros::Time::now();
-            break;
+          last_successfull_command_ = ros::Time::now();
+          break;
 
-          } else {
+        } else {
 
-            /* ROS_WARN("New goal: %2.2f %2.2f failed", new_point.request.goal[0], new_point.request.goal[1]); */
+          /* ROS_WARN("New goal: %2.2f %2.2f failed", new_point.request.goal[0], new_point.request.goal[1]); */
 
-            dist -= 0.1;
+          dist -= 0.1;
 
-            if (dist < 1.0) {
+          if (dist < 1.0) {
 
-              if (_randomize_distance_) {
-                dist = randd(0, _max_distance_);
-              } else {
-                dist = _max_distance_;
-              }
-
-              direction = randd(-M_PI, M_PI);
+            if (_randomize_distance_) {
+              dist = randd(0, _max_distance_);
+            } else {
+              dist = _max_distance_;
             }
+
+            direction = randd(-M_PI, M_PI);
           }
         }
       }
@@ -238,9 +206,7 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
 //}
 
-// --------------------------------------------------------------
-// |                          routines                          |
-// --------------------------------------------------------------
+// | ------------------------ routines ------------------------ |
 
 /* randd() //{ */
 

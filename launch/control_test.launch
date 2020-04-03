@@ -2,10 +2,14 @@
 
   <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
   <arg name="custom_config" default="" />
+  <arg name="debug" default="false" />
+
+  <arg     if="$(arg debug)" name="launch_prefix" value="debug_roslaunch" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
 
   <group ns="$(arg UAV_NAME)">
 
-    <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_testing/ControlTest" output="screen">
+    <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_testing/ControlTest" output="screen" launch-prefix="$(arg launch_prefix)">
 
       <rosparam file="$(find mrs_testing)/config/control_test.yaml" />
 

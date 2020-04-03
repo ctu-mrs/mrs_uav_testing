@@ -26,6 +26,8 @@
 #include <mutex>
 
 #include <mrs_lib/mutex.h>
+#include <mrs_lib/subscribe_handler.h>
+#include <mrs_lib/msg_extractor.h>
 
 #include <tf/transform_datatypes.h>
 
@@ -76,7 +78,7 @@ typedef enum
   FINISHED_STATE,
 } ControlState_t;
 
-const char *state_names[30] = {
+const char* state_names[30] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
     "CHANGE_TRACKER_STATE",
@@ -122,47 +124,11 @@ private:
   ros::NodeHandle nh_;
   bool            is_initialized_ = false;
 
-  // | ------------------------ odometry ------------------------ |
+  // | ----------------------- subscribers ---------------------- |
 
-  ros::Subscriber subscriber_odometry_;
-  bool            got_odometry_ = false;
-  std::mutex      mutex_odometry_;
-
-  nav_msgs::Odometry odometry_;
-
-  double odometry_heading_;
-  double odometry_pitch_;
-  double odometry_roll_;
-  double odometry_x_;
-  double odometry_y_;
-  double odometry_z_;
-
-  void callbackOdometry(const nav_msgs::OdometryConstPtr &msg);
-
-  // | -------------------- position command -------------------- |
-
-  ros::Subscriber subscriber_position_command_;
-  bool            got_position_command_ = false;
-  std::mutex      mutex_position_command_;
-
-  mrs_msgs::PositionCommand position_command_;
-
-  double cmd_x_;
-  double cmd_y_;
-  double cmd_z_;
-  double cmd_heading_;
-
-  void callbackPositionCommand(const mrs_msgs::PositionCommandConstPtr &msg);
-
-  // | --------------- control manager diagnostics -------------- |
-
-  ros::Subscriber subscriber_control_manager_diagnostics_;
-  bool            got_control_manager_diagnostics_ = false;
-  std::mutex      mutex_control_manager_diagnostics_;
-
-  mrs_msgs::ControlManagerDiagnostics control_manager_diagnostics_;
-
-  void callbackControlManagerDiagnostics(const mrs_msgs::ControlManagerDiagnosticsConstPtr &msg);
+  mrs_lib::SubscribeHandlerPtr<nav_msgs::Odometry>                  sh_odometry_;
+  mrs_lib::SubscribeHandlerPtr<mrs_msgs::PositionCommand>           sh_position_cmd_;
+  mrs_lib::SubscribeHandlerPtr<mrs_msgs::ControlManagerDiagnostics> sh_control_manager_diag_;
 
   // | ----------------------- publishers ----------------------- |
 
@@ -195,7 +161,7 @@ private:
   // | ----------------------- main timer ----------------------- |
 
   ros::Timer timer_main_;
-  void       timerMain(const ros::TimerEvent &event);
+  void       timerMain(const ros::TimerEvent& event);
 
   // | ---------------------- state machine --------------------- |
 
@@ -231,14 +197,10 @@ private:
 
   // | ------------------------ routines ------------------------ |
 
-  double dist3d(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
-  double dist2d(const double x1, const double x2, const double y1, const double y2);
   double randd(const double from, const double to);
   double genheading(void);
   double genXY(void);
   double genZ(void);
-  double sanitizeheading(const double heading_in);
-  double angleDist(const double in1, const double in2);
   bool   inDesiredState(void);
   bool   isStationary(void);
   bool   trackerReady(void);
@@ -326,10 +288,12 @@ void ControlTest::onInit() {
 
   // | ----------------------- subscribers ---------------------- |
 
-  subscriber_odometry_         = nh_.subscribe("odometry_in", 1, &ControlTest::callbackOdometry, this, ros::TransportHints().tcpNoDelay());
-  subscriber_position_command_ = nh_.subscribe("position_command_in", 1, &ControlTest::callbackPositionCommand, this, ros::TransportHints().tcpNoDelay());
-  subscriber_control_manager_diagnostics_ =
-      nh_.subscribe("control_manager_diagnostics_in", 1, &ControlTest::callbackControlManagerDiagnostics, this, ros::TransportHints().tcpNoDelay());
+  mrs_lib::SubscribeMgr subscriber_manager(nh_);
+
+  sh_odometry_     = subscriber_manager.create_handler<nav_msgs::Odometry>("odometry_in", true, true, 10, ros::TransportHints().tcpNoDelay());
+  sh_position_cmd_ = subscriber_manager.create_handler<mrs_msgs::PositionCommand>("position_command_in", true, true, 10, ros::TransportHints().tcpNoDelay());
+  sh_control_manager_diag_ = subscriber_manager.create_handler<mrs_msgs::ControlManagerDiagnostics>("control_manager_diagnostics_in", true, true, 10,
+                                                                                                    ros::TransportHints().tcpNoDelay());
 
   // | ------------------- std tracker topics ------------------- |
 
@@ -377,100 +341,29 @@ void ControlTest::onInit() {
 //}
 
 // --------------------------------------------------------------
-// |                          callbacks                         |
-// --------------------------------------------------------------
-
-/* //{ callbackOdometry() */
-
-void ControlTest::callbackOdometry(const nav_msgs::OdometryConstPtr &msg) {
-
-  if (!is_initialized_)
-    return;
-
-  got_odometry_ = true;
-
-  {
-    std::scoped_lock lock(mutex_odometry_);
-
-    odometry_   = *msg;
-    odometry_x_ = msg->pose.pose.position.x;
-    odometry_y_ = msg->pose.pose.position.y;
-    odometry_z_ = msg->pose.pose.position.z;
-
-    // calculate the euler angles
-    tf::Quaternion quaternion_odometry;
-    quaternionMsgToTF(msg->pose.pose.orientation, quaternion_odometry);
-    tf::Matrix3x3 m(quaternion_odometry);
-    m.getRPY(odometry_roll_, odometry_pitch_, odometry_heading_);
-  }
-}
-
-//}
-
-/* //{ callbackPositionCommand() */
-
-void ControlTest::callbackPositionCommand(const mrs_msgs::PositionCommandConstPtr &msg) {
-
-  if (!is_initialized_)
-    return;
-
-  got_position_command_ = true;
-
-  {
-    std::scoped_lock lock(mutex_position_command_);
-
-    position_command_ = *msg;
-
-    cmd_x_       = msg->position.x;
-    cmd_y_       = msg->position.y;
-    cmd_z_       = msg->position.z;
-    cmd_heading_ = msg->heading;
-  }
-}
-
-//}
-
-/* //{ callbackControlManagerDiagnostics() */
-
-void ControlTest::callbackControlManagerDiagnostics(const mrs_msgs::ControlManagerDiagnosticsConstPtr &msg) {
-
-  if (!is_initialized_)
-    return;
-
-  got_control_manager_diagnostics_ = true;
-
-  {
-    std::scoped_lock lock(mutex_control_manager_diagnostics_);
-    control_manager_diagnostics_ = *msg;
-  }
-}
-
-//}
-
-// --------------------------------------------------------------
 // |                           timers                           |
 // --------------------------------------------------------------
 
 /* //{ timerMain() */
 
-void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
+void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (!is_initialized_)
     return;
 
-  if (!got_odometry_) {
-    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for data, got_odometry: %s", got_odometry_ ? "YES" : "NO");
+  if (!sh_odometry_->has_data()) {
+    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the Odometry");
     return;
   }
 
-  auto [cmd_x, cmd_y, cmd_z, cmd_heading]                     = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_heading_);
-  auto [odometry_x, odometry_y, odometry_z, odometry_heading] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_heading_);
+  if (!sh_control_manager_diag_->has_data()) {
+    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the ControlManager diagnostics");
+    return;
+  }
 
-  ROS_INFO_THROTTLE(5.0, " ");
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x_, des_y_, des_z_, des_heading_);
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %.2f %.2f %.2f %.2f", cmd_x, cmd_y, cmd_z, sanitizeheading(cmd_heading));
-  ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %.2f %.2f %.2f %.2f", odometry_x, odometry_y, odometry_z, sanitizeheading(odometry_heading));
-  ROS_INFO_THROTTLE(5.0, " ");
+  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
+
+  std::string active_tracker_name = sh_control_manager_diag_->get_data()->active_tracker;
 
   if ((ros::Time::now() - timeout_).toSec() > 180.0) {
     ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
@@ -487,9 +380,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TAKEOFF_STATE: {
 
-      std::scoped_lock lock(mutex_control_manager_diagnostics_);
-
-      if (control_manager_diagnostics_.active_tracker == "MpcTracker" && trackerReady()) {
+      if (active_tracker_name == "MpcTracker" && trackerReady()) {
 
         ROS_INFO("[ControlTest]: takeoff_num=%d", takeoff_num_);
 
@@ -673,8 +564,10 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TRAJECTORY_CIRCLE_LOOP: {
 
+      auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+
       if ((ros::Time::now() - looping_start_time_).toSec() > _looping_circle_duration_) {
-        if (dist3d(odometry_x, cmd_x, odometry_y, cmd_y, odometry_z, cmd_z) < 2.0) {
+        if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
@@ -702,8 +595,10 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
     case TRAJECTORY_CIRCLE_POST_PAUSE: {
 
+      auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+
       if ((ros::Time::now() - looping_start_time_).toSec() > 20.0) {
-        if (dist3d(odometry_x, cmd_x, odometry_y, cmd_y, odometry_z, cmd_z) < 2.0) {
+        if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
@@ -738,10 +633,8 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
     case LAND_HOME_STATE: {
 
-      std::scoped_lock lock(mutex_control_manager_diagnostics_);
-
-      if (control_manager_diagnostics_.active_tracker == "NullTracker" && dist2d(home_x_, odometry_x, home_y_, odometry_y) < 1.0) {
-        ROS_INFO("[ControlTest]: %s", control_manager_diagnostics_.active_tracker.c_str());
+      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(home_x_, home_y_, odom_x, odom_y) < 1.0) {
+        ROS_INFO("[ControlTest]: %s", active_tracker_name.c_str());
         changeState(TAKEOFF_STATE);
       }
 
@@ -763,9 +656,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
     case LAND_STATE: {
 
-      std::scoped_lock lock(mutex_control_manager_diagnostics_);
-
-      if (control_manager_diagnostics_.active_tracker == "NullTracker" && dist2d(des_x_, odometry_x, des_y_, odometry_y) < 1.0) {
+      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(des_x_, des_y_, odom_x, odom_y) < 1.0) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
 
@@ -776,6 +667,17 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
       break;
     }
+  }
+
+  if (current_state_ >= SET_REFERENCE_TOPIC_STATE) {
+
+    auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+
+    ROS_INFO_THROTTLE(5.0, " ");
+    ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x_, des_y_, des_z_, des_heading_);
+    ROS_INFO_THROTTLE(5.0, "[ControlTest]: cmd: %.2f %.2f %.2f %.2f", cmd_x, cmd_y, cmd_z, cmd_heading);
+    ROS_INFO_THROTTLE(5.0, "[ControlTest]: odom: %.2f %.2f %.2f %.2f", odom_x, odom_y, odom_z, odom_heading);
+    ROS_INFO_THROTTLE(5.0, " ");
   }
 }
 
@@ -789,8 +691,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent &event) {
 
 void ControlTest::changeState(const ControlState_t new_state) {
 
-  auto [odometry_x, odometry_y]           = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_);
-  auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::get_mutexed(mutex_position_command_, cmd_x_, cmd_y_, cmd_z_, cmd_heading_);
+  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state_], state_names[new_state]);
 
@@ -809,6 +710,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
   mrs_msgs::Reference           trajectory_point;
 
   ros::Duration wait(1.0);
+
+  double cmd_x, cmd_y, cmd_z, cmd_heading;
+
+  if (current_state_ > TAKEOFF_STATE) {
+    std::tie(cmd_x, cmd_y, cmd_z, cmd_heading) = mrs_lib::getPose(sh_position_cmd_->get_data());
+  }
 
   switch (new_state) {
 
@@ -838,8 +745,8 @@ void ControlTest::changeState(const ControlState_t new_state) {
       // | ------------------------- takeoff ------------------------ |
       service_client_takeoff_.call(goal_trigger);
 
-      home_x_ = odometry_x;
-      home_y_ = odometry_y;
+      home_x_ = odom_x;
+      home_y_ = odom_y;
 
       break;
 
@@ -880,7 +787,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_reference_stamped_topic.reference.position.x = genXY();
       goal_reference_stamped_topic.reference.position.y = genXY();
       goal_reference_stamped_topic.reference.position.z = genZ();
-      goal_reference_stamped_topic.reference.heading    = sanitizeheading(genheading());
+      goal_reference_stamped_topic.reference.heading    = genheading();
 
       des_x_       = goal_reference_stamped_topic.reference.position.x;
       des_y_       = goal_reference_stamped_topic.reference.position.y;
@@ -906,7 +813,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_reference_stamped_srv.request.reference.position.x = genXY();
       goal_reference_stamped_srv.request.reference.position.y = genXY();
       goal_reference_stamped_srv.request.reference.position.z = genZ();
-      goal_reference_stamped_srv.request.reference.heading    = sanitizeheading(genheading());
+      goal_reference_stamped_srv.request.reference.heading    = genheading();
 
       des_x_       = goal_reference_stamped_srv.request.reference.position.x;
       des_y_       = goal_reference_stamped_srv.request.reference.position.y;
@@ -927,7 +834,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = genZ();
-      goal_vec4.request.goal[3] = sanitizeheading(genheading());
+      goal_vec4.request.goal[3] = genheading();
 
       des_x_       = goal_vec4.request.goal[0];
       des_y_       = goal_vec4.request.goal[1];
@@ -948,16 +855,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_vec4.request.goal[0] = genXY();
       goal_vec4.request.goal[1] = genXY();
       goal_vec4.request.goal[2] = randd(_goto_relative_altitude_down_, _goto_relative_altitude_up_);
-      goal_vec4.request.goal[3] = sanitizeheading(genheading());
+      goal_vec4.request.goal[3] = genheading();
 
-      {
-        std::scoped_lock lock(mutex_position_command_);
-
-        des_x_       = cmd_x + goal_vec4.request.goal[0];
-        des_y_       = cmd_y + goal_vec4.request.goal[1];
-        des_z_       = cmd_z + goal_vec4.request.goal[2];
-        des_heading_ = sanitizeheading(cmd_heading + goal_vec4.request.goal[3]);
-      }
+      des_x_       = cmd_x + goal_vec4.request.goal[0];
+      des_y_       = cmd_y + goal_vec4.request.goal[1];
+      des_z_       = cmd_z + goal_vec4.request.goal[2];
+      des_heading_ = cmd_heading + goal_vec4.request.goal[3];
 
       service_client_goto_relative_.call(goal_vec4);
 
@@ -985,11 +888,11 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       /* //{ test set_heading service */
 
-      goal_vec1.request.goal = sanitizeheading(genheading());
+      goal_vec1.request.goal = genheading();
 
-      des_x_       = cmd_x_;
-      des_y_       = cmd_y_;
-      des_z_       = cmd_z_;
+      des_x_       = cmd_x;
+      des_y_       = cmd_y;
+      des_z_       = cmd_z;
       des_heading_ = goal_vec1.request.goal;
 
       service_client_set_heading_.call(goal_vec1);
@@ -1003,16 +906,12 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       /* //{ test set_heading_relative service */
 
-      goal_vec1.request.goal = sanitizeheading(genheading());
+      goal_vec1.request.goal = genheading();
 
-      {
-        std::scoped_lock lock(mutex_position_command_);
-
-        des_x_       = cmd_x_;
-        des_y_       = cmd_y_;
-        des_z_       = cmd_z_;
-        des_heading_ = sanitizeheading(cmd_heading + goal_vec1.request.goal);
-      }
+      des_x_       = cmd_x;
+      des_y_       = cmd_y;
+      des_z_       = cmd_z;
+      des_heading_ = cmd_heading + goal_vec1.request.goal;
 
       service_client_set_heading_relative_.call(goal_vec1);
 
@@ -1156,7 +1055,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
       des_x_       = goal_trajectory_.points.back().position.x;
       des_y_       = goal_trajectory_.points.back().position.y;
       des_z_       = goal_trajectory_.points.back().position.z;
-      des_heading_ = cmd_heading_;
+      des_heading_ = cmd_heading;
 
       setTrajectorySrv(goal_trajectory_);
 
@@ -1332,8 +1231,6 @@ void ControlTest::changeState(const ControlState_t new_state) {
     }
   }
 
-  wait.sleep();
-
   timeout_ = ros::Time::now();
 }
 
@@ -1377,70 +1274,13 @@ double ControlTest::genZ(void) {
 
 //}
 
-/* //{ dist3d() */
-
-double ControlTest::dist3d(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2) {
-
-  return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
-}
-
-//}
-
-/* //{ dist2d() */
-
-double ControlTest::dist2d(const double x1, const double x2, const double y1, const double y2) {
-
-  return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
-}
-
-//}
-
-/* //{ sanitizeheading() */
-
-double ControlTest::sanitizeheading(const double heading_in) {
-
-  double heading_out = heading_in;
-
-  // if desired heading_out is grater then 2*M_PI mod it
-  if (fabs(heading_out) > 2 * M_PI) {
-    heading_out = fmod(heading_out, 2 * M_PI);
-  }
-
-  // move it to its place
-  if (heading_out > M_PI) {
-    heading_out -= 2 * M_PI;
-  } else if (heading_out < -M_PI) {
-    heading_out += 2 * M_PI;
-  }
-
-  return heading_out;
-}
-
-//}
-
-/* angleDist() //{ */
-
-double ControlTest::angleDist(const double in1, const double in2) {
-
-  double sanitized_difference = fabs(sanitizeheading(in1) - sanitizeheading(in2));
-
-  if (sanitized_difference > M_PI) {
-    sanitized_difference = 2 * M_PI - sanitized_difference;
-  }
-
-  return fabs(sanitized_difference);
-}
-
-//}
-
 /* //{ inDesiredState() */
 
 bool ControlTest::inDesiredState(void) {
 
-  auto [odometry_x, odometry_y, odometry_z, odometry_heading] = mrs_lib::get_mutexed(mutex_odometry_, odometry_x_, odometry_y_, odometry_z_, odometry_heading_);
+  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
 
-  if (isStationary() && dist3d(odometry_x, des_x_, odometry_y, des_y_, odometry_z, des_z_) < 0.10 &&
-      angleDist(odometry_heading, sanitizeheading(des_heading_)) < 0.10) {
+  if (isStationary() && mrs_lib::dist3d(odom_x, odom_y, odom_z, des_x_, des_y_, des_z_) < 0.20 && mrs_lib::angleBetween(odom_heading, des_heading_) < 0.20) {
 
     ROS_WARN("[ControlTest]: the goal has been reached.");
     return true;
@@ -1455,10 +1295,10 @@ bool ControlTest::inDesiredState(void) {
 
 bool ControlTest::isStationary(void) {
 
-  auto odometry = mrs_lib::get_mutexed(mutex_odometry_, odometry_);
+  nav_msgs::OdometryConstPtr odometry = sh_odometry_->get_data();
 
-  if (abs(odometry.twist.twist.linear.x) < 0.1 && abs(odometry.twist.twist.linear.y) < 0.1 && abs(odometry.twist.twist.linear.z) < 0.1 &&
-      abs(odometry.twist.twist.angular.z) < 0.1) {
+  if (abs(odometry->twist.twist.linear.x) < 0.2 && abs(odometry->twist.twist.linear.y) < 0.2 && abs(odometry->twist.twist.linear.z) < 0.2 &&
+      abs(odometry->twist.twist.angular.z) < 0.2) {
 
     ROS_WARN_THROTTLE(1.0, "[ControlTest]: the UAV is statinary");
     return true;
@@ -1473,7 +1313,7 @@ bool ControlTest::isStationary(void) {
 
 bool ControlTest::trackerReady(void) {
 
-  mrs_msgs::TrackerStatus status = control_manager_diagnostics_.tracker_status;
+  mrs_msgs::TrackerStatus status = sh_control_manager_diag_->get_data()->tracker_status;
 
   return status.active && status.callbacks_enabled && !status.have_goal;
 }
@@ -1512,7 +1352,7 @@ mrs_msgs::TrajectoryReference ControlTest::createLineTrajectory(const bool ascen
     trajectory_point.position.x += _line_trajectory_speed_ * _trajectory_dt_;
     trajectory_point.position.y += _line_trajectory_speed_ * _trajectory_dt_;
     trajectory_point.position.z += z_step;
-    trajectory_point.heading = sanitizeheading(trajectory_point.heading + _line_trajectory_heading_rate_ * _trajectory_dt_);
+    trajectory_point.heading = trajectory_point.heading + _line_trajectory_heading_rate_ * _trajectory_dt_;
 
     trajectory.points.push_back(trajectory_point);
   }

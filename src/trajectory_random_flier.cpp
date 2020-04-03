@@ -4,18 +4,16 @@
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 
-// some std includes
 #include <stdio.h>
 #include <stdlib.h>
 
-// mutexes are good to keep your shared variables our of trouble
-#include <mutex>
-
-#include <nav_msgs/Odometry.h>
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/TrajectoryReferenceSrv.h>
+#include <mrs_msgs/PositionCommand.h>
 
 #include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/subscribe_handler.h>
+#include <mrs_lib/msg_extractor.h>
 
 #include <std_srvs/Trigger.h>
 
@@ -36,13 +34,12 @@ public:
 private:
   bool is_initialized_ = false;
 
-  void   callbackControlCmd(const nav_msgs::OdometryConstPtr& msg);
   bool   callbackActivate([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
   void   timerMain(const ros::TimerEvent& event);
   double randd(double from, double to);
   bool   setTrajectorySrv(const mrs_msgs::TrajectoryReference trajectory);
 
-  ros::Subscriber subscriber_control_cmd_;
+  mrs_lib::SubscribeHandlerPtr<mrs_msgs::PositionCommand> sh_position_cmd_;
 
   ros::Publisher publisher_goto_;
 
@@ -64,10 +61,6 @@ private:
   bool   _randomize_distance_ = false;
 
   bool active_ = true;
-
-  nav_msgs::Odometry control_cmd_;
-  std::mutex         mutex_control_cmd_;
-  bool               got_control_cmd_ = false;
 
   ros::Time last_successfull_command_;
 };
@@ -100,7 +93,9 @@ void TrajectoryRandomFlier::onInit(void) {
     ros::shutdown();
   }
 
-  subscriber_control_cmd_ = nh_.subscribe("control_cmd_in", 1, &TrajectoryRandomFlier::callbackControlCmd, this, ros::TransportHints().tcpNoDelay());
+  mrs_lib::SubscribeMgr subscriber_manager(nh_);
+
+  sh_position_cmd_ = subscriber_manager.create_handler<mrs_msgs::PositionCommand>("position_command_in", true, true, 10, ros::TransportHints().tcpNoDelay());
 
   service_server_activate_   = nh_.advertiseService("activate_in", &TrajectoryRandomFlier::callbackActivate, this);
   service_client_trajectory_ = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
@@ -123,25 +118,6 @@ void TrajectoryRandomFlier::onInit(void) {
 //}
 
 // | ------------------------ callbacks ----------------------- |
-
-/* callbackControlCmd() //{ */
-
-void TrajectoryRandomFlier::callbackControlCmd(const nav_msgs::OdometryConstPtr& msg) {
-
-  if (!is_initialized_) {
-    return;
-  }
-
-  std::scoped_lock lock(mutex_control_cmd_);
-
-  control_cmd_ = *msg;
-
-  got_control_cmd_ = true;
-
-  ROS_INFO_ONCE("[TrajectoryRandomFlier]: getting control_cmd_");
-}
-
-//}
 
 /* callbackActivate() //{ */
 
@@ -177,77 +153,74 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
     return;
   }
 
-  if (!got_control_cmd_) {
+  if (!sh_position_cmd_->has_data()) {
 
-    ROS_INFO_THROTTLE(1.0, "waiting for data");
+    ROS_INFO_THROTTLE(1.0, "waiting for PositionCommand");
     return;
   }
 
-  // keeps ros in the loop
-  {
-    std::scoped_lock lock(mutex_control_cmd_);
+  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_->get_data());
+  auto [cmd_x, cmd_y, cmd_z, cmd_heading]      = mrs_lib::getPose(sh_position_cmd_->get_data());
 
-    // if the uav reached the previousy set destination
-    if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(control_cmd_.twist.twist.linear.x) < 0.01 &&
-        fabs(control_cmd_.twist.twist.linear.y) < 0.01) {
+  // if the uav reached the previousy set destination
+  if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(cmd_speed_x) < 0.01 && fabs(cmd_speed_y) < 0.01) {
 
-      // create new point to fly to
-      mrs_msgs::TrajectoryReference trajectory;
-      trajectory.fly_now     = true;
-      trajectory.dt          = _trajectory_dt_;
-      trajectory.use_heading = false;
+    // create new point to fly to
+    mrs_msgs::TrajectoryReference trajectory;
+    trajectory.fly_now     = true;
+    trajectory.dt          = _trajectory_dt_;
+    trajectory.use_heading = false;
 
-      double dist, direction;
+    double dist, direction;
 
-      if (_randomize_distance_) {
-        dist = randd(0, _max_distance_);
-      } else {
-        dist = _max_distance_;
+    if (_randomize_distance_) {
+      dist = randd(0, _max_distance_);
+    } else {
+      dist = _max_distance_;
+    }
+
+    direction = randd(-M_PI, M_PI);
+
+    int n_points = (dist / _speed_) / _trajectory_dt_;
+
+    double speed        = 0;
+    double acceleration = 0;
+    double pos_x        = cmd_x;
+    double pos_y        = cmd_y;
+
+    ROS_INFO("[TrajectoryRandomFlier]: pos_x: %.2f, pos_y: %.2f", pos_x, pos_y);
+
+    for (int it = 0; it < n_points; it++) {
+
+      acceleration += (_jerk_ * _trajectory_dt_);
+
+      if (acceleration >= _acceleration_) {
+        acceleration = _acceleration_;
       }
 
-      direction = randd(-M_PI, M_PI);
+      speed += (acceleration * _trajectory_dt_);
 
-      int n_points = (dist / _speed_) / _trajectory_dt_;
-
-      double speed        = 0;
-      double acceleration = 0;
-      double pos_x        = control_cmd_.pose.pose.position.x;
-      double pos_y        = control_cmd_.pose.pose.position.y;
-
-      ROS_INFO("[TrajectoryRandomFlier]: pos_x: %.2f, pos_y: %.2f", pos_x, pos_y);
-
-      for (int it = 0; it < n_points; it++) {
-
-        acceleration += (_jerk_ * _trajectory_dt_);
-
-        if (acceleration >= _acceleration_) {
-          acceleration = _acceleration_;
-        }
-
-        speed += (acceleration * _trajectory_dt_);
-
-        if (speed >= _speed_) {
-          speed = _speed_;
-        }
-
-        pos_x += cos(direction) * (speed * _trajectory_dt_);
-        pos_y += sin(direction) * (speed * _trajectory_dt_);
-
-        mrs_msgs::Reference new_point;
-        new_point.position.x = pos_x;
-        new_point.position.y = pos_y;
-        new_point.position.z = _height_;
-        new_point.heading    = 0;
-
-        trajectory.points.push_back(new_point);
+      if (speed >= _speed_) {
+        speed = _speed_;
       }
 
-      if (setTrajectorySrv(trajectory)) {
+      pos_x += cos(direction) * (speed * _trajectory_dt_);
+      pos_y += sin(direction) * (speed * _trajectory_dt_);
 
-        ROS_INFO("[TrajectoryRandomFlier]: trajectory set");
+      mrs_msgs::Reference new_point;
+      new_point.position.x = pos_x;
+      new_point.position.y = pos_y;
+      new_point.position.z = _height_;
+      new_point.heading    = 0;
 
-        last_successfull_command_ = ros::Time::now();
-      }
+      trajectory.points.push_back(new_point);
+    }
+
+    if (setTrajectorySrv(trajectory)) {
+
+      ROS_INFO("[TrajectoryRandomFlier]: trajectory set");
+
+      last_successfull_command_ = ros::Time::now();
     }
   }
 }
