@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="name" default="default" />
+  <arg name="name" default="default_simulation" />
 
   <group>
 
