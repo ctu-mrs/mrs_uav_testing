@@ -21,7 +21,7 @@ windows:
   - rviz:
       layout: even-vertical
       panes:
-        - waitForControl; roslaunch mrs_testing rviz_avoidance.launch
+        - waitForControl; roslaunch mrs_testing rviz.launch name:=avoidance_test
         - waitForControl; roslaunch mrs_testing tf_connector_avoidance.launch
   - spawn:
       layout: even-vertical

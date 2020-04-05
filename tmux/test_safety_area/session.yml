@@ -11,11 +11,12 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch mrs_testing safety_area.launch gui:=true
+        - waitForRos; roslaunch mrs_testing simulation.launch gui:=true world_name:=safety_area
   - rviz:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch mrs_testing rviz_uav1_safety_area.launch
+        - waitForRos; roslaunch mrs_testing rviz.launch name:=safety_area_test
+        - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
       layout: even-vertical
       panes:
@@ -35,9 +36,9 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml WORLD_FILE:=./world.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml WORLD_FILE:=./world.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
         - waitForOdometry; roslaunch mrs_testing random_flier.launch
-        # - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch
+        # - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch custom_config:=./custom_configs/trajectory_random_flier.yaml
   - autostart:
       layout: even-vertical
       panes:

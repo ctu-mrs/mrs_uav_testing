@@ -15,7 +15,7 @@ windows:
   - rviz:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch mrs_testing rviz_control_test.launch
+        - waitForRos; roslaunch mrs_testing rviz.launch name:=control_test
         - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
       layout: even-vertical
