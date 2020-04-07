@@ -361,7 +361,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     return;
   }
 
-  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_->get_data());
 
   std::string active_tracker_name = sh_control_manager_diag_->get_data()->active_tracker;
 
@@ -564,7 +564,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case TRAJECTORY_CIRCLE_LOOP: {
 
-      auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_->get_data());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > _looping_circle_duration_) {
         if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
@@ -595,7 +595,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case TRAJECTORY_CIRCLE_POST_PAUSE: {
 
-      auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_->get_data());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > 20.0) {
         if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
@@ -671,7 +671,23 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (current_state_ >= SET_REFERENCE_TOPIC_STATE) {
 
-    auto [cmd_x, cmd_y, cmd_z, cmd_heading] = mrs_lib::getPose(sh_position_cmd_->get_data());
+    auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_->get_data());
+
+    double cmd_heading = 0;
+    try {
+      cmd_heading = mrs_lib::getHeading(sh_position_cmd_->get_data());
+    }
+    catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
+      ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
+    }
+
+    double odom_heading = 0;
+    try {
+      odom_heading = mrs_lib::getHeading(sh_odometry_->get_data());
+    }
+    catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
+      ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
+    }
 
     ROS_INFO_THROTTLE(5.0, " ");
     ROS_INFO_THROTTLE(5.0, "[ControlTest]: desired: %.2f %.2f %.2f %.2f", des_x_, des_y_, des_z_, des_heading_);
@@ -691,7 +707,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
 void ControlTest::changeState(const ControlState_t new_state) {
 
-  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_->get_data());
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state_], state_names[new_state]);
 
@@ -714,7 +730,16 @@ void ControlTest::changeState(const ControlState_t new_state) {
   double cmd_x, cmd_y, cmd_z, cmd_heading;
 
   if (current_state_ > TAKEOFF_STATE) {
-    std::tie(cmd_x, cmd_y, cmd_z, cmd_heading) = mrs_lib::getPose(sh_position_cmd_->get_data());
+
+    std::tie(cmd_x, cmd_y, cmd_z) = mrs_lib::getPosition(sh_position_cmd_->get_data());
+
+    try {
+      cmd_heading = mrs_lib::getHeading(sh_position_cmd_->get_data());
+    }
+    catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
+      ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
+      cmd_heading = 0;
+    }
   }
 
   switch (new_state) {
@@ -1278,7 +1303,16 @@ double ControlTest::genZ(void) {
 
 bool ControlTest::inDesiredState(void) {
 
-  auto [odom_x, odom_y, odom_z, odom_heading] = mrs_lib::getPose(sh_odometry_->get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_->get_data());
+
+  double odom_heading = 0;
+  try {
+    odom_heading = mrs_lib::getHeading(sh_odometry_->get_data());
+  }
+  catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
+    ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
+    return false;
+  }
 
   if (isStationary() && mrs_lib::dist3d(odom_x, odom_y, odom_z, des_x_, des_y_, des_z_) < 0.20 && mrs_lib::angleBetween(odom_heading, des_heading_) < 0.20) {
 

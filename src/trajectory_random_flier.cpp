@@ -160,7 +160,7 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
   }
 
   auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_->get_data());
-  auto [cmd_x, cmd_y, cmd_z, cmd_heading]      = mrs_lib::getPose(sh_position_cmd_->get_data());
+  auto [cmd_x, cmd_y, cmd_z]                   = mrs_lib::getPosition(sh_position_cmd_->get_data());
 
   // if the uav reached the previousy set destination
   if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(cmd_speed_x) < 0.01 && fabs(cmd_speed_y) < 0.01) {
