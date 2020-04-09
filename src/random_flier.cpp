@@ -36,7 +36,7 @@ private:
   void   timerMain(const ros::TimerEvent& event);
   double randd(double from, double to);
 
-  mrs_lib::SubscribeHandlerPtr<mrs_msgs::PositionCommand> sh_position_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand> sh_position_cmd_;
 
   ros::ServiceServer service_server_activate_;
 
@@ -80,9 +80,15 @@ void RandomFlier::onInit(void) {
     ros::shutdown();
   }
 
-  mrs_lib::SubscribeMgr subscriber_manager(nh_);
+  const std::string node_name  = "RandomFlier";
+  const bool        threadsafe = true;
 
-  sh_position_cmd_ = subscriber_manager.create_handler<mrs_msgs::PositionCommand>("position_command_in", true, true, 10, ros::TransportHints().tcpNoDelay());
+  mrs_lib::SubscribeHandlerOptions shopts{
+      .nh = nh_, .node_name = node_name, .topic_name = "pes", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
+
+
+  shopts.topic_name = "position_command_in";
+  sh_position_cmd_  = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts);
 
   service_server_activate_  = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
   service_client_reference_ = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("reference_out");
@@ -140,14 +146,14 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     return;
   }
 
-  if (!sh_position_cmd_->has_data()) {
+  if (!sh_position_cmd_.has_data()) {
 
     ROS_INFO_THROTTLE(1.0, "[RandomFlier]: waiting for PositionCommand");
     return;
   }
 
-  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_->get_data());
-  auto [cmd_x, cmd_y, cmd_z]                   = mrs_lib::getPosition(sh_position_cmd_->get_data());
+  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_.get_data());
+  auto [cmd_x, cmd_y, cmd_z]                   = mrs_lib::getPosition(sh_position_cmd_.get_data());
 
   // if the uav reach the previousy set destination
   if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(cmd_speed_x) < 0.01 && fabs(cmd_speed_y) < 0.01) {
