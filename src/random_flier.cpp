@@ -80,15 +80,9 @@ void RandomFlier::onInit(void) {
     ros::shutdown();
   }
 
-  const std::string node_name  = "RandomFlier";
-  const bool        threadsafe = true;
+  mrs_lib::SubscribeHandlerOptions shopts{.nh = nh_, .node_name = "RandomFlier", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
 
-  mrs_lib::SubscribeHandlerOptions shopts{
-      .nh = nh_, .node_name = node_name, .topic_name = "pes", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
-
-
-  shopts.topic_name = "position_command_in";
-  sh_position_cmd_  = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts);
+  sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts, "position_command_in");
 
   service_server_activate_  = nh_.advertiseService("activate_in", &RandomFlier::callbackActivate, this);
   service_client_reference_ = nh_.serviceClient<mrs_msgs::ReferenceStampedSrv>("reference_out");

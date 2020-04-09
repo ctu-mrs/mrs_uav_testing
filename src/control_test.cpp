@@ -288,17 +288,13 @@ void ControlTest::onInit() {
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandlerOptions shopts{
-      .nh = nh_, .node_name = "ControlTest", .topic_name = "pes", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
+  mrs_lib::SubscribeHandlerOptions shopts{.nh = nh_, .node_name = "ControlTest", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
 
-  shopts.topic_name = "odometry_in";
-  sh_odometry_      = mrs_lib::SubscribeHandler<nav_msgs::Odometry>(shopts);
+  sh_odometry_ = mrs_lib::SubscribeHandler<nav_msgs::Odometry>(shopts, "odometry_in");
 
-  shopts.topic_name = "position_command_in";
-  sh_position_cmd_  = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts);
+  sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts, "position_command_in");
 
-  shopts.topic_name        = "control_manager_diagnostics_in";
-  sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts);
+  sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts, "control_manager_diagnostics_in");
 
   // | ------------------- std tracker topics ------------------- |
 
