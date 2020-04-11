@@ -288,7 +288,12 @@ void ControlTest::onInit() {
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandlerOptions shopts{.nh = nh_, .node_name = "ControlTest", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
+  mrs_lib::SubscribeHandlerOptions shopts;
+  shopts.nh                 = nh_;
+  shopts.node_name          = "ControlTest";
+  shopts.no_message_timeout = mrs_lib::no_timeout;
+  shopts.threadsafe         = true;
+  shopts.transport_hints    = ros::TransportHints().tcpNoDelay();
 
   sh_odometry_ = mrs_lib::SubscribeHandler<nav_msgs::Odometry>(shopts, "odometry_in");
 
@@ -352,19 +357,19 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   if (!is_initialized_)
     return;
 
-  if (!sh_odometry_.has_data()) {
+  if (!sh_odometry_.hasMsg()) {
     ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the Odometry");
     return;
   }
 
-  if (!sh_control_manager_diag_.has_data()) {
+  if (!sh_control_manager_diag_.hasMsg()) {
     ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the ControlManager diagnostics");
     return;
   }
 
-  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.getMsg());
 
-  std::string active_tracker_name = sh_control_manager_diag_.get_data()->active_tracker;
+  std::string active_tracker_name = sh_control_manager_diag_.getMsg()->active_tracker;
 
   if ((ros::Time::now() - timeout_).toSec() > 180.0) {
     ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
@@ -565,7 +570,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case TRAJECTORY_CIRCLE_LOOP: {
 
-      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.get_data());
+      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > _looping_circle_duration_) {
         if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
@@ -596,7 +601,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case TRAJECTORY_CIRCLE_POST_PAUSE: {
 
-      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.get_data());
+      auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > 20.0) {
         if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
@@ -672,11 +677,11 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
   if (current_state_ >= SET_REFERENCE_TOPIC_STATE) {
 
-    auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.get_data());
+    auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
     double cmd_heading = 0;
     try {
-      cmd_heading = mrs_lib::getHeading(sh_position_cmd_.get_data());
+      cmd_heading = mrs_lib::getHeading(sh_position_cmd_.getMsg());
     }
     catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
       ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
@@ -684,7 +689,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     double odom_heading = 0;
     try {
-      odom_heading = mrs_lib::getHeading(sh_odometry_.get_data());
+      odom_heading = mrs_lib::getHeading(sh_odometry_.getMsg());
     }
     catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
       ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
@@ -708,7 +713,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
 void ControlTest::changeState(const ControlState_t new_state) {
 
-  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.getMsg());
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state_], state_names[new_state]);
 
@@ -732,10 +737,10 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
   if (current_state_ > TAKEOFF_STATE) {
 
-    std::tie(cmd_x, cmd_y, cmd_z) = mrs_lib::getPosition(sh_position_cmd_.get_data());
+    std::tie(cmd_x, cmd_y, cmd_z) = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
     try {
-      cmd_heading = mrs_lib::getHeading(sh_position_cmd_.get_data());
+      cmd_heading = mrs_lib::getHeading(sh_position_cmd_.getMsg());
     }
     catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
       ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
@@ -1304,11 +1309,11 @@ double ControlTest::genZ(void) {
 
 bool ControlTest::inDesiredState(void) {
 
-  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.get_data());
+  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.getMsg());
 
   double odom_heading = 0;
   try {
-    odom_heading = mrs_lib::getHeading(sh_odometry_.get_data());
+    odom_heading = mrs_lib::getHeading(sh_odometry_.getMsg());
   }
   catch (mrs_lib::AttitudeConverter::GetHeadingException e) {
     ROS_ERROR_THROTTLE(1.0, "[ControlTest]: exception caught: '%s'", e.what());
@@ -1317,7 +1322,7 @@ bool ControlTest::inDesiredState(void) {
 
   if (isStationary() && mrs_lib::dist3d(odom_x, odom_y, odom_z, des_x_, des_y_, des_z_) < 0.20 && mrs_lib::angleBetween(odom_heading, des_heading_) < 0.20) {
 
-    ROS_WARN("[ControlTest]: the goal has been reached.");
+    ROS_WARN_THROTTLE(1.0, "[ControlTest]: the goal has been reached.");
     return true;
   }
 
@@ -1330,12 +1335,12 @@ bool ControlTest::inDesiredState(void) {
 
 bool ControlTest::isStationary(void) {
 
-  nav_msgs::OdometryConstPtr odometry = sh_odometry_.get_data();
+  nav_msgs::OdometryConstPtr odometry = sh_odometry_.getMsg();
 
   if (abs(odometry->twist.twist.linear.x) < 0.2 && abs(odometry->twist.twist.linear.y) < 0.2 && abs(odometry->twist.twist.linear.z) < 0.2 &&
       abs(odometry->twist.twist.angular.z) < 0.2) {
 
-    ROS_WARN_THROTTLE(1.0, "[ControlTest]: the UAV is statinary");
+    ROS_WARN_THROTTLE(1.0, "[ControlTest]: the UAV is stationary");
     return true;
   }
 
@@ -1348,7 +1353,7 @@ bool ControlTest::isStationary(void) {
 
 bool ControlTest::trackerReady(void) {
 
-  mrs_msgs::TrackerStatus status = sh_control_manager_diag_.get_data()->tracker_status;
+  mrs_msgs::TrackerStatus status = sh_control_manager_diag_.getMsg()->tracker_status;
 
   return status.active && status.callbacks_enabled && !status.have_goal;
 }

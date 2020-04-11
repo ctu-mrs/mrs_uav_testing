@@ -93,8 +93,11 @@ void TrajectoryRandomFlier::onInit(void) {
     ros::shutdown();
   }
 
-  mrs_lib::SubscribeHandlerOptions shopts{.nh = nh_, .node_name = "TrajectoryRandomFlier", .no_message_timeout = mrs_lib::no_timeout, .threadsafe = true};
-
+  mrs_lib::SubscribeHandlerOptions shopts;
+  shopts.nh                 = nh_;
+  shopts.node_name          = "TrajectoryRandomFlier";
+  shopts.no_message_timeout = mrs_lib::no_timeout;
+  shopts.threadsafe         = true;
 
   sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts, "position_command_in");
 
@@ -154,14 +157,14 @@ void TrajectoryRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& ev
     return;
   }
 
-  if (!sh_position_cmd_.has_data()) {
+  if (!sh_position_cmd_.hasMsg()) {
 
     ROS_INFO_THROTTLE(1.0, "waiting for PositionCommand");
     return;
   }
 
-  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_.get_data());
-  auto [cmd_x, cmd_y, cmd_z]                   = mrs_lib::getPosition(sh_position_cmd_.get_data());
+  auto [cmd_speed_x, cmd_speed_y, cmd_speed_z] = mrs_lib::getVelocity(sh_position_cmd_.getMsg());
+  auto [cmd_x, cmd_y, cmd_z]                   = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
   // if the uav reached the previousy set destination
   if ((ros::Time::now() - last_successfull_command_).toSec() > 1.0 && fabs(cmd_speed_x) < 0.01 && fabs(cmd_speed_y) < 0.01) {
