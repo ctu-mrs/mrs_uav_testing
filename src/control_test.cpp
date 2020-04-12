@@ -31,7 +31,7 @@
 
 #include <tf/transform_datatypes.h>
 
-#include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/param_loader.h>
 
 //}
 
@@ -255,30 +255,30 @@ void ControlTest::onInit() {
 
   mrs_lib::ParamLoader param_loader(nh_, "ControlTest");
 
-  param_loader.load_param("max_xy", _max_xy_);
-  param_loader.load_param("min_xy", _min_xy_);
-  param_loader.load_param("max_z", _max_z_);
-  param_loader.load_param("min_z", _min_z_);
-  param_loader.load_param("max_heading", _max_heading_);
-  param_loader.load_param("min_heading", _min_heading_);
-  param_loader.load_param("goto_relative_altitude_down", _goto_relative_altitude_down_);
-  param_loader.load_param("goto_relative_altitude_up", _goto_relative_altitude_up_);
+  param_loader.loadParam("max_xy", _max_xy_);
+  param_loader.loadParam("min_xy", _min_xy_);
+  param_loader.loadParam("max_z", _max_z_);
+  param_loader.loadParam("min_z", _min_z_);
+  param_loader.loadParam("max_heading", _max_heading_);
+  param_loader.loadParam("min_heading", _min_heading_);
+  param_loader.loadParam("goto_relative_altitude_down", _goto_relative_altitude_down_);
+  param_loader.loadParam("goto_relative_altitude_up", _goto_relative_altitude_up_);
 
-  param_loader.load_param("trajectory_dt", _trajectory_dt_);
+  param_loader.loadParam("trajectory_dt", _trajectory_dt_);
 
-  param_loader.load_param("line_trajectory/p1", _line_trajectory_p1_);
-  param_loader.load_param("line_trajectory/p2", _line_trajectory_p2_);
-  param_loader.load_param("line_trajectory/speed", _line_trajectory_speed_);
-  param_loader.load_param("line_trajectory/heading_rate", _line_trajectory_heading_rate_);
+  param_loader.loadParam("line_trajectory/p1", _line_trajectory_p1_);
+  param_loader.loadParam("line_trajectory/p2", _line_trajectory_p2_);
+  param_loader.loadParam("line_trajectory/speed", _line_trajectory_speed_);
+  param_loader.loadParam("line_trajectory/heading_rate", _line_trajectory_heading_rate_);
 
-  param_loader.load_param("looping_circle_trajectory/radius", _looping_circle_radius_);
-  param_loader.load_param("looping_circle_trajectory/speed", _looping_circle_speed_);
-  param_loader.load_param("looping_circle_trajectory/duration", _looping_circle_duration_);
+  param_loader.loadParam("looping_circle_trajectory/radius", _looping_circle_radius_);
+  param_loader.loadParam("looping_circle_trajectory/speed", _looping_circle_speed_);
+  param_loader.loadParam("looping_circle_trajectory/duration", _looping_circle_duration_);
 
-  param_loader.load_param("test_line_tracker", _test_line_tracker_);
-  param_loader.load_param("test_mpc_gotos", _test_mpc_gotos_);
+  param_loader.loadParam("test_line_tracker", _test_line_tracker_);
+  param_loader.loadParam("test_mpc_gotos", _test_mpc_gotos_);
 
-  if (!param_loader.loaded_successfully()) {
+  if (!param_loader.loadedSuccessfully()) {
     ros::shutdown();
   }
 

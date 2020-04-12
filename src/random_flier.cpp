@@ -10,7 +10,7 @@
 #include <mrs_msgs/ReferenceStampedSrv.h>
 #include <std_srvs/Trigger.h>
 
-#include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/param_loader.h>
 #include <mrs_lib/subscribe_handler.h>
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/msg_extractor.h>
@@ -69,13 +69,13 @@ void RandomFlier::onInit(void) {
   mrs_lib::ParamLoader param_loader(nh_, "RandomFlier");
 
   // load parameters from config file
-  param_loader.load_param("main_timer_rate", _main_timer_rate_);
-  param_loader.load_param("height", _height_);
-  param_loader.load_param("active", active_);
-  param_loader.load_param("randomize_distance", _randomize_distance_);
-  param_loader.load_param("max_distance", _max_distance_);
+  param_loader.loadParam("main_timer_rate", _main_timer_rate_);
+  param_loader.loadParam("height", _height_);
+  param_loader.loadParam("active", active_);
+  param_loader.loadParam("randomize_distance", _randomize_distance_);
+  param_loader.loadParam("max_distance", _max_distance_);
 
-  if (!param_loader.loaded_successfully()) {
+  if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[RandomFlier]: Could not load all parameters!");
     ros::shutdown();
   }

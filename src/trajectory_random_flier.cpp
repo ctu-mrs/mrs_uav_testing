@@ -11,7 +11,7 @@
 #include <mrs_msgs/TrajectoryReferenceSrv.h>
 #include <mrs_msgs/PositionCommand.h>
 
-#include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/param_loader.h>
 #include <mrs_lib/subscribe_handler.h>
 #include <mrs_lib/msg_extractor.h>
 
@@ -78,17 +78,17 @@ void TrajectoryRandomFlier::onInit(void) {
   mrs_lib::ParamLoader param_loader(nh_, "TrajectoryRandomFlier");
 
   // load parameters from config file
-  param_loader.load_param("main_timer_rate", _main_timer_rate_);
-  param_loader.load_param("height", _height_);
-  param_loader.load_param("active", active_);
-  param_loader.load_param("randomize_distance", _randomize_distance_);
-  param_loader.load_param("speed", _speed_);
-  param_loader.load_param("acceleration", _acceleration_);
-  param_loader.load_param("jerk", _jerk_);
-  param_loader.load_param("max_distance", _max_distance_);
-  param_loader.load_param("trajectory_dt", _trajectory_dt_);
+  param_loader.loadParam("main_timer_rate", _main_timer_rate_);
+  param_loader.loadParam("height", _height_);
+  param_loader.loadParam("active", active_);
+  param_loader.loadParam("randomize_distance", _randomize_distance_);
+  param_loader.loadParam("speed", _speed_);
+  param_loader.loadParam("acceleration", _acceleration_);
+  param_loader.loadParam("jerk", _jerk_);
+  param_loader.loadParam("max_distance", _max_distance_);
+  param_loader.loadParam("trajectory_dt", _trajectory_dt_);
 
-  if (!param_loader.loaded_successfully()) {
+  if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[TrajectoryRandomFlier]: Could not load all parameters!");
     ros::shutdown();
   }
