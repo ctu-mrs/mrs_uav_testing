@@ -4,36 +4,36 @@ pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps
 startup_window: control_test
 windows:
   - roscore:
-      layout: even-vertical
+      layout: tiled
       panes:
         - roscore
   - gazebo:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForRos; roslaunch simulation simulation.launch gui:=true
   - rviz:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForRos; roslaunch mrs_testing rviz.launch name:=control_test
         - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForSimulation; spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-bluefox-camera
   - status:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForOdometry; roslaunch mrs_status status.launch
   - control:
-      layout: even-vertical
+      layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./custom_configs/uav_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
   - control_test:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForControl; roslaunch mrs_testing control_test.launch
   - gazebo_camera_follow:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
         - waitForOdometry; ~/.i3/layout_manager.sh layout.json

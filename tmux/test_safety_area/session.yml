@@ -5,46 +5,49 @@ pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps
 startup_window: control
 windows:
   - roscore:
-      layout: even-vertical
+      layout: tiled
       panes:
         - roscore
   - gazebo:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForRos; roslaunch mrs_testing simulation.launch gui:=true world_name:=safety_area
   - rviz:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForRos; roslaunch mrs_testing rviz.launch name:=safety_area_test
         - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForSimulation; spawn --file pos.txt --$UAV_TYPE --run --delete --enable-rangefinder --enable-bluefox-camera
   - status:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForOdometry; roslaunch mrs_status status.launch
   - bumper:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForOdometry; roslaunch mrs_bumper bumper.launch
   - rviz_interface:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForControl; waitForControl; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
   - control:
-      layout: even-vertical
+      layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml WORLD_FILE:=./world.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
-        - waitForOdometry; roslaunch mrs_testing random_flier.launch
-        # - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch custom_config:=./custom_configs/trajectory_random_flier.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch DEBUG:=false config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml WORLD_FILE:=./world.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
+  - random_flier:
+      layout: tiled
+      panes:
+        # - waitForOdometry; roslaunch mrs_testing random_flier.launch
+        - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch custom_config:=./custom_configs/trajectory_random_flier.yaml
   - autostart:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForRos; roslaunch mrs_general automatic_start.launch
   - takeoff:
-      layout: even-vertical
+      layout: tiled
       panes:
         #{ uav1
         - 'waitForControl;
@@ -52,7 +55,7 @@ windows:
           rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         #}
   - gazebo_camera_follow:
-      layout: even-vertical
+      layout: tiled
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
         - waitForControl; sleep 3; ~/.i3/layout_manager.sh layout.json

@@ -1,8 +1,7 @@
 name: simulation
 root: ./
-
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow
-startup_window: control
+startup_window: control_test
 windows:
   - roscore:
       layout: even-vertical
@@ -32,7 +31,7 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch config_uav_manager:=./custom_configs/uav_manager.yaml
+        - waitForOdometry; roslaunch mrs_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml
   - control_test:
       layout: even-vertical
       panes:
