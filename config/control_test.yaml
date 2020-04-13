@@ -1,7 +1,7 @@
 max_xy: 10.0 # [m]
 min_xy: -10.0 # [m]
 
-min_z: 2.0 # [m]
+min_z: 4.0 # [m]
 max_z: 6.0 # [m]
 
 max_heading: 3.14 # [rad]

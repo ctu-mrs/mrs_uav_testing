@@ -1217,7 +1217,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       goal_reference_stamped_topic.reference.position.x = 0;
       goal_reference_stamped_topic.reference.position.y = 0;
-      goal_reference_stamped_topic.reference.position.z = 3;
+      goal_reference_stamped_topic.reference.position.z = _min_z_;
       goal_reference_stamped_topic.reference.heading    = 0;
 
       des_x_       = goal_reference_stamped_topic.reference.position.x;
