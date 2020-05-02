@@ -10,7 +10,7 @@ windows:
   - gazebo:
       layout: tiled
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=true
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true
   - rviz:
       layout: tiled
       panes:
@@ -19,7 +19,7 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-bluefox-camera
+        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-bluefox-camera
   - status:
       layout: tiled
       panes:
