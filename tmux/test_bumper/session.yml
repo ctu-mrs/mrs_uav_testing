@@ -14,8 +14,8 @@ windows:
   - rviz:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mrs_uav_testing rviz.launch name:=bumper_test
-        - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
+        - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=bumper_test
+        - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
       layout: tiled
       panes:
@@ -44,7 +44,7 @@ windows:
   - autostart:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
+        - waitForSimulation; roslaunch mrs_uav_general automatic_start.launch
   - takeoff:
       layout: tiled
       panes:
