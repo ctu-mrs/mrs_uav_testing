@@ -10,7 +10,7 @@ windows:
   - gazebo:
       layout: tiled
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=true world_name:=forest
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true world_name:=forest
   - rviz:
       layout: tiled
       panes:

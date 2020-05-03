@@ -10,7 +10,7 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=true
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true
   - rviz:
       layout: even-vertical
       panes:
@@ -23,7 +23,7 @@ windows:
   - status:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_status status.launch
+        - waitForOdometry; roslaunch mrs_uav_status status.launch
   - optic_flow:
       layout: even-vertical
       panes:

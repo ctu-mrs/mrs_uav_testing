@@ -24,7 +24,7 @@ windows:
   - status:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_status status.launch
+        - waitForOdometry; roslaunch mrs_uav_status status.launch
   - bumper:
       layout: tiled
       panes:

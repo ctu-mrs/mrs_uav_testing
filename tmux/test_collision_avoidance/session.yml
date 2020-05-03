@@ -10,13 +10,13 @@ windows:
   - gazebo:
       layout: tiled
       panes:
-        - waitForRos; roslaunch simulation simulation.launch gui:=false
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=false
   - status:
       layout: tiled
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch mrs_status status.launch
-        - export UAV_NAME=uav2; waitForRos; roslaunch mrs_status status.launch
-        - export UAV_NAME=uav3; waitForRos; roslaunch mrs_status status.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch mrs_uav_status status.launch
+        - export UAV_NAME=uav2; waitForRos; roslaunch mrs_uav_status status.launch
+        - export UAV_NAME=uav3; waitForRos; roslaunch mrs_uav_status status.launch
   - rviz:
       layout: tiled
       panes:
