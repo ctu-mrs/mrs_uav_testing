@@ -18,7 +18,7 @@ pre_input="export UAV_NAME=$UAV_NAME"
 # define commands
 # 'name' 'command'
 input=(
-  'Rviz' "waitForRos; roscd mrs_testing; ${SCRIPT_PATH}/change_uav_control.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/remote_log.rviz
+  'Rviz' "waitForRos; roscd mrs_uav_testing; ${SCRIPT_PATH}/change_uav_control.sh $UAV_NAME; rosrun rviz rviz -d ${SCRIPT_PATH}/../rviz/remote_log.rviz
 "
   'Layout' "waitForRos; sleep 2; ~/.i3/layout_manager.sh ${SCRIPT_PATH}/../layouts/remote_log.json
 "

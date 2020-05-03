@@ -35,7 +35,7 @@
 
 //}
 
-namespace mrs_testing
+namespace mrs_uav_testing
 {
 
 /* //{ state machine states */
@@ -1686,7 +1686,7 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
 //}
 
-}  // namespace mrs_testing
+}  // namespace mrs_uav_testing
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_testing::ControlTest, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(mrs_uav_testing::ControlTest, nodelet::Nodelet)

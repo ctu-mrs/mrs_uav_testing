@@ -14,7 +14,7 @@ windows:
   - rviz:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mrs_testing rviz.launch name:=bumper_test
+        - waitForRos; roslaunch mrs_uav_testing rviz.launch name:=bumper_test
         - waitForRos; roslaunch mrs_rviz_plugins load_robot.launch
   - spawn:
       layout: tiled
@@ -23,7 +23,7 @@ windows:
   - status:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_status status.launch
+        - waitForOdometry; roslaunch mrs_uav_status status.launch
   - bumper:
       layout: tiled
       panes:
@@ -31,20 +31,20 @@ windows:
   - joystick:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_general logitech_joystick.launch
+        - waitForOdometry; roslaunch mrs_uav_general logitech_joystick.launch
   - control:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_general core.launch DEBUG:=false config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml
+        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_control_manager:=./custom_configs/control_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml
   - random_flier:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_testing random_flier.launch
-        # - waitForOdometry; roslaunch mrs_testing trajectory_random_flier.launch
+        - waitForOdometry; roslaunch mrs_uav_testing random_flier.launch
+        # - waitForOdometry; roslaunch mrs_uav_testing trajectory_random_flier.launch
   - autostart:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mrs_general automatic_start.launch
+        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
   - takeoff:
       layout: tiled
       panes:

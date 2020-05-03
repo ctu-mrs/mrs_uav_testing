@@ -5,9 +5,9 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node name="trajectory_random_flier" pkg="nodelet" type="nodelet" args="standalone mrs_testing/TrajectoryRandomFlier" output="screen" >
+    <node name="trajectory_random_flier" pkg="nodelet" type="nodelet" args="standalone mrs_uav_testing/TrajectoryRandomFlier" output="screen" >
 
-      <rosparam file="$(find mrs_testing)/config/trajectory_random_flier.yaml" />
+      <rosparam file="$(find mrs_uav_testing)/config/trajectory_random_flier.yaml" />
 
       <!-- Load a user param file -->
       <rosparam if="$(eval not arg('custom_config') == '')" file="$(arg custom_config)" />

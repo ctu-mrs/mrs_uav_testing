@@ -10,7 +10,7 @@
   <arg name="physics" default="ode" />
   <arg name="verbose" default="true" />
   <arg name="world_name" default="grass_plane" />
-  <arg name="world_file" default="$(find mrs_testing)/worlds/$(arg world_name).world" />
+  <arg name="world_file" default="$(find mrs_uav_testing)/worlds/$(arg world_name).world" />
 
     <!-- set use_sim_time flag -->
   <group if="$(arg use_sim_time)">

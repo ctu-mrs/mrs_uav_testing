@@ -1,17 +1,17 @@
 <library path="lib/libControlTest">
-  <class name="mrs_testing/ControlTest" type="mrs_testing::ControlTest" base_class_type="nodelet::Nodelet">
+  <class name="mrs_uav_testing/ControlTest" type="mrs_uav_testing::ControlTest" base_class_type="nodelet::Nodelet">
     <description>the ControlTest nodelet</description>
   </class>
 </library>
 
 <library path="lib/libRandomFlier">
-  <class name="mrs_testing/RandomFlier" type="mrs_testing::RandomFlier" base_class_type="nodelet::Nodelet">
+  <class name="mrs_uav_testing/RandomFlier" type="mrs_uav_testing::RandomFlier" base_class_type="nodelet::Nodelet">
     <description>the RandomFlier nodelet</description>
   </class>
 </library>
 
 <library path="lib/libTrajectoryRandomFlier">
-  <class name="mrs_testing/TrajectoryRandomFlier" type="mrs_testing::TrajectoryRandomFlier" base_class_type="nodelet::Nodelet">
+  <class name="mrs_uav_testing/TrajectoryRandomFlier" type="mrs_uav_testing::TrajectoryRandomFlier" base_class_type="nodelet::Nodelet">
     <description>the TrajectoryRandomFlier nodelet</description>
   </class>
 </library>

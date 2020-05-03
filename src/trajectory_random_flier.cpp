@@ -21,7 +21,7 @@
 
 //}
 
-namespace mrs_testing
+namespace mrs_uav_testing
 {
 
 /* class TrajectoryRandomFlier //{ */
@@ -270,7 +270,7 @@ bool TrajectoryRandomFlier::setTrajectorySrv(const mrs_msgs::TrajectoryReference
 
 //}
 
-}  // namespace mrs_testing
+}  // namespace mrs_uav_testing
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_testing::TrajectoryRandomFlier, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(mrs_uav_testing::TrajectoryRandomFlier, nodelet::Nodelet)

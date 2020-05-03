@@ -13,7 +13,7 @@
 
   <node pkg="nodelet" type="nodelet" name="tf_connector_dummy" args="$(arg nodelet) mrs_odometry/TFConnectorDummy $(arg nodelet_manager)" output="screen" launch-prefix="$(arg launch_prefix)">
 
-    <rosparam file="$(find mrs_testing)/config/tf_connector_avoidance.yaml" />
+    <rosparam file="$(find mrs_uav_testing)/config/tf_connector_avoidance.yaml" />
 
     <!-- Subscribers -->
     <remap from="~tf_in" to="/tf" />

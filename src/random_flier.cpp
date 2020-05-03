@@ -19,7 +19,7 @@
 
 //}
 
-namespace mrs_testing
+namespace mrs_uav_testing
 {
 
 /* class RandomFlier //{ */
@@ -224,7 +224,7 @@ double RandomFlier::randd(double from, double to) {
 
 //}
 
-}  // namespace mrs_testing
+}  // namespace mrs_uav_testing
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(mrs_testing::RandomFlier, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(mrs_uav_testing::RandomFlier, nodelet::Nodelet)

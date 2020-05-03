@@ -9,9 +9,9 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_testing/ControlTest" output="screen" launch-prefix="$(arg launch_prefix)">
+    <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_uav_testing/ControlTest" output="screen" launch-prefix="$(arg launch_prefix)">
 
-      <rosparam file="$(find mrs_testing)/config/control_test.yaml" />
+      <rosparam file="$(find mrs_uav_testing)/config/control_test.yaml" />
 
       <!-- Load a user param file -->
       <rosparam if="$(eval not arg('custom_config') == '')" file="$(arg custom_config)" />
