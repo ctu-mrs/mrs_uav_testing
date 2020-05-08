@@ -1,4 +1,4 @@
-# MRS Testing [![Build Status](https://travis-ci.com/ctu-mrs/mrs_uav_testing.svg?branch=master)](https://travis-ci.com/ctu-mrs/mrs_uav_testing)
+# MRS UAV Testing [![Build Status](https://travis-ci.com/ctu-mrs/mrs_uav_testing.svg?branch=master)](https://travis-ci.com/ctu-mrs/mrs_uav_testing)
 
 ![](.fig/mrs_testing.jpg)
 
@@ -7,7 +7,7 @@
 * **gps control test** - series of automated tests of features of the [control manager](https://github.com/ctu-mrs/mrs_uav_managers) and [uav_manager](https://github.com/ctu-mrs/mrs_uav_managers) under GPS localization
 * **optic flow control test** - series of automated tests of features of the [control manager](https://github.com/ctu-mrs/mrs_uav_managers) and [uav_manager](https://github.com/ctu-mrs/mrs_uav_managers) under [optic flow](https://github.com/ctu-mrs/mrs_optic_flow) localization
 * **bumper test** - random walk in a simulated forest, test the bumper feature of the [control manager](https://github.com/ctu-mrs/mrs_uav_managers) and [MRS bumper](https://github.com/ctu-mrs/mrs_bumper)
-* **collision avoidance test** - tests the mutual collision avoidance feature of the [MPC tracker](https://github.com/ctu-mrs/mrs_trackers)
+* **collision avoidance test** - tests the mutual collision avoidance feature of the [MPC tracker](https://github.com/ctu-mrs/mrs_uav_trackers)
 * **safety area test** - tests the safety area feature of the [control manager](https://github.com/ctu-mrs/mrs_uav_managers)
 
 ## How to
