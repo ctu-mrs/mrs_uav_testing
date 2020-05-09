@@ -762,6 +762,8 @@ void ControlTest::changeState(const ControlState_t new_state) {
       goal_bool.request.data = 1;
       service_client_motors_.call(goal_bool);
 
+      wait.sleep();
+
       // | ------------------------- arming ------------------------- |
       goal_mavros_commandbool.request.value = 1;
       service_client_arm_.call(goal_mavros_commandbool);
