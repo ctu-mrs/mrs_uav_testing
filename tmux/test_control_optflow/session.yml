@@ -16,6 +16,7 @@ windows:
       panes:
         - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=control_test
         - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
+        - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
   - spawn:
       layout: even-vertical
       panes:

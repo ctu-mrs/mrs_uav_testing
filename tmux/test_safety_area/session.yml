@@ -17,6 +17,7 @@ windows:
       panes:
         - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=safety_area_test
         - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
+        - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
   - spawn:
       layout: tiled
       panes:
@@ -32,7 +33,7 @@ windows:
   - rviz_interface:
       layout: tiled
       panes:
-        - waitForControl; waitForControl; roslaunch mrs_rviz_interface mrs_rviz_interface.launch
+        - waitForControl; waitForControl; roslaunch mrs_rviz_plugins mrs_rviz_plugins.launch
   - control:
       layout: tiled
       panes:
