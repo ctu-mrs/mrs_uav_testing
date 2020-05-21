@@ -37,10 +37,23 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_odometry:=./custom_configs/odometry.yaml config_control_manager:=./custom_configs/control_manager.yaml
-  - control_test:
-      layout: even-vertical
+  - random_flier:
+      layout: tiled
       panes:
-        - waitForControl; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
+        - waitForOdometry; roslaunch mrs_uav_testing random_flier.launch
+        # - waitForOdometry; roslaunch mrs_uav_testing trajectory_random_flier.launch
+  - autostart:
+      layout: tiled
+      panes:
+        - waitForSimulation; roslaunch mrs_uav_general automatic_start.launch
+  - offboard:
+      layout: tiled
+      panes:
+        #{ uav1
+        - 'waitForControl;
+          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
+        #}
   - gazebo_camera_follow:
       layout: even-vertical
       panes:
