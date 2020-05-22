@@ -39,6 +39,9 @@
       <remap from="~stop_trajectory_tracking_out" to="control_manager/stop_trajectory_tracking" />
       <remap from="~resume_trajectory_tracking_out" to="control_manager/resume_trajectory_tracking" />
 
+        <!-- services in -->
+      <remap from="~start_in" to="automatic_start/start" />
+
         <!-- services and topics combined -->
       <remap from="~trajectory_reference_out" to="control_manager/trajectory_reference" />
       <remap from="~reference_out" to="control_manager/reference" />

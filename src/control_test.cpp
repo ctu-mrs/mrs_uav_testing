@@ -158,6 +158,12 @@ private:
   ros::ServiceClient service_client_resume_trajectory_tracking_;
   ros::ServiceClient service_client_stop_trajectory_tracking_;
 
+  bool callbackStart(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
+
+  // | --------------------- service servers -------------------- |
+
+  ros::ServiceServer service_server_start_;
+
   // | ----------------------- main timer ----------------------- |
 
   ros::Timer timer_main_;
@@ -333,6 +339,10 @@ void ControlTest::onInit() {
   service_client_stop_trajectory_tracking_   = nh_.serviceClient<std_srvs::Trigger>("stop_trajectory_tracking_out");
   service_client_resume_trajectory_tracking_ = nh_.serviceClient<std_srvs::Trigger>("resume_trajectory_tracking_out");
 
+  // | --------------------- service servers -------------------- |
+
+  service_server_start_ = nh_.advertiseService("start_in", &ControlTest::callbackStart, this);
+
   // | ------------------------- timers ------------------------- |
 
   timer_main_ = nh_.createTimer(ros::Rate(10), &ControlTest::timerMain, this);
@@ -346,9 +356,7 @@ void ControlTest::onInit() {
 
 //}
 
-// --------------------------------------------------------------
-// |                           timers                           |
-// --------------------------------------------------------------
+// | ------------------------- timers ------------------------- |
 
 /* //{ timerMain() */
 
@@ -380,7 +388,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case IDLE_STATE: {
 
-      changeState(ControlState_t(int(current_state_) + 1));
+      ROS_INFO_THROTTLE(1.0, "[ControlTest]: idling");
       break;
     }
 
@@ -705,9 +713,30 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
 //}
 
-// --------------------------------------------------------------
-// |                        other methods                       |
-// --------------------------------------------------------------
+// | ------------------------ callbacks ----------------------- |
+
+/* //{ callbackStart() */
+
+bool ControlTest::callbackStart([[maybe_unused]] std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res) {
+
+  if (!is_initialized_)
+    return false;
+
+  ROS_INFO("[ControlTest]: start triggered by service");
+
+  takeoff_num_++;
+
+  changeState(CHANGE_TRACKER_STATE);
+
+  res.success = true;
+  res.message = "started";
+
+  return true;
+}
+
+//}
+
+// | ---------------------- other methods --------------------- |
 
 /* //{ changeState() */
 

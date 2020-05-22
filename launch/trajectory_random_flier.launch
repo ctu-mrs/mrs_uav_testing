@@ -18,7 +18,7 @@
       <remap from="~position_command_in" to="control_manager/position_cmd" />
 
         <!-- Services -->
-      <remap from="~activate_in" to="~activate" />
+      <remap from="~activate_in" to="automatic_start/start" />
       <remap from="~trajectory_reference_out" to="control_manager/trajectory_reference" />
 
     </node>

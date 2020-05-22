@@ -4,20 +4,20 @@
 		"floating": "auto_off",
 		"fullscreen_mode": 0,
 		"layout": "splitv",
-		"percent": 0.5,
+		"percent": 0.444444444444444,
 		"type": "con",
 		"nodes": [
 			{
 				"border": "normal",
 				"floating": "auto_off",
-				"layout": "splitv",
-				"percent": 1,
+				"layout": "splith",
+				"percent": 0.59,
 				"type": "con",
 				"nodes": [
 					{
 						"border": "normal",
 						"floating": "auto_off",
-						"layout": "splith",
+						"layout": "splitv",
 						"percent": 0.5,
 						"type": "con",
 						"nodes": [
@@ -26,32 +26,13 @@
 								"current_border_width": 3,
 								"floating": "auto_off",
 								"geometry": {
-									"height": 460,
-									"width": 804,
-									"x": 0,
-									"y": 0
-								},
-								"name": "Gazebo",
-								"percent": 0.5,
-								"swallows": [
-									{
-										"instance": "^gazebo$"
-									}
-								],
-								"type": "con"
-							},
-							{
-								"border": "pixel",
-								"current_border_width": 3,
-								"floating": "auto_off",
-								"geometry": {
-									"height": 460,
-									"width": 804,
-									"x": 0,
-									"y": 0
+									"height": 1027,
+									"width": 1256,
+									"x": 1932,
+									"y": 32
 								},
 								"name": "control_test.rviz* - RViz",
-								"percent": 0.5,
+								"percent": 1,
 								"swallows": [
 									{
 										"instance": "^rviz$"
@@ -62,53 +43,44 @@
 						]
 					},
 					{
-						"border": "normal",
+						"border": "pixel",
+						"current_border_width": 3,
 						"floating": "auto_off",
-						"layout": "splith",
+						"geometry": {
+							"height": 481,
+							"width": 1280,
+							"x": 0,
+							"y": 0
+						},
+						"name": "Gazebo",
 						"percent": 0.5,
-						"type": "con",
-						"nodes": [
+						"swallows": [
 							{
-								"border": "pixel",
-								"current_border_width": 3,
-								"floating": "auto_off",
-								"geometry": {
-									"height": 460,
-									"width": 804,
-									"x": 0,
-									"y": 0
-								},
-								"name": "./start.sh",
-								"percent": 0.72,
-								"swallows": [
-									{
-										"instance": "^urxvt$"
-									}
-								],
-								"type": "con"
-							},
-							{
-								"border": "pixel",
-								"current_border_width": 3,
-								"floating": "auto_off",
-								"geometry": {
-									"height": 460,
-									"width": 804,
-									"x": 0,
-									"y": 0
-								},
-								"name": "ocv_optic_flow",
-								"percent": 0.28,
-								"swallows": [
-									{
-										"instance": "^ocv_optic_flow$"
-									}
-								],
-								"type": "con"
+								"instance": "^gazebo$"
 							}
-						]
+						],
+						"type": "con"
 					}
 				]
+			},
+			{
+				"border": "pixel",
+				"current_border_width": 3,
+				"floating": "auto_off",
+				"geometry": {
+					"height": 460,
+					"width": 724,
+					"x": 0,
+					"y": 0
+				},
+				"name": "sourceShellDotfile",
+				"percent": 0.41,
+				"swallows": [
+					{
+						"instance": "^urxvt$"
+					}
+				],
+				"type": "con"
 			}
 		]
 	}

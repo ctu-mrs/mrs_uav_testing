@@ -33,6 +33,14 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml
+  - takeoff:
+      layout: tiled
+      panes:
+        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
+        - 'waitForControl;
+          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          sleep 1;
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
   - control_test:
       layout: even-vertical
       panes:

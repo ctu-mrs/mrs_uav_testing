@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=hector
-startup_window: control_test
+startup_window: status
 windows:
   - roscore:
       layout: even-vertical
@@ -14,7 +14,7 @@ windows:
   - rviz:
       layout: even-vertical
       panes:
-        - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=control_test
+        - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=hector_test
         - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
         - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
   - spawn:
@@ -46,6 +46,10 @@ windows:
       layout: tiled
       panes:
         - waitForSimulation; roslaunch mrs_uav_general automatic_start.launch
+        - 'waitForControl;
+          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          sleep 1;
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
   - offboard:
       layout: tiled
       panes:
@@ -58,4 +62,4 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
-        # - waitForControl; sleep 3; ~/.i3/layout_manager.sh layout.json
+        - waitForControl; sleep 3; ~/.i3/layout_manager.sh layout.json
