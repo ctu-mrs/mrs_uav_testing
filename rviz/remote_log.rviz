@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /Sensors1/RPLidar1/Status1
       Splitter Ratio: 0.7256515622138977
     Tree Height: 893
   - Class: rviz/Selection
@@ -439,6 +438,38 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /uav45/colass_vir_force_updtr/viz/drag_force
+      Name: Drag F
+      Namespaces:
+        Virtual Force Vector: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /uav45/colass_vir_force_updtr/viz/nav_force
+      Name: Nav f
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /uav45/colass_vir_force_updtr/viz/obst_force
+      Name: Obst F
+      Namespaces:
+        Virtual Force Vector: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /uav45/colass_vir_force_updtr/viz/total_force
+      Name: Total F
+      Namespaces:
+        Virtual Force Vector: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -467,7 +498,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.32306671142578
+      Distance: 7.423772811889648
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -482,10 +513,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.759797215461731
+      Pitch: 0.7997975945472717
       Target Frame: uav45/fcu
       Value: Orbit (rviz)
-      Yaw: 3.353569269180298
+      Yaw: 2.828561544418335
     Saved: ~
 Window Geometry:
   Displays:
