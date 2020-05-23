@@ -15,3 +15,6 @@ jobs:
       before_script: 
       script:
         - ./.ci/ci_test_build.sh
+    - stage: test
+      script:
+        - ./.ci/takeoff_test.sh
