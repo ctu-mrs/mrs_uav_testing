@@ -177,6 +177,8 @@ private:
 
   // | ------------------------- params ------------------------- |
 
+  bool _start_with_takeoff_ = false;
+
   double _max_xy_;
   double _min_xy_;
   double _max_z_;
@@ -260,6 +262,8 @@ void ControlTest::onInit() {
   // --------------------------------------------------------------
 
   mrs_lib::ParamLoader param_loader(nh_, "ControlTest");
+
+  param_loader.loadParam("start_with_takeoff", _start_with_takeoff_);
 
   param_loader.loadParam("max_xy", _max_xy_);
   param_loader.loadParam("min_xy", _min_xy_);
@@ -389,6 +393,11 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     case IDLE_STATE: {
 
       ROS_INFO_THROTTLE(1.0, "[ControlTest]: idling");
+
+      if (_start_with_takeoff_) {
+        changeState(TAKEOFF_STATE);
+      }
+
       break;
     }
 
