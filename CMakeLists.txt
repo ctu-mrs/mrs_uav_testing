@@ -73,3 +73,29 @@ add_dependencies(TrajectoryRandomFlier
 target_link_libraries(TrajectoryRandomFlier
   ${catkin_LIBRARIES}
   )
+
+#############
+## Testing ##
+#############
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+
+  add_rostest_gtest(
+    takeoff_test
+    test/takeoff_test.launch
+    test/takeoff_test.cpp
+  )
+
+  target_link_libraries(
+    takeoff_test
+    ${catkin_LIBRARIES}
+  )
+
+  add_dependencies(
+    takeoff_test
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+  )
+
+endif()
