@@ -10,7 +10,7 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <node pkg="nodelet" type="nodelet" name="control_test" args="standalone mrs_uav_testing/ControlTest" output="screen" launch-prefix="$(arg launch_prefix)">
+    <node pkg="mrs_uav_testing" type="ControlTest" name="control_test" output="screen" launch-prefix="$(arg launch_prefix)">
 
       <rosparam file="$(find mrs_uav_testing)/config/control_test.yaml" />
 

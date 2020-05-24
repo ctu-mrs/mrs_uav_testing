@@ -8,10 +8,6 @@
   </node>
 
   <include file="$(find mrs_uav_general)/launch/core.launch">
-    <arg name="RUN_TYPE" value="simulation" />
-    <arg name="UAV_TYPE" value="t650" />
-    <arg name="ODOMETRY_TYPE" value="gps" />
-    <arg name="UAV_NAME" value="uav1" />
   </include>
 
   <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
@@ -21,7 +17,7 @@
 
   <group ns="$(arg UAV_NAME)">
 
-    <test pkg="mrs_uav_testing" type="takeoff_test" test-name="takeoff_test" time-limit="600.0">
+    <test pkg="mrs_uav_testing" type="ControlTestRostest" test-name="control_test" time-limit="600.0">
 
       <rosparam file="$(find mrs_uav_testing)/config/control_test.yaml" />
 

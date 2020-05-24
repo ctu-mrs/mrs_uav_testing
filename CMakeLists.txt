@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   CATKIN_DEPENDS nav_msgs mrs_lib std_msgs std_srvs mavros_msgs
-  LIBRARIES ControlTest RandomFlier TrajectoryRandomFlier
+  LIBRARIES RandomFlier TrajectoryRandomFlier
   #  DEPENDS system_lib
   )
 
@@ -36,7 +36,7 @@ include_directories(
   )
 
 ## Declare a C++ executable
-add_library(ControlTest src/control_test.cpp)
+add_executable(ControlTest test/control_test.cpp)
 
 add_dependencies(ControlTest
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -82,18 +82,20 @@ if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
   add_rostest_gtest(
-    takeoff_test
-    test/takeoff_test.launch
-    test/takeoff_test.cpp
+    ControlTestRostest
+    test/control_test_rostest.launch
+    test/control_test.cpp
   )
 
+target_compile_definitions(ControlTestRostest PRIVATE ROSTEST=1)
+
   target_link_libraries(
-    takeoff_test
+    ControlTestRostest
     ${catkin_LIBRARIES}
   )
 
   add_dependencies(
-    takeoff_test
+    ControlTestRostest
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
     ${catkin_EXPORTED_TARGETS}
   )

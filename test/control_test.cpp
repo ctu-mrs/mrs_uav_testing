@@ -32,7 +32,9 @@
 
 #include <mrs_lib/param_loader.h>
 
+#ifdef ROSTEST
 #include <gtest/gtest.h>
+#endif
 
 //}
 
@@ -1745,6 +1747,8 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
 //}
 
+/* finished() //{ */
+
 bool ControlTest::finished(void) {
 
   if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE) {
@@ -1753,6 +1757,10 @@ bool ControlTest::finished(void) {
     return false;
   }
 }
+
+//}
+
+/* result() //{ */
 
 bool ControlTest::result(void) {
 
@@ -1763,9 +1771,15 @@ bool ControlTest::result(void) {
   }
 }
 
+//}
+
 std::shared_ptr<ControlTest> control_test_;
 
+#ifdef ROSTEST
 TEST(TESTSuite, controlTest) {
+#else
+bool test(void) {
+#endif
 
   bool result = false;
 
@@ -1785,16 +1799,22 @@ TEST(TESTSuite, controlTest) {
     }
   }
 
+#ifdef ROSTEST
   EXPECT_TRUE(result);
+#endif
 }
 
 int main(int argc, char** argv) {
 
-  ros::init(argc, argv, "takeoff_test");
+  ros::init(argc, argv, "ControlTest");
 
   control_test_.reset(new ControlTest);
 
+  #ifdef ROSTEST
   testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();
+  #else
+  return test();
+  #endif
 }
