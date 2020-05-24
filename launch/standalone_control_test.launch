@@ -10,7 +10,7 @@
     <arg name="name" value="control_test" />
   </include>
 
-  <include file="$(find mrs_uav_testing)/launch/control_test.launch" launch-prefix="bash -c 'sleep 15; $0 $@'">
+  <include file="$(find mrs_uav_testing)/launch/control_test.launch">
     <arg name="start_with_takeoff" value="true" />
   </include>
 
