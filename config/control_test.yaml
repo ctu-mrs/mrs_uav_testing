@@ -11,7 +11,7 @@ goto_relative_altitude_up: 1.0 # [m]
 goto_relative_altitude_down: 1.0 # [m]
 
 test_line_tracker: false
-test_mpc_gotos: false
+test_mpc_gotos: true
 
 trajectory_dt: 0.1 # [s]
 

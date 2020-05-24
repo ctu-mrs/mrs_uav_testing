@@ -34,6 +34,8 @@
 
 #ifdef ROSTEST
 #include <gtest/gtest.h>
+#include <ros/console.h>
+#include <log4cxx/logger.h>
 #endif
 
 //}
@@ -1751,7 +1753,7 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
 bool ControlTest::finished(void) {
 
-  if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE) {
+  if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE || current_state_ == TAKEOFF_STATE) {
     return true;
   } else {
     return false;
@@ -1810,11 +1812,13 @@ int main(int argc, char** argv) {
 
   control_test_.reset(new ControlTest);
 
-  #ifdef ROSTEST
+#ifdef ROSTEST
   testing::InitGoogleTest(&argc, argv);
+#endif
 
+#ifdef ROSTEST
   return RUN_ALL_TESTS();
-  #else
+#else
   return test();
-  #endif
+#endif
 }
