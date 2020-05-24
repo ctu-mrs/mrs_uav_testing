@@ -1753,7 +1753,7 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
 bool ControlTest::finished(void) {
 
-  if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE || current_state_ == TAKEOFF_STATE) {
+  if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE) {
     return true;
   } else {
     return false;
