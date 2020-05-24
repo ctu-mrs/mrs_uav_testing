@@ -1,0 +1,6 @@
+test_line_tracker: false
+test_mpc_gotos: false
+
+looping_circle_trajectory:
+
+  duration: 20.0 # [s]

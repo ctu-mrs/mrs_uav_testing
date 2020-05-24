@@ -20,6 +20,7 @@
     <test pkg="mrs_uav_testing" type="ControlTestRostest" test-name="control_test" time-limit="600.0">
 
       <rosparam file="$(find mrs_uav_testing)/config/control_test.yaml" />
+      <rosparam file="$(find mrs_uav_testing)/config/control_test_rostest.yaml" />
 
         <!-- Load a user param file -->
       <rosparam if="$(eval not arg('custom_config') == '')" file="$(arg custom_config)" />
