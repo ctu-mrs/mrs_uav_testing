@@ -49,6 +49,7 @@ private:
   // parameters loaded from config file
   double _height_;
   bool   _randomize_distance_ = false;
+  bool   _randomize_heading_  = false;
   double _max_distance_;
 
   bool active_ = true;
@@ -73,6 +74,7 @@ void RandomFlier::onInit(void) {
   param_loader.loadParam("height", _height_);
   param_loader.loadParam("active", active_);
   param_loader.loadParam("randomize_distance", _randomize_distance_);
+  param_loader.loadParam("randomize_heading", _randomize_heading_);
   param_loader.loadParam("max_distance", _max_distance_);
 
   if (!param_loader.loadedSuccessfully()) {
@@ -161,7 +163,7 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     mrs_msgs::ReferenceStampedSrv new_point;
     new_point.request.header.frame_id = "gps_origin";
 
-    double dist, direction;
+    double dist, direction, heading;
 
     if (_randomize_distance_) {
       dist = randd(0, _max_distance_);
@@ -171,12 +173,18 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     direction = randd(-M_PI, M_PI);
 
+    if (_randomize_heading_) {
+      heading = randd(-M_PI, M_PI);
+    } else {
+      heading = 0;
+    }
+
     while (true) {
 
       new_point.request.reference.position.x = cmd_x + cos(direction) * dist;
       new_point.request.reference.position.y = cmd_y + sin(direction) * dist;
       new_point.request.reference.position.z = _height_;
-      new_point.request.reference.heading    = 0;
+      new_point.request.reference.heading    = heading;
 
       if (service_client_reference_.call(new_point)) {
 
