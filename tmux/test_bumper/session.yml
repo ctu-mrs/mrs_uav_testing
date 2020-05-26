@@ -1,6 +1,6 @@
 name: simulation
 root: ./
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation; export PX4_SIM_SPEED_FACTOR=1.0
 startup_window: control
 windows:
   - roscore:
@@ -52,6 +52,7 @@ windows:
         #{ uav1
         - 'waitForControl;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          sleep 0.1;
           rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
         #}
   - gazebo_camera_follow:
