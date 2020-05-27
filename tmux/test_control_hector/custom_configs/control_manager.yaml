@@ -1,6 +1,6 @@
 obstacle_bumper:
 
-  enabled: true
+  enabled: false
 
   horizontal_distance: 2.0 # [m]
   vertical_distance: 1.0 # [m]

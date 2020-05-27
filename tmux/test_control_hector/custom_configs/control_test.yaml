@@ -1,0 +1,23 @@
+max_xy: 7.0 # [m]
+min_xy: -7.0 # [m]
+
+min_z: -3.0 # [m]
+max_z: 5.0 # [m]
+
+test_line_tracker: false
+test_mpc_gotos: true
+
+line_trajectory:
+
+  p1: -5.0 # [m]
+  p2: 3.0 # [m]
+
+  speed: 2.0 # [m/s]
+
+  heading_rate: 0.1 # [rad/s]
+
+looping_circle_trajectory:
+
+  radius: 5.0 # [m]
+  speed: 2.0 # [m/s]
+  duration: 30.0 # [s]

@@ -10,7 +10,7 @@ windows:
   - gazebo:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true world_name:=forest
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true world_file:='$(find mrs_uav_testing)/worlds/hector_test.world'
   - rviz:
       layout: even-vertical
       panes:
@@ -20,7 +20,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray
+        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray --file ./init_pose.csv
   - status:
       layout: even-vertical
       panes:
@@ -37,27 +37,23 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_odometry:=./custom_configs/odometry.yaml config_control_manager:=./custom_configs/control_manager.yaml
-  - random_flier:
+  # - random_flier:
+  #     layout: tiled
+  #     panes:
+  #       - waitForOdometry; roslaunch mrs_uav_testing random_flier.launch
+  #       # - waitForOdometry; roslaunch mrs_uav_testing trajectory_random_flier.launch
+  - control_test:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_uav_testing random_flier.launch
-        # - waitForOdometry; roslaunch mrs_uav_testing trajectory_random_flier.launch
-  - autostart:
+        - waitForControl; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
+  - takeoff:
       layout: tiled
       panes:
-        - waitForSimulation; roslaunch mrs_uav_general automatic_start.launch
+        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
         - 'waitForControl;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
           sleep 1;
           rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
-  - offboard:
-      layout: tiled
-      panes:
-        #{ uav1
-        - 'waitForControl;
-          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
-        #}
   - gazebo_camera_follow:
       layout: even-vertical
       panes:
