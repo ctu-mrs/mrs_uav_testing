@@ -40,7 +40,7 @@ windows:
   - control_test:
       layout: tiled
       panes:
-        - waitForSimulation; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml start_with_takeoff:=true
+        - waitForSimulation; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
   - gazebo_camera_follow:
       layout: tiled
       panes:
