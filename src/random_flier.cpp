@@ -197,7 +197,7 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
         } else {
 
-          /* ROS_WARN("New goal: %2.2f %2.2f failed", new_point.request.goal[0], new_point.request.goal[1]); */
+          ROS_WARN_THROTTLE(1.0, "New goal: %.2f %.2f service response success: false. Check control tab.", new_point.request.reference.position.x, new_point.request.reference.position.y);
 
           dist -= 0.1;
 
@@ -212,6 +212,8 @@ void RandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
             direction = randd(-M_PI, M_PI);
           }
         }
+      } else {
+          ROS_WARN_THROTTLE(1.0, "New goal: %.2f %.2f service failed. Check control tab.", new_point.request.reference.position.x, new_point.request.reference.position.y);
       }
     }
   }
