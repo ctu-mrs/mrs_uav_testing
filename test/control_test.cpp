@@ -663,7 +663,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case LAND_HOME_STATE: {
 
-      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(home_x_, home_y_, odom_x, odom_y) < 1.0) {
+      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(home_x_, home_y_, odom_x, odom_y) < 3.0) {
         ROS_INFO("[ControlTest]: %s", active_tracker_name.c_str());
         changeState(TAKEOFF_STATE);
       }

@@ -1,6 +1,6 @@
 name: simulation
 root: ./
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow; export PX4_SIM_SPEED_FACTOR=1.0
 startup_window: control_test
 windows:
   - roscore:
@@ -39,7 +39,7 @@ windows:
         - waitForRos; roslaunch mrs_uav_general automatic_start.launch
         - 'waitForControl;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
-          sleep 1;
+          sleep 0.1;
           rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
   - control_test:
       layout: even-vertical
