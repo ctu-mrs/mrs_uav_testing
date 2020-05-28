@@ -2,4 +2,4 @@ constraint_management:
 
   fallback_constraints:
 
-    HECTOR: "medium"
+    HECTOR: "slow"

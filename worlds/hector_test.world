@@ -1163,7 +1163,7 @@
 
 <!-- 8. wall -15 15 {-->-->
 
-<!-- wall -15 15 0 {-->-->
+<!-- wall -10 15 0 {-->-->
           <model name='grey_wall_81'>
             <static>1</static>
             <link name='link'>
@@ -1207,7 +1207,7 @@
               <enable_wind>0</enable_wind>
               <kinematic>0</kinematic>
             </link>
-            <pose frame=''>-15.0 15.0 0 0 -0 0.0</pose>
+            <pose frame=''>-10.0 15.0 0 0 -0 0.0</pose>
           </model>
 
 <!--<!--}-->
@@ -1257,7 +1257,7 @@
               <enable_wind>0</enable_wind>
               <kinematic>0</kinematic>
             </link>
-            <pose frame=''>-15.0 15.0 2.8 0 -0 0.0</pose>
+            <pose frame=''>-10.0 15.0 2.8 0 -0 0.0</pose>
           </model>
 <!--}-->
 
@@ -1305,7 +1305,7 @@
               <enable_wind>0</enable_wind>
               <kinematic>0</kinematic>
             </link>
-            <pose frame=''>-15.0 15.0 5.6 0 -0 0.0</pose>
+            <pose frame=''>-10.0 15.0 5.6 0 -0 0.0</pose>
           </model>
 <!--}-->
 

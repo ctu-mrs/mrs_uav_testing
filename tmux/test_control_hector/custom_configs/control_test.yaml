@@ -1,7 +1,7 @@
-max_xy: 7.0 # [m]
-min_xy: -7.0 # [m]
+max_xy: 6.0 # [m]
+min_xy: -6.0 # [m]
 
-min_z: -3.0 # [m]
+min_z: 3.0 # [m]
 max_z: 5.0 # [m]
 
 test_line_tracker: false
@@ -10,11 +10,11 @@ test_mpc_gotos: true
 line_trajectory:
 
   p1: -5.0 # [m]
-  p2: 3.0 # [m]
+  p2: 5.0 # [m]
 
   speed: 2.0 # [m/s]
 
-  heading_rate: 0.1 # [rad/s]
+  heading_rate: 0.2 # [rad/s]
 
 looping_circle_trajectory:
 
