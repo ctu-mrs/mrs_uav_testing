@@ -56,7 +56,7 @@ typedef enum
   GOTO_SERVICE_STATE,
   GOTO_RELATIVE_SERVICE_STATE,
   GOTO_ALTITUDE_SERVICE_STATE,
-  SET_heading_SERVICE_STATE,
+  SET_HEADING_SERVICE_STATE,
   SET_heading_RELATIVE_SERVICE_STATE,
   TRAJECTORY_LOAD_STATIC_TOPIC_STATE,
   TRAJECTORY_GOTO_START_STATE,
@@ -90,7 +90,7 @@ const char* state_names[31] = {
     "GOTO_SERVICE_STATE",
     "GOTO_RELATIVE_SERVICE_STATE",
     "GOTO_ALTITUDE_SERVICE_STATE",
-    "SET_heading_SERVICE_STATE",
+    "SET_HEADING_SERVICE_STATE",
     "SET_heading_RELATIVE_SERVICE_STATE",
     "TRAJECTORY_LOAD_STATIC_TOPIC_STATE",
     "TRAJECTORY_GOTO_START_STATE",
@@ -492,7 +492,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       break;
     }
 
-    case SET_heading_SERVICE_STATE: {
+    case SET_HEADING_SERVICE_STATE: {
 
       if (inDesiredState() && trackerReady()) {
         changeState(ControlState_t(int(current_state_) + 1));
@@ -663,7 +663,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case LAND_HOME_STATE: {
 
-      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(home_x_, home_y_, odom_x, odom_y) < 3.0) {
+      if (active_tracker_name == "NullTracker") {
         ROS_INFO("[ControlTest]: %s", active_tracker_name.c_str());
         changeState(TAKEOFF_STATE);
       }
@@ -967,7 +967,7 @@ void ControlTest::changeState(const ControlState_t new_state) {
       //}
     }
 
-    case SET_heading_SERVICE_STATE: {
+    case SET_HEADING_SERVICE_STATE: {
 
       /* //{ test set_heading service */
 
