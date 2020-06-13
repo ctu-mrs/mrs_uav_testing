@@ -32,7 +32,7 @@ windows:
   - hector_slam:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch hector_mapping uav.launch
+        - waitForOdometry; roslaunch mrs_uav_general hector_slam.launch
   - control:
       layout: even-vertical
       panes:
