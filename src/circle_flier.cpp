@@ -102,9 +102,7 @@ void CircleFlier::onInit(void) {
   service_client_trajectory_ = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
   publisher_trajectory_      = nh_.advertise<mrs_msgs::TrajectoryReference>("trajectory_reference_out", 1, false);
 
-  if (params_.publisher_active) {
-    timer_main_ = nh_.createTimer(ros::Rate(params_.publisher_rate), &CircleFlier::timerMain, this);
-  }
+  timer_main_ = nh_.createTimer(ros::Rate(params_.publisher_rate), &CircleFlier::timerMain, this);
 
   // | ----------------------- finish init ---------------------- |
 
@@ -124,8 +122,6 @@ void CircleFlier::callbackDrs(mrs_uav_testing::circle_flierConfig& params, [[may
   mrs_lib::set_mutexed(mutex_params_, params, params_);
 
   ros::Duration dur(1.0 / params.publisher_rate);
-
-  ROS_INFO("[CircleFlier]: setting publisher dt to: %f s", dur.toSec());
 
   timer_main_.setPeriod(dur, true);
 
