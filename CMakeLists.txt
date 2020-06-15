@@ -15,11 +15,16 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   mavros_msgs
+  dynamic_reconfigure
+  )
+
+generate_dynamic_reconfigure_options(
+  cfg/circle_flier.cfg
   )
 
 catkin_package(
   CATKIN_DEPENDS nav_msgs mrs_lib std_msgs std_srvs mavros_msgs
-  LIBRARIES RandomFlier TrajectoryRandomFlier
+  LIBRARIES RandomFlier TrajectoryRandomFlier CircleFlier
   #  DEPENDS system_lib
   )
 
@@ -33,9 +38,9 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
   )
 
-## Declare a C++ executable
 add_executable(ControlTest test/control_test.cpp)
 
 add_dependencies(ControlTest
@@ -43,12 +48,10 @@ add_dependencies(ControlTest
   ${catkin_EXPORTED_TARGETS}
   )
 
-## Specify libraries to link a library or executable target against
 target_link_libraries(ControlTest
   ${catkin_LIBRARIES}
   )
 
-## Declare a C++ executable
 add_library(RandomFlier src/random_flier.cpp)
 
 add_dependencies(RandomFlier
@@ -56,12 +59,10 @@ add_dependencies(RandomFlier
   ${catkin_EXPORTED_TARGETS}
   )
 
-## Specify libraries to link a library or executable target against
 target_link_libraries(RandomFlier
   ${catkin_LIBRARIES}
   )
 
-## Declare a C++ executable
 add_library(TrajectoryRandomFlier src/trajectory_random_flier.cpp)
 
 add_dependencies(TrajectoryRandomFlier
@@ -69,8 +70,18 @@ add_dependencies(TrajectoryRandomFlier
   ${catkin_EXPORTED_TARGETS}
   )
 
-## Specify libraries to link a library or executable target against
 target_link_libraries(TrajectoryRandomFlier
+  ${catkin_LIBRARIES}
+  )
+
+add_library(CircleFlier src/circle_flier.cpp)
+
+add_dependencies(CircleFlier
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+target_link_libraries(CircleFlier
   ${catkin_LIBRARIES}
   )
 
