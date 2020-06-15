@@ -1,6 +1,6 @@
 publisher:
-  active: true
-  rate: 100 # [Hz]
+  active: false
+  rate: 30 # [Hz]
   mode: 0 # [0 = topic, 1 = service]
 
 center:
