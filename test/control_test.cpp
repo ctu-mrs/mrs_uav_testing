@@ -1832,7 +1832,11 @@ void ControlTest::switchEstimator(const std::string estimator_name) {
 
 bool ControlTest::finished(void) {
 
+#ifdef ROSTEST
   if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE) {
+#else
+  if (current_state_ == FINISHED_STATE || current_state_ == ERROR_STATE) {
+#endif
     return true;
   } else {
     return false;
@@ -1845,7 +1849,11 @@ bool ControlTest::finished(void) {
 
 bool ControlTest::result(void) {
 
+#ifdef ROSTEST
   if (current_state_ == FINISHED_STATE) {
+#else
+  if (current_state_ == FINISHED_STATE) {
+#endif
     return true;
   } else {
     return false;

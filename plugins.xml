@@ -10,6 +10,12 @@
   </class>
 </library>
 
+<library path="lib/libCircleFlier">
+  <class name="mrs_uav_testing/CircleFlier" type="mrs_uav_testing::CircleFlier" base_class_type="nodelet::Nodelet">
+    <description>the CircleFlier nodelet</description>
+  </class>
+</library>
+
 <library path="lib/libTrajectoryRandomFlier">
   <class name="mrs_uav_testing/TrajectoryRandomFlier" type="mrs_uav_testing::TrajectoryRandomFlier" base_class_type="nodelet::Nodelet">
     <description>the TrajectoryRandomFlier nodelet</description>
