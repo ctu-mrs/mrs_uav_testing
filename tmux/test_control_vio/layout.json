@@ -1,0 +1,87 @@
+[
+	{
+		"border": "normal",
+		"floating": "auto_off",
+		"fullscreen_mode": 0,
+		"layout": "splitv",
+		"percent": 0.444444444444444,
+		"type": "con",
+		"nodes": [
+			{
+				"border": "normal",
+				"floating": "auto_off",
+				"layout": "splith",
+				"percent": 0.59,
+				"type": "con",
+				"nodes": [
+					{
+						"border": "normal",
+						"floating": "auto_off",
+						"layout": "splitv",
+						"percent": 0.5,
+						"type": "con",
+						"nodes": [
+							{
+								"border": "pixel",
+								"current_border_width": 3,
+								"floating": "auto_off",
+								"geometry": {
+									"height": 1027,
+									"width": 1256,
+									"x": 1932,
+									"y": 32
+								},
+								"name": "control_test.rviz* - RViz",
+								"percent": 1,
+								"swallows": [
+									{
+										"instance": "^rviz$"
+									}
+								],
+								"type": "con"
+							}
+						]
+					},
+					{
+						"border": "pixel",
+						"current_border_width": 3,
+						"floating": "auto_off",
+						"geometry": {
+							"height": 481,
+							"width": 1280,
+							"x": 0,
+							"y": 0
+						},
+						"name": "Gazebo",
+						"percent": 0.5,
+						"swallows": [
+							{
+								"instance": "^gazebo$"
+							}
+						],
+						"type": "con"
+					}
+				]
+			},
+			{
+				"border": "pixel",
+				"current_border_width": 3,
+				"floating": "auto_off",
+				"geometry": {
+					"height": 460,
+					"width": 724,
+					"x": 0,
+					"y": 0
+				},
+				"name": "sourceShellDotfile",
+				"percent": 0.41,
+				"swallows": [
+					{
+						"instance": "^urxvt$"
+					}
+				],
+				"type": "con"
+			}
+		]
+	}
+]

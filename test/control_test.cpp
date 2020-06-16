@@ -50,6 +50,7 @@ typedef enum
 {
   IDLE_STATE,
   TAKEOFF_STATE,
+  CHANGE_ESTIMATOR_STATE,
   CHANGE_TRACKER_STATE,
   SET_REFERENCE_TOPIC_STATE,
   SET_REFERENCE_SERVICE_STATE,
@@ -81,9 +82,10 @@ typedef enum
   ERROR_STATE,
 } ControlState_t;
 
-const char* state_names[31] = {
+const char* state_names[32] = {
     "IDLE_STATE",
     "TAKEOFF_STATE",
+    "CHANGE_ESTIMATOR_STATE",
     "CHANGE_TRACKER_STATE",
     "SET_REFERENCE_TOPIC_STATE",
     "SET_REFERENCE_SERVICE_STATE",
@@ -157,6 +159,7 @@ private:
   ros::ServiceClient service_client_goto_altitude_;
   ros::ServiceClient service_client_set_heading_;
   ros::ServiceClient service_client_set_heading_relative_;
+  ros::ServiceClient service_client_switch_estimator_;
 
   // trajectory tracking
   ros::ServiceClient service_client_trajectory_reference_;
@@ -210,6 +213,9 @@ private:
   bool _test_line_tracker_ = false;
   bool _test_mpc_gotos_    = true;
 
+  bool        _switch_estimator_after_takeoff_ = false;
+  std::string _target_estimator_;
+
   // | ------------------------ routines ------------------------ |
 
   double randd(const double from, const double to);
@@ -220,6 +226,7 @@ private:
   bool   isStationary(void);
   bool   trackerReady(void);
   void   switchTracker(const std::string tracker_name);
+  void   switchEstimator(const std::string estimator_name);
   void   startTrajectoryTracking(void);
   void   stopTrajectoryTracking(void);
   void   resumeTrajectoryTracking(void);
@@ -232,8 +239,9 @@ private:
 
   // | ----------------------- global vars ---------------------- |
 
-  int active_tracker_ = -1;
-  int takeoff_num_    = 0;
+  int         active_tracker_   = -1;
+  int         takeoff_num_      = 0;
+  std::string active_estimator_ = "UNKNOWN";
 
   double des_x_;
   double des_y_;
@@ -295,6 +303,9 @@ ControlTest::ControlTest() {
   param_loader.loadParam("test_line_tracker", _test_line_tracker_);
   param_loader.loadParam("test_mpc_gotos", _test_mpc_gotos_);
 
+  param_loader.loadParam("switch_estimator_after_takeoff/active", _switch_estimator_after_takeoff_);
+  param_loader.loadParam("switch_estimator_after_takeoff/target_estimator", _target_estimator_);
+
   if (!param_loader.loadedSuccessfully()) {
     ros::shutdown();
   }
@@ -349,6 +360,9 @@ ControlTest::ControlTest() {
   service_client_start_trajectory_tracking_  = nh_.serviceClient<std_srvs::Trigger>("start_trajectory_tracking_out");
   service_client_stop_trajectory_tracking_   = nh_.serviceClient<std_srvs::Trigger>("stop_trajectory_tracking_out");
   service_client_resume_trajectory_tracking_ = nh_.serviceClient<std_srvs::Trigger>("resume_trajectory_tracking_out");
+
+  // | -------------------- odometry services ------------------- |
+  service_client_switch_estimator_ = nh_.serviceClient<mrs_msgs::String>("switch_estimator_out");
 
   // | --------------------- service servers -------------------- |
 
@@ -415,6 +429,23 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
         ROS_INFO("[ControlTest]: takeoff_num=%d", takeoff_num_);
 
         takeoff_num_++;
+
+        if (_switch_estimator_after_takeoff_) {
+
+          changeState(CHANGE_ESTIMATOR_STATE);
+
+        } else {
+
+          changeState(CHANGE_TRACKER_STATE);
+        }
+
+        break;
+      }
+    }
+
+    case CHANGE_ESTIMATOR_STATE: {
+
+      if (active_estimator_ == _target_estimator_) {
 
         changeState(CHANGE_TRACKER_STATE);
       }
@@ -747,7 +778,14 @@ bool ControlTest::callbackStart([[maybe_unused]] std_srvs::Trigger::Request& req
 
   takeoff_num_++;
 
-  changeState(CHANGE_TRACKER_STATE);
+  if (_switch_estimator_after_takeoff_) {
+
+    changeState(CHANGE_ESTIMATOR_STATE);
+
+  } else {
+
+    changeState(CHANGE_TRACKER_STATE);
+  }
 
   res.success = true;
   res.message = "started";
@@ -830,6 +868,21 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
       home_x_ = odom_x;
       home_y_ = odom_y;
+
+      break;
+
+      //}
+    }
+
+    case CHANGE_ESTIMATOR_STATE: {
+
+      /* change the estimator //{ */
+
+      if (active_estimator_ != _target_estimator_) {
+
+        switchEstimator(_target_estimator_);
+        active_estimator_ = _target_estimator_;
+      }
 
       break;
 
@@ -1743,6 +1796,32 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
   } else {
     ROS_ERROR("[ControlTest]: service call for switching the tracker failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ switchEstimator() */
+
+void ControlTest::switchEstimator(const std::string estimator_name) {
+
+  mrs_msgs::String srv;
+  srv.request.value = estimator_name;
+
+  ROS_INFO("[ControlTest]: switching estimator to %s", srv.request.value.c_str());
+
+  bool success = service_client_switch_estimator_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for switching the estimator failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for switching the estimator failed");
     ros::shutdown();
   }
 }

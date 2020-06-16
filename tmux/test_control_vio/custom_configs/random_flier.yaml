@@ -1,0 +1,6 @@
+active: true
+main_timer_rate: 100
+max_distance: 5
+height: 2.5
+randomize_distance: false
+randomize_heading: true

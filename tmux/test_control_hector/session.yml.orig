@@ -3,10 +3,10 @@ root: ./
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=hector; export PX4_SIM_SPEED_FACTOR=1.0
 startup_window: status
 windows:
-  # - roscore:
-  #     layout: even-vertical
-  #     panes:
-  #       - roscore
+  - roscore:
+      layout: even-vertical
+      panes:
+        - roscore
   - gazebo:
       layout: even-vertical
       panes:
@@ -17,14 +17,14 @@ windows:
         - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=hector_test
         - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
         - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
-  - juggler:
-      layout: even-vertical
-      panes:
-        - waitForSimulation; rosrun plotjuggler PlotJuggler -l ../../plot_juggler/hector_test.xml
   - spawn:
       layout: even-vertical
       panes:
+<<<<<<< HEAD
         - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray --file ./init_pose.csv
+=======
+        - waitForSimulation; rosrun mrs_simulation spawn --file ./pos.txt --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray
+>>>>>>> d9c675d28665f334fea3a125bd7ec1f1cbd2810f
   - status:
       layout: even-vertical
       panes:
@@ -36,12 +36,11 @@ windows:
   - hector_slam:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_uav_general hector_slam.launch
+        - waitForOdometry; roslaunch hector_mapping uav.launch
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_odometry:=./custom_configs/odometry.yaml config_control_manager:=./custom_configs/control_manager.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
- 
+        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_odometry:=./custom_configs/odometry.yaml config_control_manager:=./custom_configs/control_manager.yaml
   # - random_flier:
   #     layout: tiled
   #     panes:

@@ -41,6 +41,7 @@
       <remap from="~start_trajectory_tracking_out" to="control_manager/start_trajectory_tracking" />
       <remap from="~stop_trajectory_tracking_out" to="control_manager/stop_trajectory_tracking" />
       <remap from="~resume_trajectory_tracking_out" to="control_manager/resume_trajectory_tracking" />
+      <remap from="~switch_estimator_out" to="odometry/change_odometry_source" />
 
         <!-- services in -->
       <remap from="~start_in" to="automatic_start/start" />
