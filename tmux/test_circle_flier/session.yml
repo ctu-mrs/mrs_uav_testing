@@ -27,7 +27,7 @@ windows:
   - circle_flier:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_uav_testing circle_flier.launch
+        - waitForOdometry; roslaunch mrs_uav_testing circle_flier.launch custom_config:=./custom_configs/circle_flier.yaml
   - takeoff:
       layout: tiled
       panes:
@@ -43,7 +43,7 @@ windows:
   - rviz:
       layout: tiled
       panes:
-        - waitForControl; roslaunch mrs_uav_testing rviz.launch
+        - waitForControl; roslaunch mrs_uav_testing rviz.launch name:=circle_flier
         - waitForControl; roslaunch mrs_rviz_plugins load_robot.launch
   - rqt_reconfigure:
       layout: tiled
