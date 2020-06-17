@@ -1,0 +1,5 @@
+gain_management:
+
+  fallback_gains:
+
+    GPS: "tight"
