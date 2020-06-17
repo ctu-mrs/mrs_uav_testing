@@ -3,10 +3,10 @@ root: ./
 pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export WORLD_NAME=simulation; export PX4_SIM_SPEED_FACTOR=1.0
 startup_window: control_test
 windows:
-  # - roscore:
-  #     layout: tiled
-  #     panes:
-  #       - roscore
+  - roscore:
+      layout: tiled
+      panes:
+        - roscore
   - gazebo:
       layout: tiled
       panes:
