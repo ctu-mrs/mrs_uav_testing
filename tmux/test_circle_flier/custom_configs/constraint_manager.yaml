@@ -9,8 +9,8 @@ fast:
   horizontal:
     speed: 9.0
     acceleration: 10.0
-    jerk: 120.0
-    snap: 120.0
+    jerk: 30.0
+    snap: 30.0
 
   vertical:
 
