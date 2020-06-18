@@ -51,8 +51,9 @@ private:
 
   // | ---------- keeping track of the current position --------- |
 
-  double     angle_ = 0;
-  std::mutex mutex_angle_;
+  double     angle_   = 0;
+  double     heading_ = 0;
+  std::mutex mutex_global_;
 };
 
 //}
@@ -88,6 +89,7 @@ void CircleFlier::onInit(void) {
   param_loader.loadParam("heading/use_heading", params_.use_heading);
   param_loader.loadParam("heading/mode", params_.heading_mode);
   param_loader.loadParam("heading/default_heading", params_.heading);
+  param_loader.loadParam("heading/default_heading_rate", params_.heading_rate);
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[CircleFlier]: Could not load all parameters!");
@@ -154,7 +156,8 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   double arc_step     = params.speed * params.dt;
   double angular_step = arc_step / params.radius;
 
-  auto angle = mrs_lib::get_mutexed(mutex_angle_, angle_);
+  auto angle   = mrs_lib::get_mutexed(mutex_global_, angle_);
+  auto heading = mrs_lib::get_mutexed(mutex_global_, heading_);
 
   double direction = params.direction == 0 ? -1.0 : 1.0;
 
@@ -179,11 +182,17 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
         reference.heading = atan2(params.center_y - reference.position.y, params.center_x - reference.position.x);
         break;
       }
+      case 3: {
+        reference.heading = heading;
+        break;
+      }
     }
 
     trajectory.points.push_back(reference);
 
     angle += direction * angular_step;
+
+    heading += params.heading_rate * params.dt;
 
     angle = mrs_lib::wrapAngle(angle);
   }
@@ -204,13 +213,17 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   // do a step with the global angle_
   arc_step     = params.speed * (1.0 / params.publisher_rate);
   angular_step = arc_step / params.radius;
-
-  angle = mrs_lib::get_mutexed(mutex_angle_, angle_);
+  angle        = mrs_lib::get_mutexed(mutex_global_, angle_);
   angle += direction * angular_step;
-
   angle = mrs_lib::wrapAngle(angle);
+  mrs_lib::set_mutexed(mutex_global_, angle, angle_);
 
-  mrs_lib::set_mutexed(mutex_angle_, angle, angle_);
+  // do a step with the global heading_
+  heading = mrs_lib::get_mutexed(mutex_global_, heading_);
+  heading += params.heading_rate * (1.0 / params.publisher_rate);
+  heading = mrs_lib::wrapAngle(heading);
+  mrs_lib::set_mutexed(mutex_global_, heading, heading_);
+
 }  // namespace mrs_uav_testing
 
 //}
