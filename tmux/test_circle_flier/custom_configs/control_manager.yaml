@@ -1,0 +1,10 @@
+So3Controller:
+  eland_threshold: 8.0 # [m], position error triggering eland
+  failsafe_threshold: 0.0 # [m], position error triggering failsafe land
+
+EmergencyController:
+  eland_threshold: 10.0 # [m], position error triggering eland
+  failsafe_threshold: 0.0 # [m], position error triggering failsafe land
+
+safety:
+  tilt_limit_eland: 90 # [deg]

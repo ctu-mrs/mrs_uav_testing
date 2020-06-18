@@ -28,6 +28,6 @@ fast:
 
   heading:
     speed: 2.0
-    acceleration: 5.0
+    acceleration: 1.0
     jerk: 50.0
     snap: 50.0
