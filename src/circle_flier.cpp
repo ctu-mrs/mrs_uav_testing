@@ -83,6 +83,7 @@ void CircleFlier::onInit(void) {
   param_loader.loadParam("n_points", params_.n_points);
   param_loader.loadParam("dt", params_.dt);
   param_loader.loadParam("direction", params_.direction);
+  param_loader.loadParam("orientation", params_.orientation);
 
   param_loader.loadParam("fly_now", params_.fly_now);
 
@@ -165,9 +166,20 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   for (int i = 0; i < params.n_points; i++) {
 
     mrs_msgs::Reference reference;
-    reference.position.z = params.center_z;
-    reference.position.x = cos(angle) * params.radius + params.center_x;
-    reference.position.y = sin(angle) * params.radius + params.center_y;
+
+    if (params.orientation == 0) {
+      reference.position.z = params.center_z;
+      reference.position.x = cos(angle) * params.radius + params.center_x;
+      reference.position.y = sin(angle) * params.radius + params.center_y;
+    } else if (params.orientation == 1) {
+      reference.position.z = sin(angle) * params.radius + params.center_z;
+      reference.position.x = cos(angle) * params.radius + params.center_x;
+      reference.position.y = params.center_y;
+    } else {
+      reference.position.x = cos(angle) * params.radius + params.center_x;
+      reference.position.y = sin(angle) * params.radius + params.center_y;
+      reference.position.z = sin(angle) * params.radius + params.center_z;
+    }
 
     switch (params.heading_mode) {
       case 0: {

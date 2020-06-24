@@ -7,4 +7,10 @@ EmergencyController:
   failsafe_threshold: 0.0 # [m], position error triggering failsafe land
 
 safety:
-  tilt_limit_eland: 90 # [deg]
+  tilt_limit_eland: 0.0 # [deg]
+  yaw_limit_eland: 0.0 # [deg]
+  tilt_limit_disarm: 0.0 # [deg]
+
+  tilt_error_disarm:
+
+    enabled: false
