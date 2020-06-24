@@ -130,7 +130,7 @@ Visualization Manager:
           Marker Topic: /uav1/control_manager/safety_area_markers
           Name: SafetyhArea
           Namespaces:
-            "": true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -146,7 +146,7 @@ Visualization Manager:
           Marker Topic: /uav1/control_manager/safety_area_coordinates_markers
           Name: SafetyAreaCoordinates
           Namespaces:
-            "": true
+            {}
           Queue Size: 100
           Value: true
         - Angle Tolerance: 9.999999747378752e-5
@@ -209,9 +209,9 @@ Visualization Manager:
                 {}
               Queue Size: 100
               Value: true
-          Enabled: false
+          Enabled: true
           Name: OriginalTrajectory
-      Enabled: true
+      Enabled: false
       Name: ControlManager
     - Class: rviz/Group
       Displays:
@@ -342,10 +342,10 @@ Visualization Manager:
               Marker Topic: /uav1/control_manager/mpc_tracker/trajectory_processed/markers
               Name: Markers
               Namespaces:
-                {}
+                "": true
               Queue Size: 1
               Value: true
-          Enabled: false
+          Enabled: true
           Name: PostprocessedTrajectory
       Enabled: true
       Name: MpcTracker
@@ -430,21 +430,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Class: rviz/ThirdPersonFollower
+      Distance: 36.5650520324707
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: 18.631242752075195
+        Y: -30.547813415527344
+        Z: -5.7220458984375e-6
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 27.730791091918945
-      Target Frame: uav1/gps_origin
-      Value: TopDownOrtho (rviz)
-      X: 0
-      Y: 0
+      Pitch: 0.0953986719250679
+      Target Frame: uav1/fcu
+      Value: ThirdPersonFollower (rviz)
+      Yaw: 6.188568115234375
     Saved: ~
 Window Geometry:
   Displays:
@@ -462,5 +467,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 936
-  X: 966
-  Y: 392
+  X: 2886
+  Y: 32

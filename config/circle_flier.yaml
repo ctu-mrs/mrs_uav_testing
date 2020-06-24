@@ -10,12 +10,13 @@ center:
   z: 3.0 # [m]
 
 radius: 5.0 # [m]
-speed: 3.0 # [m/s]
+speed: 4.0 # [m/s]
 dt: 0.2 # [s]
 n_points: 50 # [-]
 direction: 1 # [0 = CW, 1 = CCW]
 fly_now: false
 orientation: 0 # horizontal
+cycloid_speed: 2.0 # [m/s]
 
 heading:
   use_heading: true

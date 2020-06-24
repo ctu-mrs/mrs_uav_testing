@@ -51,8 +51,9 @@ private:
 
   // | ---------- keeping track of the current position --------- |
 
-  double     angle_   = 0;
-  double     heading_ = 0;
+  double     angle_     = 0;
+  double     cycloid_x_ = 0;
+  double     heading_   = 0;
   std::mutex mutex_global_;
 };
 
@@ -86,6 +87,9 @@ void CircleFlier::onInit(void) {
   param_loader.loadParam("orientation", params_.orientation);
 
   param_loader.loadParam("fly_now", params_.fly_now);
+
+  param_loader.loadParam("cycloid_speed", params_.cycloid_speed);
+  param_loader.loadParam("cycloid_radius", params_.cycloid_radius);
 
   param_loader.loadParam("heading/use_heading", params_.use_heading);
   param_loader.loadParam("heading/mode", params_.heading_mode);
@@ -154,11 +158,12 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   trajectory.dt          = params.dt;
   trajectory.use_heading = params.use_heading;
 
-  double arc_step     = params.speed * params.dt;
-  double angular_step = arc_step / params.radius;
+  double arc_step       = params.speed * params.dt;
+  double angular_step   = arc_step / params.radius;
 
-  auto angle   = mrs_lib::get_mutexed(mutex_global_, angle_);
-  auto heading = mrs_lib::get_mutexed(mutex_global_, heading_);
+  auto angle     = mrs_lib::get_mutexed(mutex_global_, angle_);
+  auto cycloid_x = mrs_lib::get_mutexed(mutex_global_, cycloid_x_);
+  auto heading   = mrs_lib::get_mutexed(mutex_global_, heading_);
 
   double direction = params.direction == 0 ? -1.0 : 1.0;
 
@@ -168,16 +173,20 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     mrs_msgs::Reference reference;
 
     if (params.orientation == 0) {
-      reference.position.z = params.center_z;
       reference.position.x = cos(angle) * params.radius + params.center_x;
       reference.position.y = sin(angle) * params.radius + params.center_y;
+      reference.position.z = params.center_z;
     } else if (params.orientation == 1) {
-      reference.position.z = sin(angle) * params.radius + params.center_z;
       reference.position.x = cos(angle) * params.radius + params.center_x;
       reference.position.y = params.center_y;
-    } else {
+      reference.position.z = sin(angle) * params.radius + params.center_z;
+    } else if (params.orientation == 2) {
       reference.position.x = cos(angle) * params.radius + params.center_x;
       reference.position.y = sin(angle) * params.radius + params.center_y;
+      reference.position.z = sin(angle) * params.radius + params.center_z;
+    } else if (params.orientation == 3) {
+      reference.position.x = cos(angle) * params.radius + cycloid_x + params.center_x;
+      reference.position.y = params.center_y;
       reference.position.z = sin(angle) * params.radius + params.center_z;
     }
 
@@ -203,6 +212,7 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     trajectory.points.push_back(reference);
 
     angle += direction * angular_step;
+    cycloid_x += params.cycloid_speed * params.dt;
 
     heading += params.heading_rate * params.dt;
 
@@ -231,10 +241,19 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   mrs_lib::set_mutexed(mutex_global_, angle, angle_);
 
   // do a step with the global heading_
-  heading = mrs_lib::get_mutexed(mutex_global_, heading_);
-  heading += params.heading_rate * (1.0 / params.publisher_rate);
-  heading = mrs_lib::wrapAngle(heading);
-  mrs_lib::set_mutexed(mutex_global_, heading, heading_);
+  if (params.heading_mode == 3) {
+    heading = mrs_lib::get_mutexed(mutex_global_, heading_);
+    heading += params.heading_rate * (1.0 / params.publisher_rate);
+    heading = mrs_lib::wrapAngle(heading);
+    mrs_lib::set_mutexed(mutex_global_, heading, heading_);
+  }
+
+  // do a step with the cycloid
+  if (params.orientation == 3) {
+    cycloid_x = mrs_lib::get_mutexed(mutex_global_, cycloid_x_);
+    cycloid_x += params.cycloid_speed * (1.0 / params.publisher_rate);
+    mrs_lib::set_mutexed(mutex_global_, cycloid_x, cycloid_x_);
+  }
 
 }  // namespace mrs_uav_testing
 
