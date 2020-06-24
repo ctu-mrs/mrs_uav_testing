@@ -13,7 +13,7 @@ constraint_management:
 
   fallback_constraints:
 
-    GPS: "fast"
+    GPS: "insane"
 
 insane:
 

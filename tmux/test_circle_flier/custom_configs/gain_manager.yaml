@@ -12,7 +12,7 @@ tight:
     ka: 1.0
 
     attitude:
-      kq: 4.0
+      kq: 6.0
 
     kib: 1.0
     kib_lim: 10.0

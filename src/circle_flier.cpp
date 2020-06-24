@@ -89,7 +89,6 @@ void CircleFlier::onInit(void) {
   param_loader.loadParam("fly_now", params_.fly_now);
 
   param_loader.loadParam("cycloid_speed", params_.cycloid_speed);
-  param_loader.loadParam("cycloid_radius", params_.cycloid_radius);
 
   param_loader.loadParam("heading/use_heading", params_.use_heading);
   param_loader.loadParam("heading/mode", params_.heading_mode);

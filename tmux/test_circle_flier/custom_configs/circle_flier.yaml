@@ -2,7 +2,7 @@ publisher:
   rate: 30 # [Hz]
 
 radius: 5.0 # [m]
-speed: 4.0 # [m/s]
+speed: 5.0 # [m/s]
 dt: 0.01 # [s]
 n_points: 500 # [-]
 direction: 1 # [0 = CW, 1 = CCW]
@@ -12,7 +12,7 @@ center:
   frame_id: ""
   x: 0.0 # [m]
   y: 0.0 # [m]
-  z: 20.0 # [m]
+  z: 3.0 # [m]
 
 heading:
   use_heading: true
