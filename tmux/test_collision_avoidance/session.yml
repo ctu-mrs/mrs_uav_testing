@@ -76,3 +76,4 @@ windows:
       layout: tiled
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
+        - waitForOdometry; ~/.i3/layout_manager.sh ./layout.json
