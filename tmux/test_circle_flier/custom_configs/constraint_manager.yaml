@@ -42,3 +42,10 @@ insane:
     acceleration: 1.0
     jerk: 50.0
     snap: 50.0
+
+  angular_speed:
+    roll: 60.0
+    pitch: 60.0
+    yaw: 10.0
+
+  tilt: deg(90)
