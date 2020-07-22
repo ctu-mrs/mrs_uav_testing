@@ -24,7 +24,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray --file ./init_pose.txt
+        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray --file ./init_pose.csv
   - status:
       layout: even-vertical
       panes:

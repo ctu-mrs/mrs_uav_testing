@@ -25,9 +25,9 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; rosrun mrs_simulation spawn 1 --file pos1.txt --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
-        - waitForSimulation; rosrun mrs_simulation spawn 2 --file pos2.txt --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
-        - waitForSimulation; rosrun mrs_simulation spawn 3 --file pos3.txt --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; rosrun mrs_simulation spawn 1 --file pos1.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; rosrun mrs_simulation spawn 2 --file pos2.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; rosrun mrs_simulation spawn 3 --file pos3.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
   - control:
       layout: tiled
       panes:
