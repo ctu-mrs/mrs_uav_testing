@@ -16,6 +16,6 @@ center:
 
 heading:
   use_heading: true
-  mode: 0 # [0 = preset, 1 = tangent, 2 = to center]
+  mode: 2 # [0 = preset, 1 = tangent, 2 = to center]
   default_heading: 1.57 # [rad]
   default_heading_rate: 1.0 # [rad/s]
