@@ -1890,6 +1890,8 @@ bool test(void) {
 
 #ifdef ROSTEST
   EXPECT_TRUE(result);
+#else
+  return true;
 #endif
 }
 
