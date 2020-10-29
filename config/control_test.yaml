@@ -27,7 +27,7 @@ line_trajectory:
 looping_circle_trajectory:
 
   radius: 15.0 # [m]
-  speed: 8.0 # [m/s]
+  speed: 5.0 # [m/s]
   duration: 30.0 # [s]
 
 switch_estimator_after_takeoff:
