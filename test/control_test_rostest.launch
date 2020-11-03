@@ -8,6 +8,8 @@
   </node>
 
   <include file="$(find mrs_uav_general)/launch/core.launch">
+    <arg name="config_mpc_tracker" default="$(find mrs_uav_testing)/test/custom_configs/mpc_tracker.yaml" />
+    <arg name="config_odometry" default="$(find mrs_uav_testing)/test/custom_configs/odometry.yaml" />
   </include>
 
   <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
