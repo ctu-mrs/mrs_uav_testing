@@ -1,21 +1,22 @@
 <launch>
 
   <include file="$(find mrs_simulation)/launch/simulation.launch">
-    <arg name="gui" value="false" />
+    <arg name="gui" value="true" />
   </include>
 
   <node pkg="mrs_simulation" type="spawn" name="spawn" output="screen" launch-prefix="bash -c 'sleep 5; $0 1 --t650 --run --delete --enable-rangefinder'">
   </node>
 
+  <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
+  <arg name="SENSORS" default="garmin_down"/>
+  <arg name="custom_config" default="" />
+  <arg name="debug" default="false" />
+  <arg name="start_with_takeoff" default="true" />
+
   <include file="$(find mrs_uav_general)/launch/core.launch">
     <arg name="config_mpc_tracker" default="$(find mrs_uav_testing)/test/custom_configs/mpc_tracker.yaml" />
     <arg name="config_odometry" default="$(find mrs_uav_testing)/test/custom_configs/odometry.yaml" />
   </include>
-
-  <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
-  <arg name="custom_config" default="" />
-  <arg name="debug" default="false" />
-  <arg name="start_with_takeoff" default="true" />
 
   <group ns="$(arg UAV_NAME)">
 

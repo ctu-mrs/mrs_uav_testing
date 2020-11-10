@@ -1,6 +1,6 @@
 name: simulation
 root: ./
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow; export PX4_SIM_SPEED_FACTOR=1.0
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow; export PX4_SIM_SPEED_FACTOR=1.0; export SENSORS="garmin_down"
 startup_window: control_test
 windows:
   - roscore:

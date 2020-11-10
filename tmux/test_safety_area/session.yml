@@ -1,7 +1,6 @@
 name: simulation
 root: ./
-
-pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export PX4_SIM_SPEED_FACTOR=1.0
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=t650; export ODOMETRY_TYPE=gps; export PX4_SIM_SPEED_FACTOR=1.0; export SENSORS="garmin_down"
 startup_window: control
 windows:
   - roscore:
