@@ -8,7 +8,7 @@
 
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/mutex.h>
-#include <mrs_lib/geometry_utils.h>
+#include <mrs_lib/geometry/cyclic.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <mrs_uav_testing/circle_flierConfig.h>
@@ -17,6 +17,9 @@
 
 namespace mrs_uav_testing
 {
+
+using radians = mrs_lib::geometry::radians;
+using sradians = mrs_lib::geometry::sradians;
 
 /* class CircleFlier //{ */
 
@@ -215,7 +218,7 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     heading += params.heading_rate * params.dt;
 
-    angle = mrs_lib::wrapAngle(angle);
+    angle = radians::wrap(angle);
   }
 
   if (params_.publisher_active) {
@@ -236,14 +239,14 @@ void CircleFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   angular_step = arc_step / params.radius;
   angle        = mrs_lib::get_mutexed(mutex_global_, angle_);
   angle += direction * angular_step;
-  angle = mrs_lib::wrapAngle(angle);
+  angle = radians::wrap(angle);
   mrs_lib::set_mutexed(mutex_global_, angle, angle_);
 
   // do a step with the global heading_
   if (params.heading_mode == 3) {
     heading = mrs_lib::get_mutexed(mutex_global_, heading_);
     heading += params.heading_rate * (1.0 / params.publisher_rate);
-    heading = mrs_lib::wrapAngle(heading);
+    heading = radians::wrap(heading);
     mrs_lib::set_mutexed(mutex_global_, heading, heading_);
   }
 

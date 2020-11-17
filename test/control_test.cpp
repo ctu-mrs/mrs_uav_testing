@@ -27,10 +27,11 @@
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/subscribe_handler.h>
 #include <mrs_lib/msg_extractor.h>
+#include <mrs_lib/param_loader.h>
+#include <mrs_lib/geometry/cyclic.h>
+#include <mrs_lib/geometry/misc.h>
 
 #include <tf/transform_datatypes.h>
-
-#include <mrs_lib/param_loader.h>
 
 #ifdef ROSTEST
 #include <gtest/gtest.h>
@@ -39,6 +40,12 @@
 #endif
 
 //}
+
+using radians = mrs_lib::geometry::radians;
+using sradians = mrs_lib::geometry::sradians;
+
+using vec2_t = mrs_lib::geometry::vec_t<2>;
+using vec3_t = mrs_lib::geometry::vec_t<3>;
 
 /* //{ state machine states */
 
@@ -628,7 +635,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > _looping_circle_duration_) {
-        if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
+        if (mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(cmd_x, cmd_y, cmd_z)) < 2.0) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
@@ -659,7 +666,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       auto [cmd_x, cmd_y, cmd_z] = mrs_lib::getPosition(sh_position_cmd_.getMsg());
 
       if ((ros::Time::now() - looping_start_time_).toSec() > 20.0) {
-        if (mrs_lib::dist3d(odom_x, odom_y, odom_z, cmd_x, cmd_y, cmd_z) < 2.0) {
+        if (mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(cmd_x, cmd_y, cmd_z)) < 2.0) {
           changeState(ControlState_t(int(current_state_) + 1));
         }
       }
@@ -717,7 +724,7 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     case LAND_STATE: {
 
-      if (active_tracker_name == "NullTracker" && mrs_lib::dist2d(des_x_, des_y_, odom_x, odom_y) < 1.0) {
+      if (active_tracker_name == "NullTracker" && mrs_lib::geometry::dist(vec2_t(des_x_, des_y_), vec2_t(odom_x, odom_y)) < 1.0) {
         changeState(ControlState_t(int(current_state_) + 1));
       }
 
@@ -1436,7 +1443,7 @@ bool ControlTest::inDesiredState(void) {
     return false;
   }
 
-  if (isStationary() && mrs_lib::dist3d(odom_x, odom_y, odom_z, des_x_, des_y_, des_z_) < 0.20 && mrs_lib::angleBetween(odom_heading, des_heading_) < 0.20) {
+  if (isStationary() && mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(des_x_, des_y_, des_z_)) < 0.20 && sradians::diff(odom_heading, des_heading_) < 0.20) {
 
     ROS_WARN_THROTTLE(1.0, "[ControlTest]: the goal has been reached.");
     return true;
