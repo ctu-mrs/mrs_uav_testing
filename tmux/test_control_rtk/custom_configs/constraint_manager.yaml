@@ -2,4 +2,4 @@ constraint_management:
 
   fallback_constraints:
 
-    RTK: "fast"
+    RTK: "medium"
