@@ -30,6 +30,7 @@
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/geometry/cyclic.h>
 #include <mrs_lib/geometry/misc.h>
+#include <mrs_lib/timer.h>
 
 #include <tf/transform_datatypes.h>
 
@@ -41,11 +42,21 @@
 
 //}
 
-using radians = mrs_lib::geometry::radians;
+/* using //{ */
+
+using radians  = mrs_lib::geometry::radians;
 using sradians = mrs_lib::geometry::sradians;
 
 using vec2_t = mrs_lib::geometry::vec_t<2>;
 using vec3_t = mrs_lib::geometry::vec_t<3>;
+
+#if ROS_VERSION_MINIMUM(1, 15, 8)
+using Timer = mrs_lib::ThreadTimer;
+#else
+using Timer = mrs_lib::ROSTimer;
+#endif
+
+//}
 
 /* //{ state machine states */
 
@@ -183,8 +194,8 @@ private:
 
   // | ----------------------- main timer ----------------------- |
 
-  ros::Timer timer_main_;
-  void       timerMain(const ros::TimerEvent& event);
+  Timer timer_main_;
+  void  timerMain(const ros::TimerEvent& event);
 
   // | ---------------------- state machine --------------------- |
 
@@ -377,7 +388,7 @@ ControlTest::ControlTest() {
 
   // | ------------------------- timers ------------------------- |
 
-  timer_main_ = nh_.createTimer(ros::Rate(10), &ControlTest::timerMain, this);
+  timer_main_ = Timer(nh_, ros::Rate(10), &ControlTest::timerMain, this);
 
   // | ---------------------- finish inint ---------------------- |
 
@@ -1443,7 +1454,8 @@ bool ControlTest::inDesiredState(void) {
     return false;
   }
 
-  if (isStationary() && mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(des_x_, des_y_, des_z_)) < 0.20 && radians::diff(odom_heading, des_heading_) < 0.20) {
+  if (isStationary() && mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(des_x_, des_y_, des_z_)) < 0.20 &&
+      radians::diff(odom_heading, des_heading_) < 0.20) {
 
     ROS_WARN_THROTTLE(1.0, "[ControlTest]: the goal has been reached.");
     return true;
