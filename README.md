@@ -1,4 +1,4 @@
-# MRS UAV Testing [![Build Status](https://travis-ci.com/ctu-mrs/mrs_uav_testing.svg?branch=master)](https://travis-ci.com/ctu-mrs/mrs_uav_testing)
+# MRS UAV Testing [![Build Status](https://github.com/ctu-mrs/mrs_bumper/workflows/CI/badge.svg)](https://github.com/ctu-mrs/mrs_bumper/actions)
 
 ![](.fig/mrs_testing.jpg)
 
