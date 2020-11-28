@@ -27,7 +27,7 @@ windows:
   - trajectory_generation:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch trajectory_generation trajectory_generation.launch
+        - waitForOdometry; roslaunch mrs_uav_trajectory_generation trajectory_generation.launch
   - takeoff:
       layout: tiled
       panes:
