@@ -1,4 +1,4 @@
-# MRS UAV Testing [![Build Status](https://github.com/ctu-mrs/mrs_bumper/workflows/CI/badge.svg)](https://github.com/ctu-mrs/mrs_bumper/actions)
+# MRS UAV Testing [![Build Status](https://github.com/ctu-mrs/mrs_uav_testing/workflows/CI/badge.svg)](https://github.com/ctu-mrs/mrs_uav_testing/actions)
 
 ![](.fig/mrs_testing.jpg)
 
