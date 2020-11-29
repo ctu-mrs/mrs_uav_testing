@@ -9,20 +9,9 @@
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/geometry/cyclic.h>
-#include <mrs_lib/timer.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <mrs_uav_testing/circle_flierConfig.h>
-
-//}
-
-/* using //{ */
-
-#if ROS_VERSION_MINIMUM(1, 15, 8)
-using Timer = mrs_lib::ThreadTimer;
-#else
-using Timer = mrs_lib::ROSTimer;
-#endif
 
 //}
 
@@ -49,7 +38,7 @@ private:
   ros::ServiceClient service_client_trajectory_;
   ros::Publisher     publisher_trajectory_;
 
-  Timer timer_main_;
+  ros::Timer timer_main_;
 
   double main_timer_rate_;
 
@@ -122,7 +111,7 @@ void CircleFlier::onInit(void) {
   service_client_trajectory_ = nh_.serviceClient<mrs_msgs::TrajectoryReferenceSrv>("trajectory_reference_out");
   publisher_trajectory_      = nh_.advertise<mrs_msgs::TrajectoryReference>("trajectory_reference_out", 1, false);
 
-  timer_main_ = Timer(nh_, ros::Rate(params_.publisher_rate), &CircleFlier::timerMain, this);
+  timer_main_ = nh_.createTimer(ros::Rate(params_.publisher_rate), &CircleFlier::timerMain, this);
 
   // | ----------------------- finish init ---------------------- |
 

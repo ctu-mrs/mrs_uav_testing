@@ -14,19 +14,8 @@
 #include <mrs_lib/subscribe_handler.h>
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/msg_extractor.h>
-#include <mrs_lib/timer.h>
 
 #include <random>
-
-//}
-
-/* using //{ */
-
-#if ROS_VERSION_MINIMUM(1, 15, 8)
-using Timer = mrs_lib::ThreadTimer;
-#else
-using Timer = mrs_lib::ROSTimer;
-#endif
 
 //}
 
@@ -53,7 +42,7 @@ private:
 
   ros::ServiceClient service_client_reference_;
 
-  Timer main_timer_;
+  ros::Timer main_timer_;
 
   double _main_timer_rate_;
 
@@ -111,7 +100,7 @@ void RandomFlier::onInit(void) {
 
   last_successfull_command_ = ros::Time(0);
 
-  main_timer_ = Timer(nh_, ros::Rate(_main_timer_rate_), &RandomFlier::timerMain, this);
+  main_timer_ = nh_.createTimer(ros::Rate(_main_timer_rate_), &RandomFlier::timerMain, this);
 
   // | ----------------------- finish init ---------------------- |
 

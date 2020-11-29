@@ -30,7 +30,6 @@
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/geometry/cyclic.h>
 #include <mrs_lib/geometry/misc.h>
-#include <mrs_lib/timer.h>
 
 #include <tf/transform_datatypes.h>
 
@@ -49,12 +48,6 @@ using sradians = mrs_lib::geometry::sradians;
 
 using vec2_t = mrs_lib::geometry::vec_t<2>;
 using vec3_t = mrs_lib::geometry::vec_t<3>;
-
-#if ROS_VERSION_MINIMUM(1, 15, 8)
-using Timer = mrs_lib::ThreadTimer;
-#else
-using Timer = mrs_lib::ROSTimer;
-#endif
 
 //}
 
@@ -194,7 +187,7 @@ private:
 
   // | ----------------------- main timer ----------------------- |
 
-  Timer timer_main_;
+  ros::Timer timer_main_;
   void  timerMain(const ros::TimerEvent& event);
 
   // | ---------------------- state machine --------------------- |
@@ -388,7 +381,7 @@ ControlTest::ControlTest() {
 
   // | ------------------------- timers ------------------------- |
 
-  timer_main_ = Timer(nh_, ros::Rate(10), &ControlTest::timerMain, this);
+  timer_main_ = nh_.createTimer(ros::Rate(10), &ControlTest::timerMain, this);
 
   // | ---------------------- finish inint ---------------------- |
 

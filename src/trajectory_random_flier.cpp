@@ -14,21 +14,10 @@
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/subscribe_handler.h>
 #include <mrs_lib/msg_extractor.h>
-#include <mrs_lib/timer.h>
 
 #include <std_srvs/Trigger.h>
 
 #include <random>
-
-//}
-
-/* using //{ */
-
-#if ROS_VERSION_MINIMUM(1, 15, 8)
-using Timer = mrs_lib::ThreadTimer;
-#else
-using Timer = mrs_lib::ROSTimer;
-#endif
 
 //}
 
@@ -58,7 +47,7 @@ private:
 
   ros::ServiceClient service_client_trajectory_;
 
-  Timer timer_main_;
+  ros::Timer timer_main_;
 
   double _main_timer_rate_;
 
@@ -121,7 +110,7 @@ void TrajectoryRandomFlier::onInit(void) {
 
   last_successfull_command_ = ros::Time(0);
 
-  timer_main_ = Timer(nh_, ros::Rate(_main_timer_rate_), &TrajectoryRandomFlier::timerMain, this);
+  timer_main_ = nh_.createTimer(ros::Rate(_main_timer_rate_), &TrajectoryRandomFlier::timerMain, this);
 
   // | ----------------------- finish init ---------------------- |
 
