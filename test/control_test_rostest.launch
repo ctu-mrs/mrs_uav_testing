@@ -1,7 +1,7 @@
 <launch>
 
   <include file="$(find mrs_simulation)/launch/simulation.launch">
-    <arg name="gui" value="true" />
+    <arg name="gui" value="false" />
   </include>
 
   <node pkg="mrs_simulation" type="spawn" name="spawn" output="screen" launch-prefix="bash -c 'sleep 5; $0 1 --t650 --run --delete --enable-rangefinder'">
