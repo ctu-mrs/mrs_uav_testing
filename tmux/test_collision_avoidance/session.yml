@@ -25,9 +25,9 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; rosrun mrs_simulation spawn 1 --file pos1.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
-        - waitForSimulation; rosrun mrs_simulation spawn 2 --file pos2.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
-        - waitForSimulation; rosrun mrs_simulation spawn 3 --file pos3.csv --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-ground-truth --enable-rangefinder"
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "2 $UAV_TYPE --enable-ground-truth --enable-rangefinder"
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "3 $UAV_TYPE --enable-ground-truth --enable-rangefinder"
   - control:
       layout: tiled
       panes:

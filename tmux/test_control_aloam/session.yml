@@ -20,7 +20,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; rosrun mrs_simulation spawn 1 --$UAV_TYPE --run --delete --enable-rangefinder --enable-ground-truth --enable-ouster --use-gpu-ray --file ~/mrs_workspace/src/uav_core/ros_packages/mrs_uav_odometry/config/init_pose/init_pose.csv
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-ground-truth --enable-ouster --use-gpu-ray --pos_file ~/mrs_workspace/src/uav_core/ros_packages/mrs_uav_odometry/config/init_pose/init_pose.csv"
   - status:
       layout: even-vertical
       panes:
