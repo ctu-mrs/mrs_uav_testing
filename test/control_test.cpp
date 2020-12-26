@@ -188,7 +188,7 @@ private:
   // | ----------------------- main timer ----------------------- |
 
   ros::Timer timer_main_;
-  void  timerMain(const ros::TimerEvent& event);
+  void       timerMain(const ros::TimerEvent& event);
 
   // | ---------------------- state machine --------------------- |
 
@@ -1448,7 +1448,7 @@ bool ControlTest::inDesiredState(void) {
   }
 
   if (isStationary() && mrs_lib::geometry::dist(vec3_t(odom_x, odom_y, odom_z), vec3_t(des_x_, des_y_, des_z_)) < 0.20 &&
-      radians::diff(odom_heading, des_heading_) < 0.20) {
+      fabs(radians::diff(odom_heading, des_heading_)) < 0.20) {
 
     ROS_WARN_THROTTLE(1.0, "[ControlTest]: the goal has been reached.");
     return true;
