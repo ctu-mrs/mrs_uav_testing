@@ -29,7 +29,7 @@ windows:
   - bumper:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_bumper bumper.launch debug:=true
+        - waitForOdometry; roslaunch mrs_bumper bumper.launch
   - joystick:
       layout: tiled
       panes:
