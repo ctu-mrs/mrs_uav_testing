@@ -20,7 +20,8 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-ouster --use-gpu-ray"
+        # - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-ouster --use-gpu-ray"
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-rplidar"
   - status:
       layout: tiled
       panes:
@@ -28,7 +29,7 @@ windows:
   - bumper:
       layout: tiled
       panes:
-        - waitForOdometry; roslaunch mrs_bumper bumper.launch
+        - waitForOdometry; roslaunch mrs_bumper bumper.launch debug:=true
   - joystick:
       layout: tiled
       panes:
@@ -51,6 +52,7 @@ windows:
       panes:
         #{ uav1
         - 'waitForControl;
+          read;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
           sleep 0.1;
           rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
