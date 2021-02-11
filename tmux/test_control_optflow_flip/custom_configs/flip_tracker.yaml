@@ -1,0 +1,6 @@
+phases:
+
+  flipping_pulse:
+
+    axis: 0 # [0 = X, 1 = Y, 2 = Z]
+    direction: 0 # [0 = positive, 1 = negative]

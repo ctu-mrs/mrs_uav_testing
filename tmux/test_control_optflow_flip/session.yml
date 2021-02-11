@@ -1,0 +1,53 @@
+name: simulation
+root: ./
+pre_window: export UAV_NAME=uav1; export UAV_TYPE=f450; export ODOMETRY_TYPE=optflow; export PX4_SIM_SPEED_FACTOR=1.0; export SENSORS="garmin_down"
+startup_window: flip
+windows:
+  - roscore:
+      layout: even-vertical
+      panes:
+        - roscore
+  - gazebo:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch mrs_simulation simulation.launch gui:=true
+  - rviz:
+      layout: even-vertical
+      panes:
+        - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=control_test
+        - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
+        - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
+  - spawn:
+      layout: even-vertical
+      panes:
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-ground-truth --enable-bluefox-camera --pos_file `pwd`/init_pos.yaml"
+  - status:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_uav_status status.launch
+  - optic_flow:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_optic_flow optic_flow.launch
+  - control:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_se3_controller:=./custom_configs/se3_controller.yaml config_control_manager:=./custom_configs/control_manager.yaml config_flip_tracker:=./custom_configs/flip_tracker.yaml
+  - takeoff:
+      layout: tiled
+      panes:
+        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
+        - 'waitForControl;
+          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          sleep 0.1;
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard'
+  - flip:
+      layout: tiled
+      panes:
+        - 'history -s rosservice call /uav1/control_manager/flip_tracker/flip;
+           history -s rosservice call /uav1/control_manager/switch_tracker FlipTracker'
+  - gazebo_camera_follow:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
+        - waitForControl; sleep 3; ~/.i3/layout_manager.sh layout.json

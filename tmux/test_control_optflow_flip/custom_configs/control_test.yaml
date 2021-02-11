@@ -1,0 +1,25 @@
+max_xy: 10.0
+min_xy: -10.0
+
+min_z: 2.0
+max_z: 4.0
+
+max_heading: 3.14
+min_heading: -3.14
+
+goto_relative_altitude_up: 1.0
+goto_relative_altitude_down: 1.0
+
+test_line_tracker: false
+test_mpc_gotos: true
+
+trajectory:
+
+  p1: -5.0
+  p2: 5.0
+
+  speed: 1.0
+
+  heading_rate: 1.0
+
+  dt: 0.1
