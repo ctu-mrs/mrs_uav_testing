@@ -17,10 +17,6 @@ windows:
         - waitForSimulation; roslaunch mrs_uav_testing rviz.launch name:=control_test
         - waitForSimulation; roslaunch mrs_rviz_plugins load_robot.launch
         - waitForSimulation; roslaunch mrs_rviz_plugins rviz_interface.launch
-  - spawn:
-      layout: tiled
-      panes:
-        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --pos_file `pwd`/init_pos.yaml"
   - status:
       layout: tiled
       panes:

@@ -1,3 +1,5 @@
+spawn_args: "1 --t650 --enable-rangefinder"
+
 max_xy: 10.0 # [m]
 min_xy: -10.0 # [m]
 

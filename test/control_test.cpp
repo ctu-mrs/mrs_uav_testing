@@ -16,6 +16,7 @@
 #include <mrs_msgs/String.h>
 #include <mrs_msgs/PositionCommand.h>
 #include <mrs_msgs/ControlManagerDiagnostics.h>
+#include <mrs_msgs/SpawnerDiagnostics.h>
 
 #include <nav_msgs/Odometry.h>
 
@@ -60,6 +61,7 @@ using vec3_t = mrs_lib::geometry::vec_t<3>;
 typedef enum
 {
   IDLE_STATE,
+  SPAWN_STATE,
   TAKEOFF_STATE,
   CHANGE_ESTIMATOR_STATE,
   CHANGE_TRACKER_STATE,
@@ -93,8 +95,9 @@ typedef enum
   ERROR_STATE,
 } ControlState_t;
 
-const char* state_names[32] = {
+const char* state_names[33] = {
     "IDLE_STATE",
+    "SPAWN_STATE",
     "TAKEOFF_STATE",
     "CHANGE_ESTIMATOR_STATE",
     "CHANGE_TRACKER_STATE",
@@ -146,6 +149,7 @@ private:
 
   // | ----------------------- subscribers ---------------------- |
 
+  mrs_lib::SubscribeHandler<mrs_msgs::SpawnerDiagnostics>        sh_spawner_diag_;
   mrs_lib::SubscribeHandler<nav_msgs::Odometry>                  sh_odometry_;
   mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>           sh_position_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics> sh_control_manager_diag_;
@@ -171,6 +175,7 @@ private:
   ros::ServiceClient service_client_set_heading_;
   ros::ServiceClient service_client_set_heading_relative_;
   ros::ServiceClient service_client_switch_estimator_;
+  ros::ServiceClient service_client_spawn_uav_;
 
   // trajectory tracking
   ros::ServiceClient service_client_trajectory_reference_;
@@ -199,6 +204,8 @@ private:
   // | ------------------------- params ------------------------- |
 
   bool _start_with_takeoff_ = false;
+
+  std::string _spawn_args_;
 
   double _max_xy_;
   double _min_xy_;
@@ -237,6 +244,7 @@ private:
   bool   isStationary(void);
   bool   trackerReady(void);
   void   switchTracker(const std::string tracker_name);
+  void   spawnUAV(const std::string args);
   void   switchEstimator(const std::string estimator_name);
   void   startTrajectoryTracking(void);
   void   stopTrajectoryTracking(void);
@@ -291,6 +299,8 @@ ControlTest::ControlTest() {
 
   param_loader.loadParam("start_with_takeoff", _start_with_takeoff_);
 
+  param_loader.loadParam("spawn_args", _spawn_args_);
+
   param_loader.loadParam("max_xy", _max_xy_);
   param_loader.loadParam("min_xy", _min_xy_);
   param_loader.loadParam("max_z", _max_z_);
@@ -336,6 +346,8 @@ ControlTest::ControlTest() {
 
   sh_odometry_ = mrs_lib::SubscribeHandler<nav_msgs::Odometry>(shopts, "odometry_in");
 
+  sh_spawner_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::SpawnerDiagnostics>(shopts, "spawner_diagnostics_in");
+
   sh_position_cmd_ = mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>(shopts, "position_command_in");
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts, "control_manager_diagnostics_in");
@@ -373,7 +385,12 @@ ControlTest::ControlTest() {
   service_client_resume_trajectory_tracking_ = nh_.serviceClient<std_srvs::Trigger>("resume_trajectory_tracking_out");
 
   // | -------------------- odometry services ------------------- |
+
   service_client_switch_estimator_ = nh_.serviceClient<mrs_msgs::String>("switch_estimator_out");
+
+  // | ------------------ drone spawner service ----------------- |
+
+  service_client_spawn_uav_ = nh_.serviceClient<mrs_msgs::String>("spawn_out");
 
   // | --------------------- service servers -------------------- |
 
@@ -401,19 +418,19 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
   if (!is_initialized_)
     return;
 
-  if (!sh_odometry_.hasMsg()) {
-    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the Odometry");
-    return;
+  double odom_x, odom_y, odom_z;
+
+  if (sh_odometry_.hasMsg()) {
+
+    std::tie(odom_x, odom_y, odom_z) = mrs_lib::getPosition(sh_odometry_.getMsg());
   }
 
-  if (!sh_control_manager_diag_.hasMsg()) {
-    ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for the ControlManager diagnostics");
-    return;
+  std::string active_tracker_name;
+
+  if (sh_control_manager_diag_.hasMsg()) {
+
+    active_tracker_name = sh_control_manager_diag_.getMsg()->active_tracker;
   }
-
-  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.getMsg());
-
-  std::string active_tracker_name = sh_control_manager_diag_.getMsg()->active_tracker;
 
   if ((ros::Time::now() - timeout_).toSec() > 180.0) {
     ROS_ERROR("[ControlTest]: TIMEOUT, TEST FAILED!!");
@@ -426,8 +443,24 @@ void ControlTest::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       ROS_INFO_THROTTLE(1.0, "[ControlTest]: idling");
 
+      changeState(SPAWN_STATE);
+
+      break;
+    }
+
+    case SPAWN_STATE: {
+
+      ROS_INFO_THROTTLE(1.0, "[ControlTest]: waiting for UAV");
+
       if (_start_with_takeoff_) {
-        changeState(TAKEOFF_STATE);
+        if (sh_spawner_diag_.hasMsg()) {
+          mrs_msgs::SpawnerDiagnostics diag = *sh_spawner_diag_.getMsg();
+          if (diag.spawn_called && !diag.processing) {
+            if (sh_odometry_.hasMsg() && sh_control_manager_diag_.hasMsg()) {
+              changeState(TAKEOFF_STATE);
+            }
+          }
+        }
       }
 
       break;
@@ -812,7 +845,11 @@ bool ControlTest::callbackStart([[maybe_unused]] std_srvs::Trigger::Request& req
 
 void ControlTest::changeState(const ControlState_t new_state) {
 
-  auto [odom_x, odom_y, odom_z] = mrs_lib::getPosition(sh_odometry_.getMsg());
+  double odom_x, odom_y, odom_z;
+
+  if (sh_odometry_.hasMsg()) {
+    std::tie(odom_x, odom_y, odom_z) = mrs_lib::getPosition(sh_odometry_.getMsg());
+  }
 
   ROS_INFO("[ControlTest]: chaging state %s -> %s", state_names[current_state_], state_names[new_state]);
 
@@ -851,6 +888,17 @@ void ControlTest::changeState(const ControlState_t new_state) {
 
     case IDLE_STATE: {
       break;
+    }
+
+    case SPAWN_STATE: {
+
+      /* //{ spawn */
+
+      spawnUAV(_spawn_args_);
+
+      break;
+
+      //}
     }
 
     case TAKEOFF_STATE: {
@@ -1808,6 +1856,32 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
   } else {
     ROS_ERROR("[ControlTest]: service call for switching the tracker failed");
+    ros::shutdown();
+  }
+}
+
+//}
+
+/* //{ spawnUAV() */
+
+void ControlTest::spawnUAV(const std::string args) {
+
+  mrs_msgs::String srv;
+  srv.request.value = args;
+
+  ROS_INFO("[ControlTest]: spawning a UAV with args \"%s\"", srv.request.value.c_str());
+
+  bool success = service_client_spawn_uav_.call(srv);
+
+  if (success) {
+
+    if (!srv.response.success) {
+      ROS_ERROR_STREAM("[ControlTest]: service call for spawning UAV failed: " << srv.response.message);
+      ros::shutdown();
+    }
+
+  } else {
+    ROS_ERROR("[ControlTest]: service call for spawning UAV failed");
     ros::shutdown();
   }
 }

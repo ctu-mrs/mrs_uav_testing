@@ -23,6 +23,7 @@
       <remap from="~odometry_in" to="odometry/odom_main" />
       <remap from="~position_command_in" to="control_manager/position_cmd" />
       <remap from="~control_manager_diagnostics_in" to="control_manager/diagnostics" />
+      <remap from="~spawner_diagnostics_in" to="/mrs_drone_spawner/diagnostics" />
 
         <!-- services out -->
       <remap from="~goto_out" to="control_manager/goto" />
@@ -42,6 +43,7 @@
       <remap from="~stop_trajectory_tracking_out" to="control_manager/stop_trajectory_tracking" />
       <remap from="~resume_trajectory_tracking_out" to="control_manager/resume_trajectory_tracking" />
       <remap from="~switch_estimator_out" to="odometry/change_odometry_source" />
+      <remap from="~spawn_out" to="/mrs_drone_spawner/spawn" />
 
         <!-- services in -->
       <remap from="~start_in" to="automatic_start/start" />
