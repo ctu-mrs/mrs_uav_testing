@@ -21,10 +21,6 @@ windows:
   #     layout: even-vertical
   #     panes:
   #       - waitForSimulation; rosrun plotjuggler PlotJuggler -l ../../plot_juggler/hector_test.xml
-  - spawn:
-      layout: even-vertical
-      panes:
-        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --enable-ground-truth --enable-rplidar --use-gpu-ray --pos_file `pwd`/init_pos.yaml"
   - status:
       layout: even-vertical
       panes:
@@ -49,11 +45,11 @@ windows:
   - control_test:
       layout: tiled
       panes:
-        - waitForControl; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
+        - waitForSimulation; roslaunch mrs_uav_testing control_test.launch custom_config:=./custom_configs/control_test.yaml
   - takeoff:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mrs_uav_general automatic_start.launch
+        - waitForSimulation; roslaunch mrs_uav_general automatic_start.launch
         - 'waitForControl;
           rosservice call /$UAV_NAME/mavros/cmd/arming 1;
           sleep 0.1;

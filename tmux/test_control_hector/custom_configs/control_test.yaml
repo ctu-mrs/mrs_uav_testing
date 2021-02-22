@@ -1,3 +1,5 @@
+spawn_args: "1 --f450 --enable-rangefinder --enable-rplidar --pos 0 0 0.3 0"
+
 max_xy: 6.0 # [m]
 min_xy: -6.0 # [m]
 
