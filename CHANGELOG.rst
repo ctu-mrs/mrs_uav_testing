@@ -2,8 +2,8 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2021-03-16)
+------------------
 * automated google test (github actions)
 * Control tests (gps, optic flow, rtk, hector)
 * collision avoidance test
