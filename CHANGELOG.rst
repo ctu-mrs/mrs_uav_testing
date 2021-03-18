@@ -2,6 +2,10 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Major release
+
 0.0.2 (2021-03-16)
 ------------------
 * automated google test (github actions)
