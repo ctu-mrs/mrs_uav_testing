@@ -14,7 +14,7 @@ constraint_management:
 
   fallback_constraints:
 
-    GPS: "darpa"
+    GPS: "fast"
 
 insane:
 
