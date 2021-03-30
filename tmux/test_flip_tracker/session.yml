@@ -19,7 +19,7 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --model-package eagle_gazebo_resources"
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder"
   - control:
       layout: tiled
       panes:
@@ -27,7 +27,7 @@ windows:
   - flip:
       layout: tiled
       panes:
-        - 'history -s history -s rosservice call /uav1/control_manager/switch_tracker FlipTracker'
+        - 'history -s rosservice call /uav1/control_manager/switch_tracker FlipTracker'
         - waitForRos; while true; do rosservice call /uav1/control_manager/flip_tracker/flip; done
   - takeoff:
       layout: tiled
