@@ -86,25 +86,6 @@
 									}
 								],
 								"type": "con"
-							},
-							{
-								"border": "pixel",
-								"current_border_width": 3,
-								"floating": "auto_off",
-								"geometry": {
-									"height": 460,
-									"width": 804,
-									"x": 0,
-									"y": 0
-								},
-								"name": "ocv_optic_flow",
-								"percent": 0.28,
-								"swallows": [
-									{
-										"instance": "^ocv_optic_flow$"
-									}
-								],
-								"type": "con"
 							}
 						]
 					}
