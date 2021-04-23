@@ -114,6 +114,7 @@ path: [
 use_heading: true
 fly_now: true # tracker will fly it immediately after receiving
 stop_at_waypoints: false
+loop: false
 
 check_trajectory_deviation:
   first_segment: false
