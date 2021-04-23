@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -391,6 +391,26 @@ Visualization Manager:
           Name: PostprocessedTrajectory
       Enabled: true
       Name: MpcTracker
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /uav1/trajectory_generation/markers/final
+          Name: final
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /uav1/trajectory_generation/markers/original
+          Name: original
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: TrajectoryGeneration
     - Alpha: 0.10000000149011612
       Class: mrs_rviz_plugins/Bumper
       Collision alpha: 0.5
@@ -529,5 +549,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 936
-  X: 966
+  X: 2886
   Y: 33
