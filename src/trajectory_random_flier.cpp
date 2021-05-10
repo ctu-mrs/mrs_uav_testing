@@ -89,7 +89,7 @@ void TrajectoryRandomFlier::onInit(void) {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[TrajectoryRandomFlier]: Could not load all parameters!");
-    ros::shutdown();
+    ros::requestShutdown();
   }
 
   mrs_lib::SubscribeHandlerOptions shopts;

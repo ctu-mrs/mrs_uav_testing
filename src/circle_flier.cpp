@@ -99,7 +99,7 @@ void CircleFlier::onInit(void) {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[CircleFlier]: Could not load all parameters!");
-    ros::shutdown();
+    ros::requestShutdown();
   }
 
   drs_.reset(new Drs_t(mutex_drs_, nh_));

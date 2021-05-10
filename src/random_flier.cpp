@@ -79,7 +79,7 @@ void RandomFlier::onInit(void) {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[RandomFlier]: Could not load all parameters!");
-    ros::shutdown();
+    ros::requestShutdown();
   }
 
   mrs_lib::SubscribeHandlerOptions shopts;
