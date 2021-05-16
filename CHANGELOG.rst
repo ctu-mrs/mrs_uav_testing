@@ -2,6 +2,17 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updated ros::shutdown
+* updated trajectory generation params
+* updated flip tracker test
+* updated world files to be compatible with odometry
+* updated aloam test
+* updated flip tracker session
+* updated trajectory generation test
+* Contributors: Matej Petrlik, Tomas Baca
+
 1.0.0 (2021-03-18)
 ------------------
 * Major release
