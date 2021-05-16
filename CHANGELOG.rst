@@ -2,8 +2,8 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2021-05-16)
+------------------
 * updated ros::shutdown
 * updated trajectory generation params
 * updated flip tracker test
