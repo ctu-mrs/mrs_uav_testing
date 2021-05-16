@@ -21,3 +21,9 @@
     <description>the TrajectoryRandomFlier nodelet</description>
   </class>
 </library>
+
+<library path="lib/libPathRandomFlier">
+  <class name="mrs_uav_testing/PathRandomFlier" type="mrs_uav_testing::PathRandomFlier" base_class_type="nodelet::Nodelet">
+    <description>the PathRandomFlier nodelet</description>
+  </class>
+</library>

@@ -2,6 +2,7 @@ constraints: [
   "slow",
   "medium",
   "fast",
+  "even",
   "insane",
   "darpa"
 ]
@@ -10,11 +11,46 @@ constraint_management:
 
   allowed_constraints:
 
-    GPS: ["slow", "medium", "fast", "insane", "darpa"]
+    GPS: ["slow", "medium", "fast", "insane", "darpa", "even"]
 
   fallback_constraints:
 
-    GPS: "fast"
+    GPS: "even"
+
+even:
+
+  horizontal:
+    speed: 5.0
+    acceleration: 3.0
+    jerk: 50.0
+    snap: 50.0
+
+  vertical:
+
+    ascending:
+      speed: 5.0
+      acceleration: 3.0
+      jerk: 50.0
+      snap: 50.0
+
+    descending:
+      speed: 5.0
+      acceleration: 3.0
+      jerk: 50.0
+      snap: 50.0
+
+  heading:
+    speed: 1.57
+    acceleration: 1.0
+    jerk: 50.0
+    snap: 50.0
+
+  angular_speed:
+    roll: 60.0
+    pitch: 60.0
+    yaw: 10.0
+
+  tilt: deg(90)
 
 insane:
 

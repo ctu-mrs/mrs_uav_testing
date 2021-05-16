@@ -24,6 +24,10 @@ windows:
       layout: tiled
       panes:
         - waitForOdometry; roslaunch mrs_uav_testing trajectory_generation_core.launch config_constraint_manager:=./custom_configs/constraint_manager.yaml config_uav_manager:=./custom_configs/uav_manager.yaml config_gain_manager:=./custom_configs/gain_manager.yaml config_control_manager:=./custom_configs/control_manager.yaml config_odometry:=./custom_configs/odometry.yaml config_se3_controller:=./custom_configs/se3_controller.yaml
+  - random_flier:
+      layout: tiled
+      panes:
+        - waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
   - trajectory_generation:
       layout: tiled
       panes:

@@ -1,0 +1,19 @@
+active: true
+main_timer_rate: 100
+
+z:
+  value: 2.5
+  deviation: 1.0
+
+n_points:
+  min: 1
+  max: 30
+
+point_distance:
+  min: 0.01 # [m]
+  max: 5.0 # [m]
+
+stamp:
+  time: 2.0
+
+heading_change: 0.5 # [rad]

@@ -23,7 +23,7 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   CATKIN_DEPENDS nav_msgs mrs_lib std_msgs std_srvs mavros_msgs
-  LIBRARIES RandomFlier TrajectoryRandomFlier CircleFlier
+  LIBRARIES RandomFlier TrajectoryRandomFlier PathRandomFlier CircleFlier
   )
 
 include_directories(
@@ -62,6 +62,17 @@ add_dependencies(TrajectoryRandomFlier
   )
 
 target_link_libraries(TrajectoryRandomFlier
+  ${catkin_LIBRARIES}
+  )
+
+add_library(PathRandomFlier src/path_random_flier.cpp)
+
+add_dependencies(PathRandomFlier
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+target_link_libraries(PathRandomFlier
   ${catkin_LIBRARIES}
   )
 

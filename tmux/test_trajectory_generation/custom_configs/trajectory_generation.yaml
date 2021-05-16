@@ -1,5 +1,19 @@
 frame_id: "uav1/gps_origin"
 
+check_trajectory_deviation:
+  enabled: true
+  max_deviation: 0.5 # [m]
+  max_iterations: 6 # [-]
+  first_segment: false
+
+# Allows to neglect waypoints in the original path if the new path
+# does not violate max distance from the original path.
+# This makes for similar but sparser paths, which are easier for the
+# trajectory generator to work with.
+path_straightener:
+  enabled: true
+  max_deviation: 0.05 # [m]
+
 # path: [
 #   # x, y, z, heading
 #   0.0, 0.0, 1.5, 0.78,
@@ -115,6 +129,3 @@ use_heading: true
 fly_now: true # tracker will fly it immediately after receiving
 stop_at_waypoints: false
 loop: false
-
-check_trajectory_deviation:
-  first_segment: false
