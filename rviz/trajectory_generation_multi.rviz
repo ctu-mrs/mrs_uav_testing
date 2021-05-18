@@ -14,7 +14,7 @@ Panels:
         - /uav91/ControlManager1
         - /uav101/ControlManager1
       Splitter Ratio: 0.5323992967605591
-    Tree Height: 1120
+    Tree Height: 1142
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -958,7 +958,7 @@ Visualization Manager:
                   Marker Topic: /uav4/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    "": true
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1099,7 +1099,7 @@ Visualization Manager:
                   Marker Topic: /uav4/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    "": true
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1111,7 +1111,9 @@ Visualization Manager:
           Marker Topic: /uav4/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            {}
+            markers/original_lines: true
+            markers/original_points: true
+            markers/original_triangles: true
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1119,7 +1121,9 @@ Visualization Manager:
           Marker Topic: /uav4/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            {}
+            markers/final_lines: true
+            markers/final_points: true
+            markers/final_triangles: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1468,7 +1472,7 @@ Visualization Manager:
                   Marker Topic: /uav6/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    "": true
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1609,7 +1613,7 @@ Visualization Manager:
                   Marker Topic: /uav6/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    "": true
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1621,7 +1625,9 @@ Visualization Manager:
           Marker Topic: /uav6/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            {}
+            markers/original_lines: true
+            markers/original_points: true
+            markers/original_triangles: true
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1629,7 +1635,9 @@ Visualization Manager:
           Marker Topic: /uav6/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            {}
+            markers/final_lines: true
+            markers/final_points: true
+            markers/final_triangles: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2667,7 +2675,7 @@ Visualization Manager:
     Background Color: 255; 255; 255
     Default Light: true
     Fixed Frame: common_origin
-    Frame Rate: 60
+    Frame Rate: 30
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -2690,7 +2698,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 99.84469604492188
+      Distance: 116.69700622558594
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -2698,25 +2706,25 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 3.9413230419158936
-        Y: -7.025051116943359
-        Z: -2.913210391998291
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.38539835810661316
+      Pitch: 0.4053982198238373
       Target Frame: common_origin
-      Yaw: 4.883582592010498
+      Yaw: 4.320398330688477
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: false
-  Height: 1348
-  Hide Left Dock: false
+    collapsed: true
+  Height: 1370
+  Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000023d000004e9fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003e000004e9000000cb00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c9000000010000011600000252fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003e00000252000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000046400fffffffb0000000800540069006d006501000000000000045000000000000000000000079f000004e900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000023d000004fffc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003e000004ff000000cb00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c90000000100000116000004fffc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003e000004ff000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000046400fffffffb0000000800540069006d00650100000000000004500000000000000000000009e2000004ff00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -2727,4 +2735,4 @@ Window Geometry:
     collapsed: true
   Width: 2530
   X: 1932
-  Y: 77
+  Y: 55

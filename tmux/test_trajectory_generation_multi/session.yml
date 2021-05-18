@@ -40,16 +40,16 @@ windows:
   - random_flier:
       layout: tiled
       panes:
-        - export UAV_NAME=uav1; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav2; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav3; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav4; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav5; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav6; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav7; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav8; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav9; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
-        - export UAV_NAME=uav10; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch
+        - export UAV_NAME=uav1; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav2; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav3; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav4; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav5; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav6; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav7; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav8; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav9; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - export UAV_NAME=uav10; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
   - trajectory_generation:
       layout: tiled
       panes:
@@ -122,7 +122,7 @@ windows:
   - rviz:
       layout: tiled
       panes:
-        - waitForControl; roslaunch mrs_uav_testing rviz.launch name:=trajectory_generation_multi
+        - export UAV_NAME=uav1; waitForControl; roslaunch mrs_uav_testing rviz.launch name:=trajectory_generation_multi
   - layout:
       layout: tiled
       panes:

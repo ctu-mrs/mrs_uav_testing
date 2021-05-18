@@ -191,9 +191,12 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     // create new point to fly to
     mrs_msgs::Path path;
-    path.fly_now      = true;
-    path.use_heading  = true;
-    path.header.stamp = _stamp_time_ == 0 ? ros::Time::now() : ros::Time::now() + ros::Duration(_stamp_time_);
+    path.fly_now     = true;
+    path.use_heading = true;
+
+    if (!next_wait_for_finish_) {
+      path.header.stamp = _stamp_time_ == 0 ? ros::Time::now() : ros::Time::now() + ros::Duration(_stamp_time_);
+    }
 
     double dist;
 
@@ -228,6 +231,7 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
     }
 
     next_wait_for_finish_ = randi(0, 10) <= 5 ? false : true;
+
     if (!next_wait_for_finish_) {
       double replan_time = randd(2, 10);
       next_replan_time_  = ros::Time::now() + ros::Duration(replan_time);
