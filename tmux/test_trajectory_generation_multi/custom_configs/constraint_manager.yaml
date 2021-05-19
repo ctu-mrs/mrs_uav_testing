@@ -21,22 +21,22 @@ even:
 
   horizontal:
     speed: 5.0
-    acceleration: 3.0
-    jerk: 50.0
+    acceleration: 2.0
+    jerk: 30.0
     snap: 50.0
 
   vertical:
 
     ascending:
       speed: 5.0
-      acceleration: 3.0
-      jerk: 50.0
+      acceleration: 2.0
+      jerk: 30.0
       snap: 50.0
 
     descending:
       speed: 5.0
-      acceleration: 3.0
-      jerk: 50.0
+      acceleration: 2.0
+      jerk: 30.0
       snap: 50.0
 
   heading:
