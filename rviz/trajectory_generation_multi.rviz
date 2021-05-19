@@ -9,7 +9,7 @@ Panels:
         - /TF1/Tree1
         - /uav31/ControlManager1
       Splitter Ratio: 0.5323992967605591
-    Tree Height: 1142
+    Tree Height: 365
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -439,7 +439,7 @@ Visualization Manager:
                   Marker Topic: /uav2/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -580,7 +580,7 @@ Visualization Manager:
                   Marker Topic: /uav2/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -592,9 +592,7 @@ Visualization Manager:
           Marker Topic: /uav2/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -602,9 +600,7 @@ Visualization Manager:
           Marker Topic: /uav2/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -696,7 +692,7 @@ Visualization Manager:
                   Marker Topic: /uav3/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -837,7 +833,7 @@ Visualization Manager:
                   Marker Topic: /uav3/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -849,9 +845,7 @@ Visualization Manager:
           Marker Topic: /uav3/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -859,9 +853,7 @@ Visualization Manager:
           Marker Topic: /uav3/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -953,7 +945,7 @@ Visualization Manager:
                   Marker Topic: /uav4/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1094,7 +1086,7 @@ Visualization Manager:
                   Marker Topic: /uav4/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1106,9 +1098,7 @@ Visualization Manager:
           Marker Topic: /uav4/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1116,9 +1106,7 @@ Visualization Manager:
           Marker Topic: /uav4/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1132,7 +1120,7 @@ Visualization Manager:
               Marker Topic: /uav5/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -1210,7 +1198,7 @@ Visualization Manager:
                   Marker Topic: /uav5/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1351,7 +1339,7 @@ Visualization Manager:
                   Marker Topic: /uav5/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1363,9 +1351,7 @@ Visualization Manager:
           Marker Topic: /uav5/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1373,9 +1359,7 @@ Visualization Manager:
           Marker Topic: /uav5/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1389,7 +1373,7 @@ Visualization Manager:
               Marker Topic: /uav6/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -1467,7 +1451,7 @@ Visualization Manager:
                   Marker Topic: /uav6/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1608,7 +1592,7 @@ Visualization Manager:
                   Marker Topic: /uav6/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1620,9 +1604,7 @@ Visualization Manager:
           Marker Topic: /uav6/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1630,9 +1612,7 @@ Visualization Manager:
           Marker Topic: /uav6/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1646,7 +1626,7 @@ Visualization Manager:
               Marker Topic: /uav7/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -1724,7 +1704,7 @@ Visualization Manager:
                   Marker Topic: /uav7/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1865,7 +1845,7 @@ Visualization Manager:
                   Marker Topic: /uav7/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -1877,9 +1857,7 @@ Visualization Manager:
           Marker Topic: /uav7/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1887,9 +1865,7 @@ Visualization Manager:
           Marker Topic: /uav7/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1903,7 +1879,7 @@ Visualization Manager:
               Marker Topic: /uav8/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -1981,7 +1957,7 @@ Visualization Manager:
                   Marker Topic: /uav8/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2122,7 +2098,7 @@ Visualization Manager:
                   Marker Topic: /uav8/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -2134,9 +2110,7 @@ Visualization Manager:
           Marker Topic: /uav8/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -2144,9 +2118,7 @@ Visualization Manager:
           Marker Topic: /uav8/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2160,7 +2132,7 @@ Visualization Manager:
               Marker Topic: /uav9/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -2238,7 +2210,7 @@ Visualization Manager:
                   Marker Topic: /uav9/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2379,7 +2351,7 @@ Visualization Manager:
                   Marker Topic: /uav9/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -2391,9 +2363,7 @@ Visualization Manager:
           Marker Topic: /uav9/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -2401,9 +2371,7 @@ Visualization Manager:
           Marker Topic: /uav9/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2417,7 +2385,7 @@ Visualization Manager:
               Marker Topic: /uav10/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -2495,7 +2463,7 @@ Visualization Manager:
                   Marker Topic: /uav10/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2636,7 +2604,7 @@ Visualization Manager:
                   Marker Topic: /uav10/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -2648,9 +2616,7 @@ Visualization Manager:
           Marker Topic: /uav10/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -2658,9 +2624,7 @@ Visualization Manager:
           Marker Topic: /uav10/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2674,7 +2638,7 @@ Visualization Manager:
               Marker Topic: /uav11/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -2752,7 +2716,7 @@ Visualization Manager:
                   Marker Topic: /uav11/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2893,7 +2857,7 @@ Visualization Manager:
                   Marker Topic: /uav11/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -2905,9 +2869,7 @@ Visualization Manager:
           Marker Topic: /uav11/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -2915,9 +2877,7 @@ Visualization Manager:
           Marker Topic: /uav11/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2931,7 +2891,7 @@ Visualization Manager:
               Marker Topic: /uav12/control_manager/safety_area_markers
               Name: SafetyhArea
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -3009,7 +2969,7 @@ Visualization Manager:
                   Marker Topic: /uav12/control_manager/trajectory_original/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -3150,7 +3110,7 @@ Visualization Manager:
                   Marker Topic: /uav12/control_manager/mpc_tracker/trajectory_processed/markers
                   Name: Markers
                   Namespaces:
-                    "": true
+                    {}
                   Queue Size: 1
                   Value: true
               Enabled: true
@@ -3162,9 +3122,7 @@ Visualization Manager:
           Marker Topic: /uav12/trajectory_generation/markers/original
           Name: PathOriginal
           Namespaces:
-            markers/original_lines: true
-            markers/original_points: true
-            markers/original_triangles: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -3172,9 +3130,7 @@ Visualization Manager:
           Marker Topic: /uav12/trajectory_generation/markers/final
           Name: PathFinal
           Namespaces:
-            markers/final_lines: true
-            markers/final_points: true
-            markers/final_triangles: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -3207,7 +3163,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 137.12538146972656
+      Distance: 68.66040802001953
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -3223,17 +3179,17 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7147961854934692
+      Pitch: 0.46539849042892456
       Target Frame: common_origin
-      Yaw: 1.5653983354568481
+      Yaw: 0.8153981566429138
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: true
-  Height: 1370
+  Height: 998
   Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd000000040000000000000156000004fffc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003e000004ff000000cb00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c90000000100000116000004fffc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003e000004ff000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000046400fffffffb0000000800540069006d00650100000000000004500000000000000000000009e2000004ff00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000156000004fffc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004c6000001a1000001a900000153fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003e000004ff000000cb00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006502000003c9000003450000025b000000c900000001000001160000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003e0000038b000000a500fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000038f0000003efc0100000002fb0000000800540069006d006500000000000000038f0000046400fffffffb0000000800540069006d00650100000000000004500000000000000000000004e80000038b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -3242,6 +3198,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 2530
-  X: 1932
-  Y: 55
+  Width: 1256
+  X: 3206
+  Y: 33

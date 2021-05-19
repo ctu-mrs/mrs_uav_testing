@@ -117,8 +117,8 @@ void PathRandomFlier::onInit(void) {
   service_client_path_     = nh_.serviceClient<mrs_msgs::PathSrv>("path_out");
 
   // initialize the random number generator
-  /* srand(static_cast<unsigned int>(time(0))); */
-  srand(time(NULL));
+  srand(static_cast<unsigned int>(time(0)));
+  /* srand(time(NULL)); */
 
   last_successfull_command_ = ros::Time(0);
 
@@ -230,7 +230,8 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       path.points.push_back(new_point);
     }
 
-    next_wait_for_finish_ = randi(0, 10) <= 5 ? false : true;
+    /* next_wait_for_finish_ = randi(0, 10) <= 5 ? false : true; */
+    next_wait_for_finish_ = false;
 
     if (!next_wait_for_finish_) {
       double replan_time = randd(2, 10);

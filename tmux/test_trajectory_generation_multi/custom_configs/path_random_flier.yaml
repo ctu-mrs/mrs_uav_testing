@@ -1,2 +1,6 @@
 stamp:
-  time: 8.0
+  time: 2.0
+
+z:
+  value: 3.0
+  deviation: 0.5
