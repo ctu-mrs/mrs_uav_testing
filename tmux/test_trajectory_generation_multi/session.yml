@@ -38,18 +38,18 @@ windows:
   - random_flier:
       layout: tiled
       panes:
-        - if (( $N < 1 )); then exit; fi; export UAV_NAME=uav1; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 2 )); then exit; fi; export UAV_NAME=uav2; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 3 )); then exit; fi; export UAV_NAME=uav3; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 4 )); then exit; fi; export UAV_NAME=uav4; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 5 )); then exit; fi; export UAV_NAME=uav5; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 6 )); then exit; fi; export UAV_NAME=uav6; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 7 )); then exit; fi; export UAV_NAME=uav7; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 8 )); then exit; fi; export UAV_NAME=uav8; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 9 )); then exit; fi; export UAV_NAME=uav9; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 10 )); then exit; fi; export UAV_NAME=uav10; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 11 )); then exit; fi; export UAV_NAME=uav11; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
-        - if (( $N < 12 )); then exit; fi; export UAV_NAME=uav12; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 1 )); then exit; fi; sleep $N; export UAV_NAME=uav1; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 2 )); then exit; fi; sleep $N; export UAV_NAME=uav2; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 3 )); then exit; fi; sleep $N; export UAV_NAME=uav3; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 4 )); then exit; fi; sleep $N; export UAV_NAME=uav4; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 5 )); then exit; fi; sleep $N; export UAV_NAME=uav5; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 6 )); then exit; fi; sleep $N; export UAV_NAME=uav6; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 7 )); then exit; fi; sleep $N; export UAV_NAME=uav7; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 8 )); then exit; fi; sleep $N; export UAV_NAME=uav8; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 9 )); then exit; fi; sleep $N; export UAV_NAME=uav9; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 10 )); then exit; fi; sleep $N; export UAV_NAME=uav10; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 11 )); then exit; fi; sleep $N; export UAV_NAME=uav11; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - if (( $N < 12 )); then exit; fi; sleep $N; export UAV_NAME=uav12; waitForOdometry; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
   - trajectory_generation:
       layout: tiled
       panes:

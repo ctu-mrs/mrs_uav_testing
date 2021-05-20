@@ -1,10 +1,9 @@
-max_time: 0.5 # [s]
+max_time: 0.2 # [s]
 
 check_trajectory_deviation:
   enabled: true
-  max_deviation: 0.10 # [m]
+  max_deviation: 0.05 # [m]
   max_iterations: 6 # [-]
-  first_segment: true
 
 # Allows to neglect waypoints in the original path if the new path
 # does not violate max distance from the original path.

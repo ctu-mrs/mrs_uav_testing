@@ -111,9 +111,9 @@ darpa:
 
   heading:
     speed: 2.0
-    acceleration: 2.0
-    jerk: 10.0
-    snap: 10.0
+    acceleration: 5.0
+    jerk: 20.0
+    snap: 20.0
 
   angular_speed:
     roll: 60.0
