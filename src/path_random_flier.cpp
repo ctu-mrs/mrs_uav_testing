@@ -272,6 +272,7 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       pos_x += cos(bearing) * distance;
       pos_y += sin(bearing) * distance;
+      pos_z = _z_value_ + randd(-_z_deviation_, _z_deviation_);
     }
 
     next_wait_for_finish_ = randd(0, 10) <= 10 * _future_stamp_prob_ ? false : true;
