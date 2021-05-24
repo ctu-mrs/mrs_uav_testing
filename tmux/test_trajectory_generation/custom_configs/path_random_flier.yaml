@@ -1,2 +1,8 @@
-stamp:
-  time: 6.0
+z:
+  value: 1.0
+  deviation: 0.5
+
+future_stamp:
+  prob: 0.5 # [0, 1]
+  min: 1.0 # [s]
+  max: 3.0 # [s]
