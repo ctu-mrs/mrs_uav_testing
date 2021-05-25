@@ -90,34 +90,34 @@ insane:
 darpa:
 
   horizontal:
-    speed: 5.0
-    acceleration: 4.0
+    speed: 4.47
+    acceleration: 7.29
     jerk: 20.0
     snap: 20.0
 
   vertical:
 
     ascending:
-      speed: 4.0
-      acceleration: 4.0
-      jerk: 20.0
-      snap: 20.0
+      speed: 4.47
+      acceleration: 7.29
+      jerk: 50.0
+      snap: 50.0
 
     descending:
-      speed: 4.0
-      acceleration: 4.0
-      jerk: 20.0
-      snap: 20.0
+      speed: 4.47
+      acceleration: 7.29
+      jerk: 50.0
+      snap: 50.0
 
   heading:
-    speed: 2.0
-    acceleration: 5.0
-    jerk: 20.0
-    snap: 20.0
+    speed: 2.44
+    acceleration: 2.0
+    jerk: 50.0
+    snap: 50.0
 
   angular_speed:
     roll: 60.0
     pitch: 60.0
     yaw: 10.0
 
-  tilt: deg(60)
+  tilt: deg(90)

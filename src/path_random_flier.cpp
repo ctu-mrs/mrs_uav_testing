@@ -1,6 +1,5 @@
 /* includes //{ */
 
-#include "mrs_msgs/Path.h"
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 
@@ -9,6 +8,7 @@
 
 #include <mrs_msgs/PathSrv.h>
 #include <mrs_msgs/Reference.h>
+#include <mrs_msgs/ValidateReference.h>
 #include <mrs_msgs/ControlManagerDiagnostics.h>
 #include <mrs_msgs/MpcPredictionFullState.h>
 
@@ -41,6 +41,8 @@ private:
   int    randi(const int from, const int to);
   bool   setPathSrv(const mrs_msgs::Path path_in);
 
+  bool checkReference(const std::string frame, const double x, const double y, const double z, const double hdg);
+
   mrs_lib::SubscribeHandler<mrs_msgs::PositionCommand>           sh_position_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics> sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::MpcPredictionFullState>    sh_mpc_predition_;
@@ -50,6 +52,7 @@ private:
   ros::ServiceServer service_server_activate_;
 
   ros::ServiceClient service_client_path_;
+  ros::ServiceClient service_client_check_reference_;
 
   ros::Timer timer_main_;
 
@@ -135,8 +138,9 @@ void PathRandomFlier::onInit(void) {
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts, "control_manager_diag_in");
   sh_mpc_predition_        = mrs_lib::SubscribeHandler<mrs_msgs::MpcPredictionFullState>(shopts, "mpc_prediction_in");
 
-  service_server_activate_ = nh_.advertiseService("activate_in", &PathRandomFlier::callbackActivate, this);
-  service_client_path_     = nh_.serviceClient<mrs_msgs::PathSrv>("path_out");
+  service_server_activate_        = nh_.advertiseService("activate_in", &PathRandomFlier::callbackActivate, this);
+  service_client_path_            = nh_.serviceClient<mrs_msgs::PathSrv>("path_out");
+  service_client_check_reference_ = nh_.serviceClient<mrs_msgs::ValidateReference>("check_reference_out");
 
   // initialize the random number generator
   srand(static_cast<unsigned int>(ros::Time::now().nsec));
@@ -269,6 +273,10 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       new_point.position.z = pos_z;
       new_point.heading    = bearing;
 
+      if (!checkReference("", pos_x, pos_y, pos_z, bearing)) {
+        break;
+      }
+
       path.points.push_back(new_point);
 
       bearing += randd(-_bearing_change_, _bearing_change_);
@@ -342,6 +350,31 @@ bool PathRandomFlier::setPathSrv(const mrs_msgs::Path path_in) {
     } else {
       return true;
     }
+
+  } else {
+    ROS_ERROR_THROTTLE(1.0, "[PathRandomFlier]: service call for setting path failed");
+    return false;
+  }
+}
+
+//}
+
+/* checkReference() //{ */
+
+bool PathRandomFlier::checkReference(const std::string frame, const double x, const double y, const double z, const double hdg) {
+
+  mrs_msgs::ValidateReference srv;
+  srv.request.reference.header.frame_id      = frame;
+  srv.request.reference.reference.position.x = x;
+  srv.request.reference.reference.position.y = y;
+  srv.request.reference.reference.position.z = z;
+  srv.request.reference.reference.heading    = hdg;
+
+  bool success = service_client_check_reference_.call(srv);
+
+  if (success) {
+
+    return srv.response.success;
 
   } else {
     ROS_ERROR_THROTTLE(1.0, "[PathRandomFlier]: service call for setting path failed");

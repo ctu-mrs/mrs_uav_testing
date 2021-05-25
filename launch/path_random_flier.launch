@@ -22,6 +22,7 @@
         <!-- Services -->
       <remap from="~activate_in" to="automatic_start/start" />
       <remap from="~path_out" to="trajectory_generation/path" />
+      <remap from="~check_reference_out" to="control_manager/validate_reference" />
 
     </node>
 
