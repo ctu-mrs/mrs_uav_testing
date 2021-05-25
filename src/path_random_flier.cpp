@@ -245,6 +245,14 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
         path.header.stamp = ros::Time(0);
       }
 
+      mrs_msgs::Reference new_point;
+      new_point.position.x = pos_x;
+      new_point.position.y = pos_y;
+      new_point.position.z = pos_z;
+      new_point.heading    = sh_mpc_predition_.getMsg()->heading[prediction_idx];
+
+      path.points.push_back(new_point);
+
     } else {
 
       pos_x = cmd_x;
@@ -267,17 +275,9 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       double heading_change = randd(-_heading_change_, _heading_change_);
 
-      mrs_msgs::Reference new_point;
-      new_point.position.x = pos_x;
-      new_point.position.y = pos_y;
-      new_point.position.z = pos_z;
-      new_point.heading    = bearing;
-
       if (!checkReference("", pos_x, pos_y, pos_z, bearing)) {
         break;
       }
-
-      path.points.push_back(new_point);
 
       bearing += randd(-_bearing_change_, _bearing_change_);
 
@@ -288,6 +288,14 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       pos_x += cos(bearing) * distance;
       pos_y += sin(bearing) * distance;
       pos_z = _z_value_ + randd(-_z_deviation_, _z_deviation_);
+
+      mrs_msgs::Reference new_point;
+      new_point.position.x = pos_x;
+      new_point.position.y = pos_y;
+      new_point.position.z = pos_z;
+      new_point.heading    = bearing;
+
+      path.points.push_back(new_point);
     }
 
     next_wait_for_finish_ = randd(0, 10) <= 10 * _future_stamp_prob_ ? false : true;
