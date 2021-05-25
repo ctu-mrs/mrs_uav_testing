@@ -1,5 +1,7 @@
+relax_heading: true
+
 z:
-  value: 1.0
+  value: 1.5
   deviation: 0.5
 
 future_stamp:

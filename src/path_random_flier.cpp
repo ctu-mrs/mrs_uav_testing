@@ -55,6 +55,9 @@ private:
 
   double _main_timer_rate_;
 
+  bool _relax_heading_;
+  bool _use_heading_;
+
   int _n_points_min_;
   int _n_points_max_;
 
@@ -97,6 +100,9 @@ void PathRandomFlier::onInit(void) {
   // load parameters from config file
   param_loader.loadParam("main_timer_rate", _main_timer_rate_);
   param_loader.loadParam("active", active_);
+
+  param_loader.loadParam("relax_heading", _relax_heading_);
+  param_loader.loadParam("use_heading", _use_heading_);
 
   param_loader.loadParam("heading_change", _heading_change_);
   param_loader.loadParam("bearing_change", _bearing_change_);
@@ -213,8 +219,9 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     // create new point to fly to
     mrs_msgs::Path path;
-    path.fly_now     = true;
-    path.use_heading = true;
+    path.fly_now       = true;
+    path.use_heading   = _use_heading_;
+    path.relax_heading = _relax_heading_;
 
     double pos_x, pos_y, pos_z;
 
@@ -238,7 +245,7 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       pos_x = cmd_x;
       pos_y = cmd_y;
-      pos_z = _z_value_ + randd(-_z_deviation_, _z_deviation_);
+      pos_z = cmd_z;
 
       path.header.stamp = ros::Time(0);
     }

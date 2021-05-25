@@ -1,8 +1,11 @@
 active: true
 main_timer_rate: 100 # [Hz]
 
+use_heading: true
+relax_heading: false
+
 z:
-  value: 1.0 # [m]
+  value: 1.5 # [m]
   deviation: 0.5 # [m]
 
 n_points:
