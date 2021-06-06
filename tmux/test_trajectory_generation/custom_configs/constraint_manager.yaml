@@ -15,7 +15,7 @@ constraint_management:
 
   fallback_constraints:
 
-    GPS: "even"
+    GPS: "fast"
 
 even:
 

@@ -1,5 +1,8 @@
 max_time: 0.2 # [s]
 
+# when true, only the fallback solver will be used by default
+enforce_fallback_solver: true
+
 check_trajectory_deviation:
   enabled: true
   max_deviation: 0.20 # [m]
@@ -9,5 +12,5 @@ check_trajectory_deviation:
 # This makes for similar but sparser paths, which are easier for the
 # trajectory generator to work with.
 path_straightener:
-  enabled: true
+  enabled: false
   max_deviation: 0.05 # [m]

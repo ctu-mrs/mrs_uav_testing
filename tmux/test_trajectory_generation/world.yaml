@@ -15,7 +15,7 @@ init_gps_offset_y: 0.0 # initial position of UAV relative to gps_origin when ini
 
 safety_area:
 
-  use_safety_area: false
+  use_safety_area: true
 
   frame_name: "gps_origin"
 

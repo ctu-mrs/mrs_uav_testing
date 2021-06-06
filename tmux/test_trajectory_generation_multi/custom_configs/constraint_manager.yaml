@@ -15,7 +15,7 @@ constraint_management:
 
   fallback_constraints:
 
-    GPS: "darpa_realhw"
+    GPS: "fast"
 
 even:
 

@@ -1,5 +1,8 @@
 max_time: 5.0 # [s]
 
+# when true, only the fallback solver will be used by default
+enforce_fallback_solver: true
+
 check_trajectory_deviation:
   enabled: true
   max_deviation: 0.2 # [m]
