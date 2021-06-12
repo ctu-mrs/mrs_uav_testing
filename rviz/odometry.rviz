@@ -54,7 +54,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 100
-      Reference Frame: uav60/gps_origin
+      Reference Frame: uav62/gps_origin
       Value: true
     - Angle Tolerance: 0.009999999776482582
       Class: rviz/Odometry
@@ -87,7 +87,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/control_manager/cmd_odom
+      Topic: /uav62/control_manager/cmd_odom
       Unreliable: true
       Value: true
     - Angle Tolerance: 0.009999999776482582
@@ -121,7 +121,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/odometry/odom_main
+      Topic: /uav62/odometry/odom_main
       Unreliable: true
       Value: true
     - Angle Tolerance: 0.009999999776482582
@@ -155,7 +155,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/odometry/rtk_local_odom
+      Topic: /uav62/odometry/rtk_local_odom
       Unreliable: true
       Value: true
     - Alpha: 1
@@ -171,7 +171,7 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /uav60/control_manager/mpc_tracker/predicted_trajectory_debugging
+      Topic: /uav62/control_manager/mpc_tracker/predicted_trajectory_debugging
       Unreliable: true
       Value: true
     - Angle Tolerance: 0.009999999776482582
@@ -205,7 +205,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/odometry/odom_gps
+      Topic: /uav62/odometry/odom_gps
       Unreliable: true
       Value: false
     - Class: rviz/Axes
@@ -246,7 +246,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/odometry/odom_optflow
+      Topic: /uav62/odometry/odom_optflow
       Unreliable: true
       Value: false
     - Angle Tolerance: 0.009999999776482582
@@ -280,12 +280,12 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/odometry/odom_optflowgps
+      Topic: /uav62/odometry/odom_optflowgps
       Unreliable: true
       Value: false
     - Class: rviz/Image
       Enabled: false
-      Image Topic: /uav60/realsense/camera/color/image_raw
+      Image Topic: /uav62/realsense/camera/color/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -308,7 +308,7 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /uav60/control_manager/mpc_tracker/debug_set_trajectory
+      Topic: /uav62/control_manager/mpc_tracker/debug_set_trajectory
       Unreliable: false
       Value: true
     - Alpha: 0.10000000149011612
@@ -324,13 +324,13 @@ Visualization Manager:
       Name: MRS_Bumper
       Show sectors with no data: false
       Show undetected obstacles: false
-      Topic: /uav60/bumper/obstacle_sectors
+      Topic: /uav62/bumper/obstacle_sectors
       Unreliable: false
       Value: true
       Vertical collision threshold: 1
     - Class: rviz/Image
       Enabled: false
-      Image Topic: /uav60/realsense/camera/color/image_raw
+      Image Topic: /uav62/realsense/camera/color/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -365,7 +365,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.05000000074505806
       Style: Flat Squares
-      Topic: /uav60/rplidar/scan
+      Topic: /uav62/rplidar/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -401,7 +401,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /uav60/lidar_stabilization/odom
+      Topic: /uav62/lidar_stabilization/odom
       Unreliable: false
       Value: false
     - Alpha: 0.5
@@ -429,7 +429,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /uav60/lidar_stabilization/pc_seq_transformed
+      Topic: /uav62/lidar_stabilization/pc_seq_transformed
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -459,7 +459,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /uav60/lidar_stabilization/pc_seq_reference
+      Topic: /uav62/lidar_stabilization/pc_seq_reference
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -476,7 +476,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /uav60/hector_mapping/slam_out_pose
+      Topic: /uav62/hector_mapping/slam_out_pose
       Unreliable: false
       Value: false
     - Alpha: 0.699999988079071
@@ -485,7 +485,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: hector_map
-      Topic: /uav60/hector_mapping/map
+      Topic: /uav62/hector_mapping/map
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -514,7 +514,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.05000000074505806
       Style: Flat Squares
-      Topic: /uav60/hector_mapping/slam_cloud
+      Topic: /uav62/hector_mapping/slam_cloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -532,14 +532,14 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /uav60/brick_estimation/debug_active
+      Topic: /uav62/brick_estimation/debug_active
       Unreliable: false
       Value: false
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
     Default Light: true
-    Fixed Frame: uav60/gps_origin
+    Fixed Frame: uav62/gps_origin
     Frame Rate: 60
   Name: root
   Tools:
@@ -576,7 +576,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.27479681372642517
-      Target Frame: fcu_uav60
+      Target Frame: fcu_uav62
       Value: ThirdPersonFollower (rviz)
       Yaw: 2.930067539215088
     Saved: ~
