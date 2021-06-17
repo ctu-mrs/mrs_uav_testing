@@ -32,7 +32,7 @@ windows:
   - control:
       layout: even-vertical
       panes:
-        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_se3_controller:=./custom_configs/se3_controller.yaml config_control_manager:=./custom_configs/control_manager.yaml config_flip_tracker:=./custom_configs/flip_tracker.yaml
+        - waitForOdometry; roslaunch mrs_uav_general core.launch DEBUG:=false config_uav_manager:=./custom_configs/uav_manager.yaml config_se3_controller:=./custom_configs/se3_controller.yaml config_control_manager:=./custom_configs/control_manager.yaml config_flip_tracker:=./custom_configs/flip_tracker.yaml config_constraint_manager:=./custom_configs/constraint_manager.yaml
   - takeoff:
       layout: tiled
       panes:
