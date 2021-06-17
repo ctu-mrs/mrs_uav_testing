@@ -6,7 +6,7 @@ heading_estimator: "ALOAMREP"
 
 # Active estimators are started at node launch and can be switched to during flight
 state_estimators:
-  active: ["GPS", "ALOAM","ALOAMREP"]
+  active: ["GPS","ALOAMREP"]
 
 heading_estimators:
-  active: ["PIXHAWK", "ALOAM","ALOAMREP"]
+  active: ["PIXHAWK","ALOAMREP"]
