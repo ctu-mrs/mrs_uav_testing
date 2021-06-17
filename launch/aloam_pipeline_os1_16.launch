@@ -107,7 +107,7 @@
   <!--//}-->
   
   <!--//{ DATA PROCESSING NODELET -->
-  <include file="$(find mrs_pcl_tools)/launch/uav_os1_filtration.launch">
+  <include file="$(find mrs_pcl_tools)/launch/uav_os_filtration.launch">
     <arg name="nodelet" value="$(arg nodelet)" />
     <arg name="nodelet_manager" value="$(arg nodelet_manager)" />
     <arg name="launch_prefix" value="$(arg launch_prefix)" />
