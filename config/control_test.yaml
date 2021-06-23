@@ -1,4 +1,4 @@
-spawn_args: "1 --t650 --enable-rangefinder"
+spawn_args: "1 --t650 --enable-rangefinder --enable-ground-truth"
 
 max_xy: 10.0 # [m]
 min_xy: -10.0 # [m]
