@@ -14,6 +14,7 @@ Panels:
         - /Mapping1/full1
         - /Mapping1/local1
         - /Pathfinder1
+        - /Minesweeper1
         - /Compton1/3d_hypo_pose1
         - /intensity_mapping1/inensity_grid1
       Splitter Ratio: 0.5567010045051575
@@ -36,7 +37,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: os1_raw
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -101,13 +102,13 @@ Visualization Manager:
       Length: 1
       Name: gps_origin
       Radius: 0.5
-      Reference Frame: uav65/gps_origin
+      Reference Frame: uav5/gps_origin
       Value: true
     - Class: rviz/Group
       Displays:
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav65/rs_d435/dept
+          Image Topic: /uav5/rs_d435/dept
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -119,7 +120,7 @@ Visualization Manager:
           Value: false
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav65/bluefox_brick/image_raw
+          Image Topic: /uav5/bluefox_brick/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -152,14 +153,14 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Spheres
-          Topic: /uav65/rplidar/scan
+          Topic: /uav5/rplidar/scan
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: false
           Value: false
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /uav65/rs_d435/color/image_raw
+          Image Topic: /uav5/rs_d435/color/image_raw
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -175,7 +176,7 @@ Visualization Manager:
           Draw Behind: false
           Enabled: false
           Name: Map
-          Topic: /uav65/hector_mapping/map
+          Topic: /uav5/hector_mapping/map
           Unreliable: false
           Use Timestamp: false
           Value: false
@@ -204,7 +205,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.20000000298023224
           Style: Spheres
-          Topic: /uav65/os_cloud_nodelet/points
+          Topic: /uav5/os_cloud_nodelet/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: false
@@ -232,7 +233,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Spheres
-          Topic: /uav65/pcl_filter_mapping/points_processed
+          Topic: /uav5/pcl_filter_mapping/points_processed
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -260,7 +261,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Spheres
-          Topic: /uav65/bumper/lidar3d_processed
+          Topic: /uav5/bumper/lidar3d_processed
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -288,7 +289,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Spheres
-          Topic: /uav65/up_rgbd/rs_d435/points
+          Topic: /uav5/up_rgbd/rs_d435/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -316,7 +317,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Spheres
-          Topic: /uav65/down_rgbd/rs_d435/points
+          Topic: /uav5/down_rgbd/rs_d435/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -324,7 +325,7 @@ Visualization Manager:
         - Class: rviz/Camera
           Enabled: false
           Image Rendering: background and overlay
-          Image Topic: /uav65/mobius/image_raw
+          Image Topic: /uav5/mobius/image_raw
           Name: mobius
           Overlay Alpha: 0.5
           Queue Size: 2
@@ -438,7 +439,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /uav65/control_manager/mpc_tracker/setpoint_odom
+          Topic: /uav5/control_manager/mpc_tracker/setpoint_odom
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -455,7 +456,7 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
-          Topic: /uav65/control_manager/mpc_tracker/predicted_trajectory_debugging
+          Topic: /uav5/control_manager/mpc_tracker/predicted_trajectory_debugging
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -472,14 +473,14 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Axes
-          Topic: /uav65/control_manager/mpc_tracker/mpc_reference_debugging
+          Topic: /uav5/control_manager/mpc_tracker/mpc_reference_debugging
           Unreliable: false
           Value: true
         - Class: rviz/Group
           Displays:
             - Class: rviz/MarkerArray
               Enabled: false
-              Marker Topic: /uav65/control_manager/mpc_tracker/trajectory_original/markers
+              Marker Topic: /uav5/control_manager/mpc_tracker/trajectory_original/markers
               Name: MarkerArray
               Namespaces:
                 {}
@@ -499,7 +500,7 @@ Visualization Manager:
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
-              Topic: /uav65/control_manager/mpc_tracker/trajectory_original/poses
+              Topic: /uav5/control_manager/mpc_tracker/trajectory_original/poses
               Unreliable: false
               Value: false
           Enabled: true
@@ -508,7 +509,7 @@ Visualization Manager:
           Displays:
             - Class: rviz/MarkerArray
               Enabled: true
-              Marker Topic: /uav65/control_manager/mpc_tracker/trajectory_processed/markers
+              Marker Topic: /uav5/control_manager/mpc_tracker/trajectory_processed/markers
               Name: MarkerArray
               Namespaces:
                 {}
@@ -528,7 +529,7 @@ Visualization Manager:
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
-              Topic: /uav65/control_manager/mpc_tracker/trajectory_processed/poses
+              Topic: /uav5/control_manager/mpc_tracker/trajectory_processed/poses
               Unreliable: false
               Value: true
           Enabled: true
@@ -539,7 +540,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /uav65/control_manager/disturbances_markers
+          Marker Topic: /uav5/control_manager/disturbances_markers
           Name: disturbances
           Namespaces:
             {}
@@ -577,12 +578,12 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /uav65/control_manager/cmd_odom
+          Topic: /uav5/control_manager/cmd_odom
           Unreliable: true
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/control_manager/safety_area_markers
+          Marker Topic: /uav5/control_manager/safety_area_markers
           Name: SafetyArea
           Namespaces:
             "": true
@@ -590,7 +591,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/control_manager/safety_area_coordinates_markers
+          Marker Topic: /uav5/control_manager/safety_area_coordinates_markers
           Name: SafetyAreaCoordinates
           Namespaces:
             "": true
@@ -610,7 +611,7 @@ Visualization Manager:
           Queue Size: 10
           Show sectors with no data: false
           Show undetected obstacles: true
-          Topic: /uav65/bumper/obstacle_sectors
+          Topic: /uav5/bumper/obstacle_sectors
           Unreliable: false
           Value: true
           Vertical collision threshold: 1
@@ -650,7 +651,7 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /uav65/odometry/odom_main
+          Topic: /uav5/odometry/odom_main
           Unreliable: true
           Value: true
       Enabled: true
@@ -695,14 +696,14 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.20000000298023224
           Style: Spheres
-          Topic: /uav65/aloam/map/throttled
+          Topic: /uav5/aloam/map/throttled
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/occupied_cells_vis_array
+          Marker Topic: /uav5/occupied_cells_vis_array
           Name: OccupiedCells
           Namespaces:
             {}
@@ -710,7 +711,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /uav65/free_cells_vis_array
+          Marker Topic: /uav5/free_cells_vis_array
           Name: FreeCells
           Namespaces:
             {}
@@ -722,13 +723,13 @@ Visualization Manager:
           Draw Behind: false
           Enabled: false
           Name: ProjectedMap
-          Topic: /uav65/projected_map
+          Topic: /uav5/projected_map
           Unreliable: false
           Use Timestamp: false
           Value: false
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/map/occupied/throttled
+          Marker Topic: /uav5/map/occupied/throttled
           Name: MappingMap
           Namespaces:
             {}
@@ -744,7 +745,7 @@ Visualization Manager:
           Draw Behind: false
           Enabled: true
           Name: Map
-          Topic: /uav65/hector_mapping/map
+          Topic: /uav5/hector_mapping/map
           Unreliable: false
           Use Timestamp: false
           Value: true
@@ -754,7 +755,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/trajectory_generation/markers/final
+          Marker Topic: /uav5/trajectory_generation/markers/final
           Name: final_path
           Namespaces:
             {}
@@ -762,7 +763,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/trajectory_generation/markers/original
+          Marker Topic: /uav5/trajectory_generation/markers/original
           Name: original_path
           Namespaces:
             {}
@@ -776,7 +777,7 @@ Visualization Manager:
           Displays:
             - Class: rviz/MarkerArray
               Enabled: true
-              Marker Topic: /uav65/octomap_global_vis/occupied_cells_vis_array_throttled
+              Marker Topic: /uav5/octomap_global_vis/occupied_cells_vis_array_throttled
               Name: occupied
               Namespaces:
                 {}
@@ -784,7 +785,7 @@ Visualization Manager:
               Value: true
             - Class: rviz/MarkerArray
               Enabled: false
-              Marker Topic: /uav65/octomap_global_vis/free_cells_vis_array_throttled
+              Marker Topic: /uav5/octomap_global_vis/free_cells_vis_array_throttled
               Name: free
               Namespaces:
                 {}
@@ -796,41 +797,41 @@ Visualization Manager:
           Displays:
             - Class: rviz/MarkerArray
               Enabled: true
-              Marker Topic: /uav65/octomap_local_vis/occupied_cells_vis_array_throttled
+              Marker Topic: /uav5/octomap_local_vis/occupied_cells_vis_array_throttled
               Name: occupied
               Namespaces:
-                map: true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
               Enabled: false
-              Marker Topic: /uav65/octomap_local_vis/free_cells_vis_array_throttled
+              Marker Topic: /uav5/octomap_local_vis/free_cells_vis_array_throttled
               Name: free
               Namespaces:
                 {}
               Queue Size: 100
               Value: false
-          Enabled: true
+          Enabled: false
           Name: local
       Enabled: true
       Name: Mapping
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /uav65/pathfinder/visualize_planner
+          Enabled: false
+          Marker Topic: /uav5/pathfinder/visualize_planner
           Name: expansions
           Namespaces:
             {}
           Queue Size: 100
-          Value: true
+          Value: false
       Enabled: true
       Name: Pathfinder
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/minesweeper/markers
+          Marker Topic: /uav5/minesweeper/markers
           Name: MarkerArray
           Namespaces:
             {}
@@ -842,7 +843,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/compton_cone_generator_left/compton_cones
+          Marker Topic: /uav5/compton_cone_generator_left/compton_cones
           Name: cones_left
           Namespaces:
             {}
@@ -850,7 +851,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/compton_cone_generator_right/compton_cones
+          Marker Topic: /uav5/compton_cone_generator_right/compton_cones
           Name: cones_right
           Namespaces:
             {}
@@ -858,7 +859,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: false
-          Marker Topic: /uav65/compton_filter/hypothesis_3d
+          Marker Topic: /uav5/compton_filter/hypothesis_3d
           Name: 3d_hypothesis
           Namespaces:
             {}
@@ -892,7 +893,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
-          Topic: /uav65/cone_optimizer/pose
+          Topic: /uav5/cone_optimizer/pose
           Unreliable: false
           Value: false
         - Alpha: 1
@@ -923,7 +924,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
-          Topic: /uav65/compton_filter/pose_3D
+          Topic: /uav5/compton_filter/pose_3D
           Unreliable: false
           Value: true
       Enabled: true
@@ -932,7 +933,7 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /uav65/intensity_mapping/intensity_text_out
+          Marker Topic: /uav5/intensity_mapping/intensity_text_out
           Name: intensity_text
           Namespaces:
             {}
@@ -944,7 +945,7 @@ Visualization Manager:
           Draw Behind: false
           Enabled: true
           Name: inensity_grid
-          Topic: /uav65/intensity_mapping/intensity_grid_out
+          Topic: /uav5/intensity_mapping/intensity_grid_out
           Unreliable: false
           Use Timestamp: false
           Value: true
@@ -954,7 +955,7 @@ Visualization Manager:
   Global Options:
     Background Color: 255; 255; 255
     Default Light: true
-    Fixed Frame: uav65/gps_origin
+    Fixed Frame: uav5/gps_origin
     Frame Rate: 60
   Name: root
   Tools:
@@ -978,7 +979,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 77.68841552734375
+      Distance: 59.16818618774414
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -986,17 +987,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 7.478466033935547
-        Y: 26.229507446289062
-        Z: 13.938979148864746
+        X: -2.968461275100708
+        Y: 19.514827728271484
+        Z: 12.733095169067383
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9847981333732605
-      Target Frame: uav65/gps_origin
-      Yaw: 2.0803842544555664
+      Pitch: 0.85479736328125
+      Target Frame: uav5/gps_origin
+      Yaw: 1.7053776979446411
     Saved: ~
 Window Geometry:
   Displays:
