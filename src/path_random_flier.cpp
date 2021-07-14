@@ -125,7 +125,7 @@ void PathRandomFlier::onInit(void) {
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[PathRandomFlier]: Could not load all parameters!");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 
   mrs_lib::SubscribeHandlerOptions shopts;

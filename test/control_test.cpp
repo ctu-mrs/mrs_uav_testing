@@ -328,7 +328,7 @@ ControlTest::ControlTest() {
   param_loader.loadParam("switch_estimator_after_takeoff/target_estimator", _target_estimator_);
 
   if (!param_loader.loadedSuccessfully()) {
-    ros::requestShutdown();
+    ros::shutdown();
   }
 
   // | ------------- calculate stuff from the params ------------ |
@@ -1727,12 +1727,12 @@ void ControlTest::startTrajectoryTracking(void) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for starting trajectory tracking failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for starting trajectory tracking failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1750,12 +1750,12 @@ void ControlTest::stopTrajectoryTracking(void) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for stopping trajectory tracking failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for stopping trajectory tracking failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1773,12 +1773,12 @@ void ControlTest::resumeTrajectoryTracking(void) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for resume trajectory tracking failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for resume trajectory tracking failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1801,12 +1801,12 @@ void ControlTest::gotoTrajectoryStart(void) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for flying to trajectory start failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for flying to trajectory start failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1825,12 +1825,12 @@ void ControlTest::setTrajectorySrv(const mrs_msgs::TrajectoryReference trajector
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for setting trajectory failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for setting trajectory failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1851,12 +1851,12 @@ void ControlTest::switchTracker(const std::string tracker_name) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for switching the tracker failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for switching the tracker failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1877,12 +1877,12 @@ void ControlTest::spawnUAV(const std::string args) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for spawning UAV failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for spawning UAV failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
@@ -1903,12 +1903,12 @@ void ControlTest::switchEstimator(const std::string estimator_name) {
 
     if (!srv.response.success) {
       ROS_ERROR_STREAM("[ControlTest]: service call for switching the estimator failed: " << srv.response.message);
-      ros::requestShutdown();
+      ros::shutdown();
     }
 
   } else {
     ROS_ERROR("[ControlTest]: service call for switching the estimator failed");
-    ros::requestShutdown();
+    ros::shutdown();
   }
 }
 
