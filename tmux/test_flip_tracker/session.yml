@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 startup_window: flip
-pre_window: export UAV_NAME=uav1; export RUN_TYPE=simulation; export UAV_TYPE=x500; export WORLD_FILE=./world.yaml; export SENSORS="garmin_down"
+pre_window: export UAV_NAME=uav1; export RUN_TYPE=simulation; export UAV_TYPE=brus; export WORLD_FILE=./world.yaml; export SENSORS="garmin_down"
 windows:
   - roscore:
       layout: tiled
@@ -19,7 +19,7 @@ windows:
   - spawn:
       layout: tiled
       panes:
-        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder"
+        - waitForSimulation; rosservice call /mrs_drone_spawner/spawn "1 $UAV_TYPE --enable-rangefinder --model-package brus_gazebo_resources"
   - control:
       layout: tiled
       panes:
