@@ -1,16 +1,23 @@
 relax_heading: true
 
 z:
-  value: 2.5
-  deviation: 0.5
+  value: 5.0
+  deviation: 0.00
 
 future_stamp:
   prob: 1.0 # [0, 1]
-  min: 2.0 # [s]
-  max: 4.0 # [s]
+  min: 1.0 # [s]
+  max: 2.0 # [s]
 
 replanning_time:
-  min: 3.0 # [s]
-  max: 6.0 # [s]
+  min: 0.7 # [s]
+  max: 1.0 # [s]
 
-bearing_change: 0.70 # [rad]
+override_constraints:
+  enabled: false
+  speed: 0.5
+  acceleration: 2.0
+
+heading_change: 1.0 # [rad]
+bearing_change: 0.0 # [rad]
+initial_bearing_change: 0.3 # [rad]
