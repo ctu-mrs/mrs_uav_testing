@@ -79,6 +79,11 @@ private:
 
   double _heading_change_;
   double _bearing_change_;
+  double _initial_bearing_change_;
+
+  bool   _override_constraints_;
+  double _override_speed_;
+  double _override_acceleration_;
 
   bool active_ = true;
 
@@ -86,6 +91,8 @@ private:
   ros::Time next_replan_time_;
 
   ros::Time last_successfull_command_;
+
+  double bearing_ = 0;
 };
 
 //}
@@ -109,6 +116,7 @@ void PathRandomFlier::onInit(void) {
 
   param_loader.loadParam("heading_change", _heading_change_);
   param_loader.loadParam("bearing_change", _bearing_change_);
+  param_loader.loadParam("initial_bearing_change", _initial_bearing_change_);
   param_loader.loadParam("n_points/min", _n_points_min_);
   param_loader.loadParam("n_points/max", _n_points_max_);
   param_loader.loadParam("point_distance/min", _point_distance_min_);
@@ -122,6 +130,10 @@ void PathRandomFlier::onInit(void) {
 
   param_loader.loadParam("replanning_time/min", _replanning_time_min_);
   param_loader.loadParam("replanning_time/max", _replanning_time_max_);
+
+  param_loader.loadParam("override_constraints/enabled", _override_constraints_);
+  param_loader.loadParam("override_constraints/speed", _override_speed_);
+  param_loader.loadParam("override_constraints/acceleration", _override_acceleration_);
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[PathRandomFlier]: Could not load all parameters!");
@@ -264,7 +276,8 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
     double dist;
 
-    double bearing = randd(-M_PI, M_PI);
+    bearing_ += randd(-_initial_bearing_change_, _initial_bearing_change_);
+
     double heading = randd(-M_PI, M_PI);
 
     ROS_INFO("[PathRandomFlier]: pos_x: %.2f, pos_y: %.2f", pos_x, pos_y);
@@ -275,25 +288,25 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
 
       double heading_change = randd(-_heading_change_, _heading_change_);
 
-      if (!checkReference("", pos_x, pos_y, pos_z, bearing)) {
+      if (!checkReference("", pos_x, pos_y, pos_z, bearing_)) {
         break;
       }
 
-      bearing += randd(-_bearing_change_, _bearing_change_);
+      bearing_ += randd(-_bearing_change_, _bearing_change_);
 
       heading += randd(-_heading_change_, _heading_change_);
 
       double distance = randd(_point_distance_min_, _point_distance_max_);
 
-      pos_x += cos(bearing) * distance;
-      pos_y += sin(bearing) * distance;
+      pos_x += cos(bearing_) * distance;
+      pos_y += sin(bearing_) * distance;
       pos_z = _z_value_ + randd(-_z_deviation_, _z_deviation_);
 
       mrs_msgs::Reference new_point;
       new_point.position.x = pos_x;
       new_point.position.y = pos_y;
       new_point.position.z = pos_z;
-      new_point.heading    = bearing;
+      new_point.heading    = bearing_;
 
       path.points.push_back(new_point);
     }
@@ -304,6 +317,20 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       double replan_time = randd(_replanning_time_min_, _replanning_time_max_);
       next_replan_time_  = ros::Time::now() + ros::Duration(replan_time);
       ROS_INFO("[PathRandomFlier]: replanning in %.2f s", replan_time);
+    }
+
+    if (_override_constraints_) {
+
+      path.override_constraints = true;
+
+      path.override_max_velocity_horizontal = _override_speed_;
+      path.override_max_velocity_vertical   = _override_speed_;
+
+      path.override_max_acceleration_horizontal = _override_acceleration_;
+      path.override_max_acceleration_vertical   = _override_acceleration_;
+
+      ROS_INFO_THROTTLE(1.0, "[PathRandomFlier]: overriding constraints to speed: %.2f m/s, acc: %.2f m/s2", path.override_max_velocity_horizontal,
+                        path.override_max_acceleration_horizontal);
     }
 
     if (setPathSrv(path)) {

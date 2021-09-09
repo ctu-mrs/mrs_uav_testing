@@ -27,7 +27,7 @@ windows:
   - random_flier:
       layout: tiled
       panes:
-        - roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
+        - waitForSimulation; roslaunch mrs_uav_testing path_random_flier.launch custom_config:=./custom_configs/path_random_flier.yaml
   - path_loader:
       layout: tiled
       panes:
