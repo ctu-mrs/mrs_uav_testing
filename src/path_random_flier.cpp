@@ -87,6 +87,8 @@ private:
 
   bool active_ = true;
 
+  int path_id_ = 0;
+
   bool      next_wait_for_finish_ = false;
   ros::Time next_replan_time_;
 
@@ -374,6 +376,8 @@ bool PathRandomFlier::setPathSrv(const mrs_msgs::Path path_in) {
 
   mrs_msgs::PathSrv srv;
   srv.request.path = path_in;
+
+  srv.request.path.input_id = path_id_++;
 
   bool success = service_client_path_.call(srv);
 
