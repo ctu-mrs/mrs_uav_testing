@@ -4,18 +4,22 @@ z:
   value: 5.0
   deviation: 0.10
 
+n_points:
+  min: 10 # [-]
+  max: 20 # [-]
+
 point_distance:
-  min: 0.2 # [m]
-  max: 1.0 # [m]
+  min: 0.5 # [m]
+  max: 2.0 # [m]
 
 future_stamp:
   prob: 1.0 # [0, 1]
-  min: 0.5 # [s]
-  max: 0.7 # [s]
+  min: 2.0 # [s]
+  max: 3.0 # [s]
 
 replanning_time:
-  min: 1.0 # [s]
-  max: 1.0 # [s]
+  min: 5.0 # [s]
+  max: 10.0 # [s]
 
 override_constraints:
   enabled: false
@@ -23,5 +27,5 @@ override_constraints:
   acceleration: 2.0
 
 heading_change: 0.1 # [rad]
-bearing_change: 0.3 # [rad]
+bearing_change: 0.4 # [rad]
 initial_bearing_change: 2.0 # [rad]
