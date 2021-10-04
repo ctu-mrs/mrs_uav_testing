@@ -2,8 +2,8 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2021-10-04)
+------------------
 * updated traj gen testing
 * added path id to path test
 * updated tmux sessions
