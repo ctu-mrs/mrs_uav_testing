@@ -2,6 +2,13 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updated traj gen testing
+* added path id to path test
+* updated tmux sessions
+* Contributors: Matej Petrlik, Tomas Baca, Vaclav Pritzl
+
 1.0.1 (2021-05-16)
 ------------------
 * updated ros::shutdown
