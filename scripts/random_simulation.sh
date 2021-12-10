@@ -11,4 +11,6 @@ elif [ -x "$(whereis vim | awk '{print $2}')" ]; then
  HEADLESS=""
 fi
 
-$VIM_BIN -u "$GIT_PATH/linux-setup/submodules/profile_manager/epigen/epigen.vimrc" $HEADLESS -Ens -c "%s/uav[0-9]\+/$UAV_NAME/g" -c "wqa" -- "$SCRIPT_PATH/../rviz/default_random_simulation.rviz"
+cp $SCRIPT_PATH/../rviz/default_random_simulation.rviz /tmp/default_random_simulation.rviz
+
+$VIM_BIN -u "$GIT_PATH/linux-setup/submodules/profile_manager/epigen/epigen.vimrc" $HEADLESS -Ens -c "%s/uav[0-9]\+/$UAV_NAME/g" -c "wqa" -- "/tmp/default_random_simulation.rviz"
