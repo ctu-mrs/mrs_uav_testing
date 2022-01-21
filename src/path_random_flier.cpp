@@ -56,6 +56,9 @@ private:
 
   ros::Timer timer_main_;
 
+  std::string _frame_id_;
+  std::string _uav_name_;
+
   double _main_timer_rate_;
 
   bool _relax_heading_;
@@ -112,6 +115,9 @@ void PathRandomFlier::onInit(void) {
   // load parameters from config file
   param_loader.loadParam("main_timer_rate", _main_timer_rate_);
   param_loader.loadParam("active", active_);
+
+  param_loader.loadParam("frame_id", _frame_id_);
+  param_loader.loadParam("uav_name", _uav_name_);
 
   param_loader.loadParam("relax_heading", _relax_heading_);
   param_loader.loadParam("use_heading", _use_heading_);
@@ -259,6 +265,8 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
         path.header.stamp = ros::Time(0);
       }
 
+      path.header.frame_id = _uav_name_ + "/" + _frame_id_;
+
       mrs_msgs::Reference new_point;
       new_point.position.x = pos_x;
       new_point.position.y = pos_y;
@@ -370,7 +378,7 @@ int PathRandomFlier::randi(const int from, const int to) {
 
 //}
 
-/* setPathServ() //{ */
+/* setPathSrv() //{ */
 
 bool PathRandomFlier::setPathSrv(const mrs_msgs::Path path_in) {
 
