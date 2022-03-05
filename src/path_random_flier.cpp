@@ -175,7 +175,9 @@ void PathRandomFlier::onInit(void) {
 
   timer_main_ = nh_.createTimer(ros::Rate(_main_timer_rate_), &PathRandomFlier::timerMain, this);
 
-  transformer_ = std::make_shared<mrs_lib::Transformer>("PathRandomFlier", _uav_name_);
+  transformer_ = std::make_shared<mrs_lib::Transformer>(nh_, "PathRandomFlier");
+  transformer_->setDefaultPrefix(_uav_name_);
+  transformer_->retryLookupNewest(true);
 
   // | ----------------------- finish init ---------------------- |
 
@@ -282,7 +284,7 @@ void PathRandomFlier::timerMain([[maybe_unused]] const ros::TimerEvent& event) {
       new_point.reference.position.z = sh_mpc_predition_.getMsg()->position[prediction_idx].z;
       new_point.reference.heading    = sh_mpc_predition_.getMsg()->heading[prediction_idx];
 
-      auto res = transformer_->transformSingle(_uav_name_ + "/" + _frame_id_, new_point);
+      auto res = transformer_->transformSingle(new_point, _frame_id_);
 
       if (res) {
         new_point = res.value();
@@ -487,8 +489,8 @@ std::optional<mrs_msgs::PositionCommand> PathRandomFlier::transformPositionCmd(c
 
   mrs_msgs::PositionCommand cmd_out;
 
-  cmd_out.header.stamp    = tf.value().stamp();
-  cmd_out.header.frame_id = tf.value().to();
+  cmd_out.header.stamp    = tf.value().header.stamp;
+  cmd_out.header.frame_id = transformer_->frame_to(tf.value());
 
   /* position + heading //{ */
 
@@ -499,7 +501,7 @@ std::optional<mrs_msgs::PositionCommand> PathRandomFlier::transformPositionCmd(c
     pos.pose.position    = position_cmd.position;
     pos.pose.orientation = mrs_lib::AttitudeConverter(0, 0, position_cmd.heading);
 
-    if (auto ret = transformer_->transform(tf.value(), pos)) {
+    if (auto ret = transformer_->transform(pos, tf.value())) {
       cmd_out.position = ret.value().pose.position;
       try {
         cmd_out.heading = mrs_lib::AttitudeConverter(ret.value().pose.orientation).getHeading();
@@ -523,7 +525,7 @@ std::optional<mrs_msgs::PositionCommand> PathRandomFlier::transformPositionCmd(c
 
     vec.vector = position_cmd.velocity;
 
-    if (auto ret = transformer_->transform(tf.value(), vec)) {
+    if (auto ret = transformer_->transform(vec, tf.value())) {
       cmd_out.velocity = ret.value().vector;
     } else {
       return {};
@@ -540,7 +542,7 @@ std::optional<mrs_msgs::PositionCommand> PathRandomFlier::transformPositionCmd(c
 
     vec.vector = position_cmd.acceleration;
 
-    if (auto ret = transformer_->transform(tf.value(), vec)) {
+    if (auto ret = transformer_->transform(vec, tf.value())) {
       cmd_out.acceleration = ret.value().vector;
     } else {
       return {};
@@ -557,7 +559,7 @@ std::optional<mrs_msgs::PositionCommand> PathRandomFlier::transformPositionCmd(c
 
     vec.vector = position_cmd.jerk;
 
-    if (auto ret = transformer_->transform(tf.value(), vec)) {
+    if (auto ret = transformer_->transform(vec, tf.value())) {
       cmd_out.jerk = ret.value().vector;
     } else {
       return {};

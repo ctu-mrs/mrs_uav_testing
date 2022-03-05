@@ -22,7 +22,7 @@ generate_dynamic_reconfigure_options(
   )
 
 set(LIBRARIES
-  RandomFlier TrajectoryRandomFlier PathRandomFlier CircleFlier
+  RandomFlier TrajectoryRandomFlier PathRandomFlier CircleFlier TfTest
   )
 
 set(EXECUTABLES
@@ -102,6 +102,19 @@ add_dependencies(CircleFlier
   )
 
 target_link_libraries(CircleFlier
+  ${catkin_LIBRARIES}
+  )
+
+add_library(TfTest
+  src/tf_test.cpp
+  )
+
+add_dependencies(TfTest
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+target_link_libraries(TfTest
   ${catkin_LIBRARIES}
   )
 
