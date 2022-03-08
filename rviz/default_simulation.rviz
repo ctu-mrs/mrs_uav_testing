@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /TF1/Tree1
+        - /Sensors1
         - /Odometry1/odom_main1
         - /Odometry1/odom_main1/Shape1
       Splitter Ratio: 0.6081632375717163
@@ -28,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: os1
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -128,16 +129,16 @@ Visualization Manager:
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 22.416576385498047
-            Min Value: -0.5015535950660706
+            Max Value: 39.533172607421875
+            Min Value: -1.1937049627304077
             Value: true
           Axis: Z
           Channel Name: intensity
           Class: rviz/PointCloud2
           Color: 255; 255; 255
           Color Transformer: AxisColor
-          Decay Time: 60
-          Enabled: true
+          Decay Time: 0
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Min Color: 0; 0; 0
@@ -148,7 +149,35 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Flat Squares
-          Topic: /uav1/os1_cloud_node/points
+          Topic: /uav1/os_cloud_nodelet/points
+          Unreliable: true
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 21.852458953857422
+            Min Value: -1.139976978302002
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: AxisColor
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Min Color: 0; 0; 0
+          Name: os1_filtered
+          Position Transformer: XYZ
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.10000000149011612
+          Style: Flat Squares
+          Topic: /uav1/pcl_filter_aloam/points_processed
           Unreliable: true
           Use Fixed Frame: true
           Use rainbow: true
@@ -517,7 +546,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 8.354268074035645
+      Distance: 24.078683853149414
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -533,9 +562,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5797969102859497
+      Pitch: 0.48979729413986206
       Target Frame: uav1/fcu
-      Yaw: 3.1622262001037598
+      Yaw: 3.002202033996582
     Saved: ~
 Window Geometry:
   Displays:
