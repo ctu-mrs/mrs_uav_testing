@@ -30,4 +30,4 @@ override_constraints:
 
 heading_change: 0.1 # [rad]
 bearing_change: 0.4 # [rad]
-initial_bearing_change: 2.0 # [rad]
+initial_bearing_change: 3.0 # [rad]
