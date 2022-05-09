@@ -2,6 +2,27 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updated trajectory test
+* updated avoindace test
+* udpated rviz conf
+* updated rviz conf
+* updated transformer interface, added tf test
+* added baro to collision avoidance test
+* added sun to safety area world
+* fixed randomizer script
+* + install in cmakelists
+* fix for randomized uav names in singularity
+* fixed tmux sessions for singularity
+* updated path random flier for custom frame_id
+* updated path test to set particular frame
+* updated random flier params
+* updated random rviz script to use /tmp
+* added scripts and configs for random simulation
+* updated control test
+* Contributors: Dan Hert, Tomas Baca, Vaclav Pritzl
+
 1.0.2 (2021-10-04)
 ------------------
 * updated traj gen testing
