@@ -2,8 +2,8 @@
 
 ![](.fig/mrs_testing.jpg)
 
-| Build status | [![Build Status](https://github.com/ctu-mrs/mrs_uav_testing/workflows/Melodic/badge.svg)](https://github.com/ctu-mrs/mrs_uav_testing/actions) | [![Build Status](https://github.com/ctu-mrs/mrs_uav_testing/workflows/Noetic/badge.svg)](https://github.com/ctu-mrs/mrs_uav_testing/actions) |
-|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Build status | [![Build Status](https://github.com/ctu-mrs/mrs_uav_testing/workflows/Noetic/badge.svg)](https://github.com/ctu-mrs/mrs_uav_testing/actions) |
+|--------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 
 ## Automated simulation tests of the [uav_core](https://github.com/ctu-mrs/uav_core)
 
