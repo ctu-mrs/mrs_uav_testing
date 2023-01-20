@@ -2,8 +2,8 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.4 (2023-01-20)
+------------------
 * updated ci, updated readme
 * fixed avoidance test tfs
 * updated rviz config
