@@ -2,6 +2,15 @@
 Changelog for package mrs_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* updated ci, updated readme
+* fixed avoidance test tfs
+* updated rviz config
+* fixed trajectory generation test
+* updated viz
+* Contributors: Tomas Baca
+
 1.0.3 (2022-05-09)
 ------------------
 * updated trajectory test
