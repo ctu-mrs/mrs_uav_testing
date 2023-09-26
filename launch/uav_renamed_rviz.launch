@@ -1,0 +1,11 @@
+<launch>
+
+  <arg name="UAV_NAME" default="$(env UAV_NAME)"/>
+
+  <arg name="rviz_filename" />
+
+  <group>
+    <node pkg="mrs_uav_testing" type="uav_rename_rviz.sh" name="rviz_renamed" args="$(arg rviz_filename)" />
+  </group>
+
+</launch>
