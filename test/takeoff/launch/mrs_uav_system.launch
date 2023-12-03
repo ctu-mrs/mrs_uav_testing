@@ -25,9 +25,9 @@
     <arg name="UAV_NAME" default="$(arg UAV_NAME)" />
     <arg name="RUN_TYPE" default="$(arg RUN_TYPE)" />
 
-    <arg name="world_config" default="$(arg this_session_path)/config/world_config.yaml" />
-    <arg name="network_config" default="$(arg this_session_path)/config/network_config.yaml" />
-    <arg name="custom_config" default="$(arg this_session_path)/config/custom_config.yaml" />
+    <arg name="world_config" default="$(find mrs_uav_testing)/config/default_world_config.yaml" />
+    <arg name="network_config" default="$(find mrs_uav_testing)/config/default_network_config.yaml" />
+    <arg name="custom_config" default="$(find mrs_uav_testing)/config/default_custom_config.yaml" />
     <arg name="platform_config" default="$(find mrs_multirotor_simulator)/config/mrs_uav_system/$(arg UAV_TYPE).yaml" />
 
   </include>
