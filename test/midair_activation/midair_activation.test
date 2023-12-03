@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find mrs_uav_testing)/test/midair_activation/launch/mrs_uav_system.launch" />
+
+  <test pkg="mrs_uav_testing" type="test_midair" test-name="midair" time-limit="60.0" />
+
+</launch>
