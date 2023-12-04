@@ -21,6 +21,7 @@
 #include <mrs_msgs/ConstraintManagerDiagnostics.h>
 #include <mrs_msgs/GazeboSpawnerDiagnostics.h>
 #include <mrs_msgs/String.h>
+#include <mrs_msgs/UavState.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -57,6 +58,7 @@ protected:
   void sleep(const double &duration);
 
   bool isFlyingNormally(void);
+  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;
@@ -64,6 +66,7 @@ protected:
   mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>       sh_gain_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics> sh_constraint_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>     sh_gazebo_spawner_diag_;
+  mrs_lib::SubscribeHandler<mrs_msgs::UavState>                     sh_uav_state_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 

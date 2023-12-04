@@ -51,6 +51,7 @@ void TestGeneric::initialize(void) {
   sh_estim_manager_diag_      = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts, "/" + _uav_name_ + "/estimation_manager/diagnostics");
   sh_constraint_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_       = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_uav_state_               = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts, "/" + _uav_name_ + "/estimation_manager/uav_state");
   sh_gazebo_spawner_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts, "/mrs_drone_spawner/diagnostics");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts, "/" + _uav_name_ + "/hw_api/status");
@@ -393,6 +394,10 @@ tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const
       return {true, "goal reached"};
     }
 
+    if (isAtPosition(x, y, z, hdg, 0.1)) {
+      return {true, "goal reached"};
+    }
+
     ros::Duration(0.1).sleep();
   }
 
@@ -437,13 +442,7 @@ tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const
       return {false, "not flying normally"};
     }
 
-    auto diag = sh_estim_manager_diag_.getMsg();
-
-    auto current_hdg = mrs_lib::AttitudeConverter(diag->pose.orientation).getHeading();
-
-    if (abs(start_pose.x + x - diag->pose.position.x) < 0.1 && abs(start_pose.y + y - diag->pose.position.y) < 0.1 &&
-        abs(start_pose.z + z - diag->pose.position.z) < 0.1 && abs(radians::diff(start_hdg + hdg, current_hdg)) < 0.1) {
-
+    if (isAtPosition(start_pose.x + x, start_pose.y + y, start_pose.z + z, start_hdg + hdg, 0.1)) {
       return {true, "goal reached"};
     }
 
@@ -451,6 +450,27 @@ tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const
   }
 
   return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* isAtPosition() //{ */
+
+bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+
+  auto uav_state = sh_uav_state_.getMsg();
+
+  auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
+
+  if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(hdg - current_hdg) < 0.1) {
+
+    return true;
+
+  } else {
+
+    return false;
+  }
 }
 
 //}
