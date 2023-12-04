@@ -13,6 +13,10 @@ set(CATKIN_DEPENDENCIES
   mrs_msgs
   )
 
+set(LIBRARIES
+  MrsUavTesting_TestGeneric
+  )
+
 find_package(catkin REQUIRED COMPONENTS
   ${CATKIN_DEPENDENCIES}
   )
@@ -20,11 +24,22 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
+  LIBRARIES ${LIBRARIES}
   )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  )
+
+# Test Generic
+
+add_library(MrsUavTesting_TestGeneric
+  src/test_generic.cpp
+  )
+
+target_link_libraries(MrsUavTesting_TestGeneric
+  ${catkin_LIBRARIES}
   )
 
 if(CATKIN_ENABLE_TESTING)
@@ -39,6 +54,12 @@ endif()
 ## --------------------------------------------------------------
 ## |                           Install                          |
 ## --------------------------------------------------------------
+
+install(TARGETS ${LIBRARIES}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+  )
 
 install(DIRECTORY include/mrs_uav_testing/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

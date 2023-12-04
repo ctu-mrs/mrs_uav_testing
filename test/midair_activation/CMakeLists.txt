@@ -3,6 +3,7 @@ catkin_add_executable_with_gtest(test_midair
   )
 
 target_link_libraries(test_midair
+  MrsUavTesting_TestGeneric
   ${catkin_LIBRARIES}
   )
 

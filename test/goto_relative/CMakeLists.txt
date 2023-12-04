@@ -3,6 +3,7 @@ catkin_add_executable_with_gtest(test_goto_relative
   )
 
 target_link_libraries(test_goto_relative
+  MrsUavTesting_TestGeneric
   ${catkin_LIBRARIES}
   )
 
