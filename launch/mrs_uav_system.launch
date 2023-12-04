@@ -1,0 +1,32 @@
+<launch>
+
+  <arg name="automatic_start" default="" />
+
+  <arg name="UAV_NAME" default="" />
+  <arg name="RUN_TYPE" default="simulation" />
+
+  <arg name="custom_config" default="$(find mrs_uav_testing)/config/default_custom_config.yaml" />
+  <arg name="world_config" default="$(find mrs_uav_testing)/config/default_world_config.yaml" />
+  <arg name="network_config" default="$(find mrs_uav_testing)/config/default_network_config.yaml" />
+  <arg name="platform_config" default="" />
+  <arg name="automatic_start_config" default="" />
+
+  <include if="$(eval arg('automatic_start'))" file="$(find mrs_uav_autostart)/launch/automatic_start.launch">
+    <arg name="UAV_NAME" default="$(arg UAV_NAME)" />
+    <arg name="RUN_TYPE" default="$(arg RUN_TYPE)" />
+    <arg name="custom_config" default="$(arg automatic_start_config)" />
+  </include>
+
+  <include file="$(find mrs_uav_core)/launch/core.launch">
+
+    <arg name="UAV_NAME" default="$(arg UAV_NAME)" />
+    <arg name="RUN_TYPE" default="$(arg RUN_TYPE)" />
+
+    <arg name="world_config" default="$(arg world_config)" />
+    <arg name="network_config" default="$(arg network_config)" />
+    <arg name="custom_config" default="$(arg custom_config)" />
+    <arg name="platform_config" default="$(arg platform_config)" />
+
+  </include>
+
+</launch>

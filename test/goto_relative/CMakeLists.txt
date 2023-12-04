@@ -1,15 +1,21 @@
-catkin_add_executable_with_gtest(test_goto_relative
+get_filename_component(TEST_NAME "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+
+catkin_add_executable_with_gtest(test_${TEST_NAME}
   test.cpp
   )
 
-target_link_libraries(test_goto_relative
+target_link_libraries(test_${TEST_NAME}
   MrsUavTesting_TestGeneric
   ${catkin_LIBRARIES}
   )
 
-add_dependencies(test_goto_relative
+add_dependencies(test_${TEST_NAME}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
-add_rostest(goto_relative.test)
+add_rostest(${TEST_NAME}.test
+  ARGS
+  test_path:=${CMAKE_CURRENT_SOURCE_DIR}
+  package_name:=${PROJECT_NAME}
+  )
