@@ -10,16 +10,27 @@ public:
 
 bool Tester::test() {
 
-  auto [success, message] = activateMidAir();
+  {
+    auto [success, message] = spawnGazeboUav();
 
-  if (!success) {
-    ROS_ERROR("[%s]: midair activation failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
-    return false;
+    if (!success) {
+      ROS_ERROR("[%s]: gazebo UAV spawning failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
+      return false;
+    }
+  }
+
+  {
+    auto [success, message] = takeoff();
+
+    if (!success) {
+      ROS_ERROR("[%s]: midair activation failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
+      return false;
+    }
   }
 
   this->sleep(5.0);
 
-  if (this->flyingNormally()) {
+  if (this->isFlyingNormally()) {
     return true;
   } else {
     ROS_ERROR("[%s]: not flying normally", ros::this_node::getName().c_str());
@@ -28,7 +39,7 @@ bool Tester::test() {
 }
 
 
-TEST(TESTSuite, midair_activation) {
+TEST(TESTSuite, test) {
 
   Tester tester;
 

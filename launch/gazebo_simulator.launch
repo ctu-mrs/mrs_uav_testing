@@ -1,20 +1,11 @@
 <launch>
 
-  <arg name="UAV_NAME" default="" />
-  <arg name="UAV_TYPE" default="x500" />
-
   <arg name="hw_api_config" default="" />
   <arg name="world_name" default="grass_plane" />
 
   <include file="$(find mrs_uav_gazebo_simulation)/launch/simulation.launch">
     <arg name="world_name" default="$(arg world_name)" />
     <arg name="gui" default="false" />
-  </include>
-
-  <include file="$(find mrs_uav_px4_api)/launch/api.launch">
-    <arg name="UAV_NAME" default="$(arg UAV_NAME)" />
-    <arg name="RUN_TYPE" default="$(arg RUN_TYPE)" />
-    <arg name="custom_config" default="$(arg hw_api_config)" />
   </include>
 
 </launch>

@@ -7,24 +7,6 @@ namespace mrs_uav_testing
 
 TestGeneric::TestGeneric() {
 
-  _test_name_ = "TestGeneric";
-  _uav_name_  = "uav1";
-
-  initialize();
-}
-
-TestGeneric::TestGeneric(const string &test_name) {
-
-  this->_test_name_ = test_name;
-
-  initialize();
-}
-
-TestGeneric::TestGeneric(const string &test_name, const string &uav_name) {
-
-  this->_test_name_ = test_name;
-  this->_uav_name_  = uav_name;
-
   initialize();
 }
 
@@ -34,8 +16,6 @@ TestGeneric::TestGeneric(const string &test_name, const string &uav_name) {
 
 void TestGeneric::initialize(void) {
 
-  name_ = _uav_name_ + "/" + _test_name_;
-
   nh_ = ros::NodeHandle("~");
 
   ROS_INFO("[%s]: ROS node initialized", name_.c_str());
@@ -44,6 +24,16 @@ void TestGeneric::initialize(void) {
 
   spinner_ = make_shared<ros::AsyncSpinner>(4);
   spinner_->start();
+
+  // | ----------------------- load params ---------------------- |
+
+  mrs_lib::ParamLoader param_loader(nh_, "Test");
+
+  param_loader.loadParam("uav_name", _uav_name_, std::string());
+  param_loader.loadParam("test_name", _test_name_, std::string());
+  param_loader.loadParam("gazebo_spawner_params", _gazebo_spawner_params_, std::string());
+
+  name_ = _uav_name_ + "/" + _test_name_;
 
   // | ----------------------- subscribers ---------------------- |
 
@@ -61,6 +51,7 @@ void TestGeneric::initialize(void) {
   sh_estim_manager_diag_      = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts, "/" + _uav_name_ + "/estimation_manager/diagnostics");
   sh_constraint_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_       = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_gazebo_spawner_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts, "/mrs_drone_spawner/diagnostics");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts, "/" + _uav_name_ + "/hw_api/status");
 
@@ -69,6 +60,7 @@ void TestGeneric::initialize(void) {
   sch_arming_            = mrs_lib::ServiceClientHandler<std_srvs::SetBool>(nh_, "/" + _uav_name_ + "/hw_api/arming");
   sch_offboard_          = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/hw_api/offboard");
   sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/midair_activation");
+  sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
@@ -76,6 +68,68 @@ void TestGeneric::initialize(void) {
   // | --------------------- finish the init -------------------- |
 
   ROS_INFO("[%s]: initialized", name_.c_str());
+}
+
+//}
+
+/* spawnGazeboUav() //{ */
+
+tuple<bool, string> TestGeneric::spawnGazeboUav() {
+
+  // | ------------ wait for the spawner to be ready ------------ |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the Gazebo drone spawner", name_.c_str());
+
+    if (sh_gazebo_spawner_diag_.hasMsg()) {
+      break;
+    }
+
+    sleep(0.1);
+  }
+
+  // | -------------------------- wait  ------------------------- |
+
+  sleep(1.0);
+
+  // | ------------------- call spawn service ------------------- |
+
+  {
+
+    mrs_msgs::String srv;
+
+    srv.request.value = _gazebo_spawner_params_;
+
+    bool service_call = sch_spawn_gazebo_uav_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "gazebo drone spawner service call failed"};
+    }
+  }
+
+  // | ------------------ wait while processing ----------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the drone to spawn", name_.c_str());
+
+    if (!sh_gazebo_spawner_diag_.getMsg()->processing) {
+      break;
+    }
+
+    sleep(0.1);
+  }
+
+  return {true, "drone spawned"};
 }
 
 //}
@@ -288,7 +342,7 @@ bool TestGeneric::mrsSystemReady(void) {
 
 /* flyingNormally() //{ */
 
-bool TestGeneric::flyingNormally(void) {
+bool TestGeneric::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->flying_normally;
@@ -326,7 +380,7 @@ tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const
       return {false, "shut down from outside"};
     }
 
-    if (!flyingNormally()) {
+    if (!isFlyingNormally()) {
       return {false, "not flying normally"};
     }
 
@@ -379,7 +433,7 @@ tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const
       return {false, "shut down from outside"};
     }
 
-    if (!flyingNormally()) {
+    if (!isFlyingNormally()) {
       return {false, "not flying normally"};
     }
 

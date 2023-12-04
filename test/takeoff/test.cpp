@@ -19,7 +19,7 @@ bool Tester::test() {
 
   this->sleep(5.0);
 
-  if (this->flyingNormally()) {
+  if (this->isFlyingNormally()) {
     return true;
   } else {
     ROS_ERROR("[%s]: not flying normally", ros::this_node::getName().c_str());
@@ -28,7 +28,7 @@ bool Tester::test() {
 }
 
 
-TEST(TESTSuite, takeoff) {
+TEST(TESTSuite, test) {
 
   Tester tester;
 
