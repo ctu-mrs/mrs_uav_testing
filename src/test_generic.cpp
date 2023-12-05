@@ -185,7 +185,7 @@ tuple<bool, string> TestGeneric::takeoff(void) {
 
   // | ---------------------- wait a second --------------------- |
 
-  sleep(1.0);
+  sleep(2.0);
 
   // | --------------------- check if armed --------------------- |
 
@@ -341,12 +341,38 @@ bool TestGeneric::mrsSystemReady(void) {
 
 //}
 
-/* flyingNormally() //{ */
+/* isFlyingNormally() //{ */
 
 bool TestGeneric::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->flying_normally;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* isOutputEnabled() //{ */
+
+bool TestGeneric::isOutputEnabled(void) {
+
+  if (sh_control_manager_diag_.hasMsg()) {
+    return sh_control_manager_diag_.getMsg()->output_enabled;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* hasGoal() //{ */
+
+bool TestGeneric::hasGoal(void) {
+
+  if (sh_control_manager_diag_.hasMsg()) {
+    return sh_control_manager_diag_.getMsg()->tracker_status.have_goal;
   } else {
     return false;
   }

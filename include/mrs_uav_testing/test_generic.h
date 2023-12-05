@@ -11,6 +11,7 @@
 #include <mrs_lib/attitude_converter.h>
 #include <mrs_lib/geometry/cyclic.h>
 #include <mrs_lib/param_loader.h>
+#include <mrs_lib/publisher_handler.h>
 
 #include <mrs_msgs/ControlManagerDiagnostics.h>
 #include <mrs_msgs/UavManagerDiagnostics.h>
@@ -57,7 +58,9 @@ protected:
 
   void sleep(const double &duration);
 
+  bool hasGoal(void);
   bool isFlyingNormally(void);
+  bool isOutputEnabled(void);
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
@@ -83,10 +86,10 @@ protected:
   string _test_name_;
   string name_;
 
+  bool mrsSystemReady(void);
+
 private:
   shared_ptr<ros::AsyncSpinner> spinner_;
-
-  bool mrsSystemReady(void);
 };
 
 //}
