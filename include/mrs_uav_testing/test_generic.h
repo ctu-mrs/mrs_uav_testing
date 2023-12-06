@@ -46,8 +46,11 @@ public:
 
   virtual bool test() = 0;
 
+  std::shared_ptr<mrs_lib::ParamLoader> pl_;
+
 protected:
-  ros::NodeHandle nh_;
+  ros::NodeHandle                       nh_;
+  std::shared_ptr<mrs_lib::Transformer> transformer_;
 
   tuple<bool, string> takeoff(void);
   tuple<bool, string> activateMidAir(void);

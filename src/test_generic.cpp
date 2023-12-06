@@ -27,13 +27,19 @@ void TestGeneric::initialize(void) {
 
   // | ----------------------- load params ---------------------- |
 
-  mrs_lib::ParamLoader param_loader(nh_, "Test");
+  pl_ = std::make_shared<mrs_lib::ParamLoader>(nh_, "Test");
 
-  param_loader.loadParam("uav_name", _uav_name_, std::string());
-  param_loader.loadParam("test_name", _test_name_, std::string());
-  param_loader.loadParam("gazebo_spawner_params", _gazebo_spawner_params_, std::string());
+  pl_->loadParam("uav_name", _uav_name_, std::string());
+  pl_->loadParam("test_name", _test_name_, std::string());
+  pl_->loadParam("gazebo_spawner_params", _gazebo_spawner_params_, std::string());
 
   name_ = _uav_name_ + "/" + _test_name_;
+
+  // | ----------------------- transformer ---------------------- |
+
+  transformer_ = std::make_shared<mrs_lib::Transformer>(nh_, "Test");
+  transformer_->setDefaultPrefix(_uav_name_);
+  transformer_->retryLookupNewest(true);
 
   // | ----------------------- subscribers ---------------------- |
 
