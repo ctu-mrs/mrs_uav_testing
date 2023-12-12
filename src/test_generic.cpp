@@ -43,24 +43,24 @@ void TestGeneric::initialize(void) {
 
   // | ----------------------- subscribers ---------------------- |
 
-  mrs_lib::SubscribeHandlerOptions shopts;
-  shopts.nh                 = nh_;
-  shopts.node_name          = name_;
-  shopts.no_message_timeout = mrs_lib::no_timeout;
-  shopts.threadsafe         = true;
-  shopts.autostart          = true;
-  shopts.queue_size         = 10;
-  shopts.transport_hints    = ros::TransportHints().tcpNoDelay();
+  shopts_.nh                 = nh_;
+  shopts_.node_name          = name_;
+  shopts_.no_message_timeout = mrs_lib::no_timeout;
+  shopts_.threadsafe         = true;
+  shopts_.autostart          = true;
+  shopts_.queue_size         = 10;
+  shopts_.transport_hints    = ros::TransportHints().tcpNoDelay();
 
-  sh_control_manager_diag_    = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts, "/" + _uav_name_ + "/control_manager/diagnostics");
-  sh_uav_manager_diag_        = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(shopts, "/" + _uav_name_ + "/uav_manager/diagnostics");
-  sh_estim_manager_diag_      = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts, "/" + _uav_name_ + "/estimation_manager/diagnostics");
-  sh_constraint_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts, "/" + _uav_name_ + "/constraint_manager/diagnostics");
-  sh_gain_manager_diag_       = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_               = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_gazebo_spawner_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts, "/mrs_drone_spawner/diagnostics");
+  sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
+  sh_uav_manager_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
+  sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
+  sh_constraint_manager_diag_ =
+      mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
+  sh_gain_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_uav_state_           = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_gazebo_spawner_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts_, "/mrs_drone_spawner/diagnostics");
 
-  sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts, "/" + _uav_name_ + "/hw_api/status");
+  sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
   // | --------------------- service clients -------------------- |
 
@@ -503,6 +503,32 @@ bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z
 
     return false;
   }
+}
+
+//}
+
+/* getActiveController() //{ */
+
+std::string TestGeneric::getActiveTracker(void) {
+
+  if (!sh_control_manager_diag_.getMsg()) {
+    return "";
+  }
+
+  return sh_control_manager_diag_.getMsg()->active_tracker;
+}
+
+//}
+
+/* getActiveController() //{ */
+
+std::string TestGeneric::getActiveController(void) {
+
+  if (!sh_control_manager_diag_.getMsg()) {
+    return "";
+  }
+
+  return sh_control_manager_diag_.getMsg()->active_controller;
 }
 
 //}

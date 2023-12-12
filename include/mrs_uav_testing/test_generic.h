@@ -52,6 +52,8 @@ protected:
   ros::NodeHandle                       nh_;
   std::shared_ptr<mrs_lib::Transformer> transformer_;
 
+  mrs_lib::SubscribeHandlerOptions shopts_;
+
   tuple<bool, string> takeoff(void);
   tuple<bool, string> activateMidAir(void);
 
@@ -61,10 +63,12 @@ protected:
 
   void sleep(const double &duration);
 
-  bool hasGoal(void);
-  bool isFlyingNormally(void);
-  bool isOutputEnabled(void);
-  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+  bool        hasGoal(void);
+  bool        isFlyingNormally(void);
+  bool        isOutputEnabled(void);
+  bool        isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+  std::string getActiveTracker(void);
+  std::string getActiveController(void);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;
