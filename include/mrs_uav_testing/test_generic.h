@@ -23,6 +23,7 @@
 #include <mrs_msgs/GazeboSpawnerDiagnostics.h>
 #include <mrs_msgs/String.h>
 #include <mrs_msgs/UavState.h>
+#include <mrs_msgs/PathSrv.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -85,8 +86,11 @@ protected:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_midair_activation_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_spawn_gazebo_uav_;
 
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4> sch_goto_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4> sch_goto_relative_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
+
+  tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
 
   string _uav_name_;
   string _gazebo_spawner_params_;

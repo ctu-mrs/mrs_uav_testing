@@ -72,12 +72,16 @@ void TestGeneric::initialize(void) {
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
 
+  sch_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+
   // | --------------------- finish the init -------------------- |
 
   ROS_INFO("[%s]: initialized", name_.c_str());
 }
 
 //}
+
+// | --------------------- action methods --------------------- |
 
 /* spawnGazeboUav() //{ */
 
@@ -332,60 +336,6 @@ tuple<bool, string> TestGeneric::activateMidAir(void) {
 
 //}
 
-/* mrsSystemReady() //{ */
-
-bool TestGeneric::mrsSystemReady(void) {
-
-  bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
-  bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
-  bool got_uav_manager_diag        = sh_uav_manager_diag_.hasMsg();
-  bool got_gain_manager_diag       = sh_gain_manager_diag_.hasMsg();
-  bool got_constraint_manager_diag = sh_constraint_manager_diag_.hasMsg();
-
-  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag;
-}
-
-//}
-
-/* isFlyingNormally() //{ */
-
-bool TestGeneric::isFlyingNormally(void) {
-
-  if (sh_control_manager_diag_.hasMsg()) {
-    return sh_control_manager_diag_.getMsg()->flying_normally;
-  } else {
-    return false;
-  }
-}
-
-//}
-
-/* isOutputEnabled() //{ */
-
-bool TestGeneric::isOutputEnabled(void) {
-
-  if (sh_control_manager_diag_.hasMsg()) {
-    return sh_control_manager_diag_.getMsg()->output_enabled;
-  } else {
-    return false;
-  }
-}
-
-//}
-
-/* hasGoal() //{ */
-
-bool TestGeneric::hasGoal(void) {
-
-  if (sh_control_manager_diag_.hasMsg()) {
-    return sh_control_manager_diag_.getMsg()->tracker_status.have_goal;
-  } else {
-    return false;
-  }
-}
-
-//}
-
 /* gotoAbs() //{ */
 
 tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
@@ -486,6 +436,28 @@ tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const
 
 //}
 
+/* setPathSrv() //{ */
+
+tuple<bool, string> TestGeneric::setPathSrv(const mrs_msgs::Path &path_in) {
+
+  mrs_msgs::PathSrv srv;
+  srv.request.path = path_in;
+
+  {
+    bool service_call = sch_path_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "path service call failed"};
+    }
+  }
+
+  return {true, "path set"};
+}
+
+//}
+
+// | ------------------------- getters ------------------------ |
+
 /* isAtPosition() //{ */
 
 bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
@@ -529,6 +501,60 @@ std::string TestGeneric::getActiveController(void) {
   }
 
   return sh_control_manager_diag_.getMsg()->active_controller;
+}
+
+//}
+
+/* hasGoal() //{ */
+
+bool TestGeneric::hasGoal(void) {
+
+  if (sh_control_manager_diag_.hasMsg()) {
+    return sh_control_manager_diag_.getMsg()->tracker_status.have_goal;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* mrsSystemReady() //{ */
+
+bool TestGeneric::mrsSystemReady(void) {
+
+  bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
+  bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
+  bool got_uav_manager_diag        = sh_uav_manager_diag_.hasMsg();
+  bool got_gain_manager_diag       = sh_gain_manager_diag_.hasMsg();
+  bool got_constraint_manager_diag = sh_constraint_manager_diag_.hasMsg();
+
+  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag;
+}
+
+//}
+
+/* isFlyingNormally() //{ */
+
+bool TestGeneric::isFlyingNormally(void) {
+
+  if (sh_control_manager_diag_.hasMsg()) {
+    return sh_control_manager_diag_.getMsg()->flying_normally;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* isOutputEnabled() //{ */
+
+bool TestGeneric::isOutputEnabled(void) {
+
+  if (sh_control_manager_diag_.hasMsg()) {
+    return sh_control_manager_diag_.getMsg()->output_enabled;
+  } else {
+    return false;
+  }
 }
 
 //}
