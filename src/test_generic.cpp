@@ -74,6 +74,10 @@ void TestGeneric::initialize(void) {
 
   sch_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
 
+  // | ----------------------- publishers ----------------------- |
+
+  ph_path_ = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+
   // | --------------------- finish the init -------------------- |
 
   ROS_INFO("[%s]: initialized", name_.c_str());
@@ -101,7 +105,7 @@ tuple<bool, string> TestGeneric::spawnGazeboUav() {
       break;
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   // | -------------------------- wait  ------------------------- |
@@ -137,7 +141,7 @@ tuple<bool, string> TestGeneric::spawnGazeboUav() {
       break;
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   return {true, "drone spawned"};
@@ -173,7 +177,7 @@ tuple<bool, string> TestGeneric::takeoff(void) {
       break;
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   // | ---------------------- arm the drone --------------------- |
@@ -242,7 +246,7 @@ tuple<bool, string> TestGeneric::takeoff(void) {
       return {true, "takeoff finished"};
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   return {false, "reached end of the method without assertion"};
@@ -269,7 +273,7 @@ tuple<bool, string> TestGeneric::activateMidAir(void) {
       break;
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   // | ---------------------- arm the drone --------------------- |
@@ -328,7 +332,7 @@ tuple<bool, string> TestGeneric::activateMidAir(void) {
       return {true, "midair activation finished"};
     }
 
-    sleep(0.1);
+    sleep(0.01);
   }
 
   return {false, "reached end of the method without assertion"};
@@ -367,20 +371,12 @@ tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const
       return {false, "not flying normally"};
     }
 
-    auto diag = sh_estim_manager_diag_.getMsg();
-
-    auto current_hdg = mrs_lib::AttitudeConverter(diag->pose.orientation).getHeading();
-
-    if (abs(x - diag->pose.position.x) < 0.1 && abs(y - diag->pose.position.y) < 0.1 && abs(z - diag->pose.position.z) < 0.1 && abs(hdg - current_hdg) < 0.1) {
-
-      return {true, "goal reached"};
-    }
-
     if (isAtPosition(x, y, z, hdg, 0.1)) {
+
       return {true, "goal reached"};
     }
 
-    ros::Duration(0.1).sleep();
+    sleep(0.01);
   }
 
   return {false, "reached end of the method without assertion"};
@@ -428,7 +424,7 @@ tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const
       return {true, "goal reached"};
     }
 
-    ros::Duration(0.1).sleep();
+    sleep(0.01);
   }
 
   return {false, "reached end of the method without assertion"};
@@ -456,6 +452,17 @@ tuple<bool, string> TestGeneric::setPathSrv(const mrs_msgs::Path &path_in) {
 
 //}
 
+/* setPathTopic() //{ */
+
+tuple<bool, string> TestGeneric::setPathTopic(const mrs_msgs::Path &path_in) {
+
+  ph_path_.publish(path_in);
+
+  return {true, "path set"};
+}
+
+//}
+
 // | ------------------------- getters ------------------------ |
 
 /* isAtPosition() //{ */
@@ -467,7 +474,7 @@ bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z
   auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
 
   if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
-      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(hdg - current_hdg) < 0.1) {
+      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, current_hdg)) < 0.2) {
 
     return true;
 

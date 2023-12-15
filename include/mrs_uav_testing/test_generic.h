@@ -90,7 +90,10 @@ protected:
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
 
+  mrs_lib::PublisherHandler<mrs_msgs::Path> ph_path_;
+
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
+  tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
 
   string _uav_name_;
   string _gazebo_spawner_params_;
