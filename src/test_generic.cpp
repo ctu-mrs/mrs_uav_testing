@@ -145,9 +145,28 @@ tuple<bool, string> TestGeneric::spawnGazeboUav() {
     sleep(0.01);
   }
 
-  // | --------- wait some time to allow the PX4 to boot -------- |
+  // | ------------- wait for the HW API to connect ------------- |
 
-  sleep(5.0);
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
+
+    if (sh_hw_api_status_.hasMsg()) {
+      if (sh_hw_api_status_.getMsg()->connected) {
+        break;
+      }
+    }
+
+    sleep(0.01);
+  }
+
+  // | -------------- wait for PX4 to finish bootup ------------- |
+
+  sleep(12.0);
 
   return {true, "drone spawned"};
 }
@@ -601,12 +620,14 @@ bool TestGeneric::hasGoal(void) {
 bool TestGeneric::mrsSystemReady(void) {
 
   bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
-  bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
   bool got_uav_manager_diag        = sh_uav_manager_diag_.hasMsg();
   bool got_gain_manager_diag       = sh_gain_manager_diag_.hasMsg();
   bool got_constraint_manager_diag = sh_constraint_manager_diag_.hasMsg();
+  bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
+  bool got_uav_state               = sh_uav_state_.hasMsg();
 
-  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag;
+  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag &&
+         got_uav_state;
 }
 
 //}
