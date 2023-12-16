@@ -68,6 +68,7 @@ void TestGeneric::initialize(void) {
   sch_offboard_          = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/hw_api/offboard");
   sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/midair_activation");
   sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
+  sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land");
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
@@ -248,6 +249,72 @@ tuple<bool, string> TestGeneric::takeoff(void) {
     if (sh_control_manager_diag_.getMsg()->flying_normally) {
 
       return {true, "takeoff finished"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* land() //{ */
+
+tuple<bool, string> TestGeneric::land(void) {
+
+  if (!isFlyingNormally()) {
+    return {false, "not flying normally in the beginning"};
+  }
+
+  // | ---------------------- arm the drone --------------------- |
+
+  ROS_INFO("[%s]: calling for landing", name_.c_str());
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_land_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "land service call failed"};
+      }
+    }
+  }
+
+  // | ---------------------- wait a second --------------------- |
+
+  sleep(1.0);
+
+  // | -------- wait till the right controller is active -------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "MpcController") {
+      break;
+    }
+
+    sleep(0.01);
+  }
+
+  // | ------------- wait for the landing to finish ------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the landing to finish", name_.c_str());
+
+    if (!isOutputEnabled()) {
+
+      return {true, "landing finished"};
     }
 
     sleep(0.01);

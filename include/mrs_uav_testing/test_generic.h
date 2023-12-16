@@ -56,6 +56,7 @@ protected:
   mrs_lib::SubscribeHandlerOptions shopts_;
 
   tuple<bool, string> takeoff(void);
+  tuple<bool, string> land(void);
   tuple<bool, string> activateMidAir(void);
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
@@ -85,6 +86,7 @@ protected:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_offboard_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_midair_activation_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_spawn_gazebo_uav_;
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
