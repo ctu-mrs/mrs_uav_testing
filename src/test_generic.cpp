@@ -144,6 +144,10 @@ tuple<bool, string> TestGeneric::spawnGazeboUav() {
     sleep(0.01);
   }
 
+  // | --------- wait some time to allow the PX4 to boot -------- |
+
+  sleep(5.0);
+
   return {true, "drone spawned"};
 }
 
