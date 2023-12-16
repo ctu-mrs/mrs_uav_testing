@@ -69,8 +69,10 @@ protected:
   bool        isFlyingNormally(void);
   bool        isOutputEnabled(void);
   bool        isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+
   std::string getActiveTracker(void);
   std::string getActiveController(void);
+  std::string getActiveEstimator(void);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;

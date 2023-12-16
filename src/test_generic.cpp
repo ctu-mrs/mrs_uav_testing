@@ -407,7 +407,7 @@ tuple<bool, string> TestGeneric::activateMidAir(void) {
     }
   }
 
-  // | --------------- wait for takeoff to finish --------------- |
+  // | --------------- waiting for flying normally -------------- |
 
   while (true) {
 
@@ -576,7 +576,7 @@ bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z
 
 //}
 
-/* getActiveController() //{ */
+/* getActiveTracker() //{ */
 
 std::string TestGeneric::getActiveTracker(void) {
 
@@ -598,6 +598,19 @@ std::string TestGeneric::getActiveController(void) {
   }
 
   return sh_control_manager_diag_.getMsg()->active_controller;
+}
+
+//}
+
+/* getActiveEstimator() //{ */
+
+std::string TestGeneric::getActiveEstimator(void) {
+
+  if (!sh_estim_manager_diag_.getMsg()) {
+    return "";
+  }
+
+  return sh_estim_manager_diag_.getMsg()->current_state_estimator;
 }
 
 //}
