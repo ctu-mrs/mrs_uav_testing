@@ -1,6 +1,8 @@
 #ifndef TEST_GENERIC_H
 #define TEST_GENERIC_H
 
+/* includes //{ */
+
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <log4cxx/logger.h>
@@ -24,9 +26,13 @@
 #include <mrs_msgs/String.h>
 #include <mrs_msgs/UavState.h>
 #include <mrs_msgs/PathSrv.h>
+#include <mrs_msgs/Float64Stamped.h>
+#include <mrs_msgs/TrackerCommand.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
+
+//}
 
 namespace mrs_uav_testing
 {
@@ -35,8 +41,6 @@ using radians  = mrs_lib::geometry::radians;
 using sradians = mrs_lib::geometry::sradians;
 
 using namespace std;
-
-/* TestGeneric //{ */
 
 class TestGeneric {
 
@@ -57,6 +61,7 @@ protected:
 
   tuple<bool, string> takeoff(void);
   tuple<bool, string> land(void);
+  tuple<bool, string> landHome(void);
   tuple<bool, string> activateMidAir(void);
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
@@ -65,14 +70,16 @@ protected:
 
   void sleep(const double &duration);
 
-  bool        hasGoal(void);
-  bool        isFlyingNormally(void);
-  bool        isOutputEnabled(void);
-  bool        isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+  bool hasGoal(void);
+  bool isFlyingNormally(void);
+  bool isOutputEnabled(void);
+  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
-  std::string getActiveTracker(void);
-  std::string getActiveController(void);
-  std::string getActiveEstimator(void);
+  std::string                             getActiveTracker(void);
+  std::string                             getActiveController(void);
+  std::string                             getActiveEstimator(void);
+  std::optional<mrs_msgs::TrackerCommand> getTrackerCmd(void);
+  std::optional<double>                   getHeightAgl(void);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;
@@ -81,6 +88,8 @@ protected:
   mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics> sh_constraint_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>     sh_gazebo_spawner_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavState>                     sh_uav_state_;
+  mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>               sh_tracker_cmd_;
+  mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_height_agl_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
@@ -89,6 +98,7 @@ protected:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_midair_activation_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_spawn_gazebo_uav_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_;
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_home_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
@@ -109,8 +119,6 @@ protected:
 private:
   shared_ptr<ros::AsyncSpinner> spinner_;
 };
-
-//}
 
 }  // namespace mrs_uav_testing
 

@@ -53,11 +53,13 @@ void TestGeneric::initialize(void) {
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
   sh_uav_manager_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
+  sh_tracker_cmd_          = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
   sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
   sh_constraint_manager_diag_ =
       mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
   sh_uav_state_           = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
   sh_gazebo_spawner_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts_, "/mrs_drone_spawner/diagnostics");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
@@ -69,6 +71,7 @@ void TestGeneric::initialize(void) {
   sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/midair_activation");
   sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
   sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land");
+  sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land_home");
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
@@ -286,7 +289,7 @@ tuple<bool, string> TestGeneric::land(void) {
     return {false, "not flying normally in the beginning"};
   }
 
-  // | ---------------------- arm the drone --------------------- |
+  // | -------------------- call land service ------------------- |
 
   ROS_INFO("[%s]: calling for landing", name_.c_str());
 
@@ -298,6 +301,72 @@ tuple<bool, string> TestGeneric::land(void) {
 
       if (!service_call || !srv.response.success) {
         return {false, "land service call failed"};
+      }
+    }
+  }
+
+  // | ---------------------- wait a second --------------------- |
+
+  sleep(1.0);
+
+  // | -------- wait till the right controller is active -------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "MpcController") {
+      break;
+    }
+
+    sleep(0.01);
+  }
+
+  // | ------------- wait for the landing to finish ------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the landing to finish", name_.c_str());
+
+    if (!isOutputEnabled()) {
+
+      return {true, "landing finished"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* landHome() //{ */
+
+tuple<bool, string> TestGeneric::landHome(void) {
+
+  if (!isFlyingNormally()) {
+    return {false, "not flying normally in the beginning"};
+  }
+
+  // | ----------------- call land home service ----------------- |
+
+  ROS_INFO("[%s]: calling for landing home", name_.c_str());
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_land_home_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "land home service call failed"};
       }
     }
   }
@@ -549,6 +618,32 @@ tuple<bool, string> TestGeneric::setPathTopic(const mrs_msgs::Path &path_in) {
   ph_path_.publish(path_in);
 
   return {true, "path set"};
+}
+
+//}
+
+/* getHeightAgl() //{ */
+
+std::optional<double> TestGeneric::getHeightAgl(void) {
+
+  if (sh_height_agl_.hasMsg()) {
+    return {sh_height_agl_.getMsg()->value};
+  } else {
+    return {};
+  }
+}
+
+//}
+
+/* getTrackerCmd() //{ */
+
+std::optional<mrs_msgs::TrackerCommand> TestGeneric::getTrackerCmd(void) {
+
+  if (sh_tracker_cmd_.hasMsg()) {
+    return {*sh_tracker_cmd_.getMsg()};
+  } else {
+    return {};
+  }
 }
 
 //}
