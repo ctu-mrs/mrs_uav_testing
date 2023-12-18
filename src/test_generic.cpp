@@ -486,8 +486,10 @@ tuple<bool, string> TestGeneric::activateMidAir(void) {
 
     ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the midair activation to finish", name_.c_str());
 
-    if (sh_control_manager_diag_.getMsg()->flying_normally) {
+    auto control_diag = sh_control_manager_diag_.getMsg();
 
+    if (control_diag->flying_normally && control_diag->active_controller != "MidairActivationController" &&
+        control_diag->active_tracker != "MidairActivationTracker") {
       return {true, "midair activation finished"};
     }
 
@@ -654,12 +656,39 @@ std::optional<mrs_msgs::TrackerCommand> TestGeneric::getTrackerCmd(void) {
 
 bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
 
+  if (!sh_uav_state_.hasMsg()) {
+    return false;
+  }
+
   auto uav_state = sh_uav_state_.getMsg();
 
   auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
 
   if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
       abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, current_hdg)) < 0.2) {
+
+    return true;
+
+  } else {
+
+    return false;
+  }
+}
+
+//}
+
+/* isReferenceAtPosition() //{ */
+
+bool TestGeneric::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+
+  if (!sh_tracker_cmd_.hasMsg()) {
+    return false;
+  }
+
+  auto tracker_cmd = sh_tracker_cmd_.getMsg();
+
+  if (abs(x - tracker_cmd->position.x) < pos_tolerance && abs(y - tracker_cmd->position.y) < pos_tolerance &&
+      abs(z - tracker_cmd->position.z) < pos_tolerance && abs(sradians::diff(hdg, tracker_cmd->heading)) < 0.2) {
 
     return true;
 
