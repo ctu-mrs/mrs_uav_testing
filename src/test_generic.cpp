@@ -52,6 +52,7 @@ void TestGeneric::initialize(void) {
   shopts_.transport_hints    = ros::TransportHints().tcpNoDelay();
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
+  sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
   sh_uav_manager_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
   sh_tracker_cmd_          = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
   sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
@@ -630,6 +631,19 @@ std::optional<double> TestGeneric::getHeightAgl(void) {
 
   if (sh_height_agl_.hasMsg()) {
     return {sh_height_agl_.getMsg()->value};
+  } else {
+    return {};
+  }
+}
+
+//}
+
+/* getCurrentConstraints() //{ */
+
+std::optional<mrs_msgs::DynamicsConstraints> TestGeneric::getCurrentConstraints(void) {
+
+  if (sh_current_constraints_.hasMsg()) {
+    return {*sh_current_constraints_.getMsg()};
   } else {
     return {};
   }

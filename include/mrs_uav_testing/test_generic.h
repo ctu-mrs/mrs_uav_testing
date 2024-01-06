@@ -28,6 +28,7 @@
 #include <mrs_msgs/PathSrv.h>
 #include <mrs_msgs/Float64Stamped.h>
 #include <mrs_msgs/TrackerCommand.h>
+#include <mrs_msgs/DynamicsConstraints.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -76,13 +77,15 @@ protected:
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
-  std::string                             getActiveTracker(void);
-  std::string                             getActiveController(void);
-  std::string                             getActiveEstimator(void);
-  std::optional<mrs_msgs::TrackerCommand> getTrackerCmd(void);
-  std::optional<double>                   getHeightAgl(void);
+  std::string                                  getActiveTracker(void);
+  std::string                                  getActiveController(void);
+  std::string                                  getActiveEstimator(void);
+  std::optional<mrs_msgs::TrackerCommand>      getTrackerCmd(void);
+  std::optional<double>                        getHeightAgl(void);
+  std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
+  mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>          sh_current_constraints_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>        sh_estim_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>       sh_gain_manager_diag_;
