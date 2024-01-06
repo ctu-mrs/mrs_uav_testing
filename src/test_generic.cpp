@@ -73,6 +73,7 @@ void TestGeneric::initialize(void) {
   sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
   sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land");
   sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land_home");
+  sch_switch_estimator_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
@@ -625,6 +626,28 @@ tuple<bool, string> TestGeneric::setPathTopic(const mrs_msgs::Path &path_in) {
 
 //}
 
+/* switchEstimator() //{ */
+
+tuple<bool, string> TestGeneric::switchEstimator(const std::string &estimator) {
+
+  mrs_msgs::String srv;
+  srv.request.value = estimator;
+
+  {
+    bool service_call = sch_switch_estimator_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "estimator switching service call failed"};
+    }
+  }
+
+  return {true, "estimator switched"};
+}
+
+//}
+
+// | ------------------------- getters ------------------------ |
+
 /* getHeightAgl() //{ */
 
 std::optional<double> TestGeneric::getHeightAgl(void) {
@@ -663,8 +686,6 @@ std::optional<mrs_msgs::TrackerCommand> TestGeneric::getTrackerCmd(void) {
 }
 
 //}
-
-// | ------------------------- getters ------------------------ |
 
 /* isAtPosition() //{ */
 

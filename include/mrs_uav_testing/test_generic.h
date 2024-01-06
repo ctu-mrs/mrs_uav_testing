@@ -29,6 +29,7 @@
 #include <mrs_msgs/Float64Stamped.h>
 #include <mrs_msgs/TrackerCommand.h>
 #include <mrs_msgs/DynamicsConstraints.h>
+#include <mrs_msgs/String.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -103,6 +104,7 @@ protected:
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_spawn_gazebo_uav_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_home_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_switch_estimator_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
@@ -112,6 +114,7 @@ protected:
 
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
+  tuple<bool, string> switchEstimator(const std::string &estimator);
 
   string _uav_name_;
   string _gazebo_spawner_params_;
