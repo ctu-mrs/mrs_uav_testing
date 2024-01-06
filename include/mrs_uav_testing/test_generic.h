@@ -95,6 +95,7 @@ protected:
   mrs_lib::SubscribeHandler<mrs_msgs::UavState>                     sh_uav_state_;
   mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>               sh_tracker_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_height_agl_;
+  mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_max_height_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 

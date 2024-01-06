@@ -61,6 +61,7 @@ void TestGeneric::initialize(void) {
   sh_gain_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
   sh_uav_state_           = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
   sh_height_agl_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
   sh_gazebo_spawner_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts_, "/mrs_drone_spawner/diagnostics");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
