@@ -30,10 +30,10 @@ void TestGeneric::initialize(void) {
   pl_ = std::make_shared<mrs_lib::ParamLoader>(nh_, "Test");
 
   pl_->loadParam("uav_name", _uav_name_, std::string());
-  pl_->loadParam("test_name", _test_name_, std::string());
+  pl_->loadParam("test", _test_name_, std::string());
   pl_->loadParam("gazebo_spawner_params", _gazebo_spawner_params_, std::string());
 
-  name_ = _uav_name_ + "/" + _test_name_;
+  name_ = "test/" + _uav_name_ + "/" + _test_name_;
 
   // | ----------------------- transformer ---------------------- |
 
@@ -78,6 +78,11 @@ void TestGeneric::initialize(void) {
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
+
+  sch_goto_trajectory_start_      = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start");
+  sch_start_trajectory_tracking_  = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking");
+  sch_stop_trajectory_tracking_   = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking");
+  sch_resume_trajectory_tracking_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/resume_trajectory_tracking");
 
   sch_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
 
@@ -643,6 +648,129 @@ tuple<bool, string> TestGeneric::switchEstimator(const std::string &estimator) {
   }
 
   return {true, "estimator switched"};
+}
+
+//}
+
+/* gotoTrajectoryStart() //{ */
+
+tuple<bool, string> TestGeneric::gotoTrajectoryStart() {
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_goto_trajectory_start_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "goto trajectory start service call failed"};
+      }
+    }
+  }
+
+  sleep(1.0);
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (!hasGoal()) {
+      return {true, "goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* startTrajectoryTracking() //{ */
+
+tuple<bool, string> TestGeneric::startTrajectoryTracking() {
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_start_trajectory_tracking_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "start trajectory tracking service call failed"};
+      }
+    }
+  }
+
+  sleep(1.0);
+
+  if (sh_control_manager_diag_.getMsg()->tracker_status.tracking_trajectory) {
+    return {true, "tracking trajectory"};
+  }
+
+  return {false, "failed to start trajectory tracking"};
+}
+
+//}
+
+/* stopTrajectoryTracking() //{ */
+
+tuple<bool, string> TestGeneric::stopTrajectoryTracking() {
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_stop_trajectory_tracking_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "stop trajectory tracking service call failed"};
+      }
+    }
+  }
+
+  sleep(1.0);
+
+  if (!sh_control_manager_diag_.getMsg()->tracker_status.tracking_trajectory) {
+    return {true, "tracking trajectory stopped"};
+  }
+
+  return {false, "failed to stop trajectory tracking"};
+}
+
+//}
+
+/* resumeTrajectoryTracking() //{ */
+
+tuple<bool, string> TestGeneric::resumeTrajectoryTracking() {
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_resume_trajectory_tracking_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "resume trajectory tracking service call failed"};
+      }
+    }
+  }
+
+  sleep(1.0);
+
+  if (sh_control_manager_diag_.getMsg()->tracker_status.tracking_trajectory) {
+    return {true, "tracking trajectory"};
+  }
+
+  return {false, "failed to resume trajectory tracking"};
 }
 
 //}

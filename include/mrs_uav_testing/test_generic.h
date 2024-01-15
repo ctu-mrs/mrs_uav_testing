@@ -68,7 +68,11 @@ protected:
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> gotoRel(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> gotoTrajectoryStart();
   tuple<bool, string> spawnGazeboUav();
+  tuple<bool, string> startTrajectoryTracking();
+  tuple<bool, string> resumeTrajectoryTracking();
+  tuple<bool, string> stopTrajectoryTracking();
 
   void sleep(const double &duration);
 
@@ -110,6 +114,11 @@ protected:
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
+
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_start_trajectory_tracking_;
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_stop_trajectory_tracking_;
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
 
   mrs_lib::PublisherHandler<mrs_msgs::Path> ph_path_;
 
