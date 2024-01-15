@@ -30,6 +30,8 @@
 #include <mrs_msgs/TrackerCommand.h>
 #include <mrs_msgs/DynamicsConstraints.h>
 #include <mrs_msgs/String.h>
+#include <mrs_msgs/TrajectoryReference.h>
+#include <mrs_msgs/GetPathSrv.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -115,6 +117,8 @@ protected:
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
 
+  mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv> sch_get_path_;
+
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_start_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_stop_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
@@ -125,6 +129,8 @@ protected:
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
   tuple<bool, string> switchEstimator(const std::string &estimator);
+
+  tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
 
   string _uav_name_;
   string _gazebo_spawner_params_;

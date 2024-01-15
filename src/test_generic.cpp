@@ -84,7 +84,8 @@ void TestGeneric::initialize(void) {
   sch_stop_trajectory_tracking_   = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking");
   sch_resume_trajectory_tracking_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/resume_trajectory_tracking");
 
-  sch_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+  sch_path_     = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+  sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/get_path");
 
   // | ----------------------- publishers ----------------------- |
 
@@ -771,6 +772,26 @@ tuple<bool, string> TestGeneric::resumeTrajectoryTracking() {
   }
 
   return {false, "failed to resume trajectory tracking"};
+}
+
+//}
+
+/* getPathSrv() //{ */
+
+tuple<std::optional<mrs_msgs::TrajectoryReference>, string> TestGeneric::getPathSrv(const mrs_msgs::Path &path_in) {
+
+  mrs_msgs::GetPathSrv srv;
+  srv.request.path = path_in;
+
+  {
+    bool service_call = sch_get_path_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, string>({}, "path service call failed");
+    }
+  }
+
+  return {srv.response.trajectory, "path set"};
 }
 
 //}
