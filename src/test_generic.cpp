@@ -243,6 +243,14 @@ tuple<bool, string> TestGeneric::takeoff(void) {
     return {false, "not armed"};
   }
 
+  sleep(0.2);
+
+  // | --------------- check if output is enabled --------------- |
+
+  if (!isOutputEnabled()) {
+    return {false, "output not enabled by automatic start"};
+  }
+
   // | ------------------- switch to offboard ------------------- |
 
   {
