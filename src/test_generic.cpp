@@ -566,8 +566,8 @@ tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const
 
 tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
 
-  auto start_pose = sh_estim_manager_diag_.getMsg()->pose.position;
-  auto start_hdg  = mrs_lib::AttitudeConverter(sh_estim_manager_diag_.getMsg()->pose.orientation).getHeading();
+  auto start_pose = sh_tracker_cmd_.getMsg()->position;
+  auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
 
   {
     mrs_msgs::Vec4 srv;
