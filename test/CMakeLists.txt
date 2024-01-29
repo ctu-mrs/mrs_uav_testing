@@ -5,5 +5,3 @@ add_subdirectory(takeoff)
 add_subdirectory(goto)
 
 add_subdirectory(goto_relative)
-
-add_subdirectory(gazebo_takeoff)
