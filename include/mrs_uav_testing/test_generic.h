@@ -156,41 +156,7 @@ public:
   std::shared_ptr<mrs_lib::ParamLoader> pl_;
 
   UAVHandler makeUAV(string uav_name);
- //TODO: the below uses the default DroneMangager - deprecate, this should be specific for a drone {
-
   bool isGazeboSimulation(void);
-
-  tuple<bool, string> takeoff(void);
-  tuple<bool, string> land(void);
-  tuple<bool, string> landHome(void);
-  tuple<bool, string> activateMidAir(void);
-
-  tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
-  tuple<bool, string> gotoRel(const double &x, const double &y, const double &z, const double &hdg);
-  tuple<bool, string> gotoTrajectoryStart();
-  tuple<bool, string> startTrajectoryTracking();
-  tuple<bool, string> resumeTrajectoryTracking();
-  tuple<bool, string> stopTrajectoryTracking();
-
-  bool hasGoal(void);
-  bool isFlyingNormally(void);
-  bool isOutputEnabled(void);
-  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
-  bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
-
-  std::string                                  getActiveTracker(void);
-  std::string                                  getActiveController(void);
-  std::string                                  getActiveEstimator(void);
-  std::optional<mrs_msgs::TrackerCommand>      getTrackerCmd(void);
-  std::optional<double>                        getHeightAgl(void);
-  std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
-
-  tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
-  tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
-  tuple<bool, string> switchEstimator(const std::string &estimator);
-
-  tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
-  //}
 
 protected:
   ros::NodeHandle                       nh_;
@@ -207,8 +173,6 @@ protected:
   string name_;
 
   bool mrsSystemReady(void);
-
-  std::unique_ptr<UAVHandler> uh; //the default drone manager, for compatibility, but user of TestGeneric should use his own so we can deprecate this.
 
 private:
   shared_ptr<ros::AsyncSpinner> spinner_;

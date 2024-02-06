@@ -113,13 +113,6 @@ void TestGeneric::initialize(void) {
   shopts_.queue_size         = 10;
   shopts_.transport_hints    = ros::TransportHints().tcpNoDelay();
 
-  // | ------------------ prepare the default uh ---------------- |
-
-  uh = std::make_unique<UAVHandler>(makeUAV("uav1"));
-  if (isGazeboSimulation()){
-    uh->spawn(_gazebo_spawner_params_);
-  }
-
   // | --------------------- finish the init -------------------- |
 
   ROS_INFO("[%s]: initialized", name_.c_str());
@@ -269,10 +262,6 @@ void sleep(const double &duration) {
 //}
 
 /* takeoff() //{ */
-tuple<bool, string> TestGeneric::takeoff(void) {
-  return uh->takeoff();
-}
-
 tuple<bool, string> UAVHandler::takeoff(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -380,11 +369,6 @@ tuple<bool, string> UAVHandler::takeoff(void) {
 //}
 
 /* land() //{ */
-
-tuple<bool, string> TestGeneric::land(void) {
-  return uh->land();
-}
-
 tuple<bool, string> UAVHandler::land(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -453,10 +437,6 @@ tuple<bool, string> UAVHandler::land(void) {
 //}
 
 /* landHome() //{ */
-tuple<bool, string> TestGeneric::landHome(void) {
-  return uh->landHome();
-}
-
 tuple<bool, string> UAVHandler::landHome(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -524,11 +504,6 @@ tuple<bool, string> UAVHandler::landHome(void) {
 //}
 
 /* activateMidAir() //{ */
-tuple<bool, string> TestGeneric::activateMidAir(void) {
-  ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: Here A");
-  return uh->activateMidAir();
-}
-
 tuple<bool, string> UAVHandler::activateMidAir(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -619,10 +594,6 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
 //}
 
 /* gotoAbs() //{ */
-tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
-  return uh->gotoAbs(x,y,z,hdg);
-}
-
 tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -669,10 +640,6 @@ tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const 
 //}
 
 /* gotoRel() //{ */
-tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
-  return uh->gotoRel(x,y,z,hdg);
-}
-
 tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -723,10 +690,6 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
 //}
 
 /* setPathSrv() //{ */
-tuple<bool, string> TestGeneric::setPathSrv(const mrs_msgs::Path &path_in) {
-  return uh->setPathSrv(path_in);
-}
-
 tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -749,10 +712,6 @@ tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
 //}
 
 /* setPathTopic() //{ */
-tuple<bool, string> TestGeneric::setPathTopic(const mrs_msgs::Path &path_in) {
-  return uh->setPathTopic(path_in);
-}
-
 tuple<bool, string> UAVHandler::setPathTopic(const mrs_msgs::Path &path_in) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -766,10 +725,6 @@ tuple<bool, string> UAVHandler::setPathTopic(const mrs_msgs::Path &path_in) {
 //}
 
 /* switchEstimator() //{ */
-tuple<bool, string> TestGeneric::switchEstimator(const std::string &estimator) {
-  return uh->switchEstimator(estimator);
-}
-
 tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -792,10 +747,6 @@ tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
 //}
 
 /* gotoTrajectoryStart() //{ */
-tuple<bool, string> TestGeneric::gotoTrajectoryStart() {
-  return uh->gotoTrajectoryStart();
-}
-
 tuple<bool, string> UAVHandler::gotoTrajectoryStart() {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -840,10 +791,6 @@ tuple<bool, string> UAVHandler::gotoTrajectoryStart() {
 //}
 
 /* startTrajectoryTracking() //{ */
-tuple<bool, string> TestGeneric::startTrajectoryTracking() {
-  return uh->startTrajectoryTracking();
-}
-
 tuple<bool, string> UAVHandler::startTrajectoryTracking() {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -873,10 +820,6 @@ tuple<bool, string> UAVHandler::startTrajectoryTracking() {
 //}
 
 /* stopTrajectoryTracking() //{ */
-tuple<bool, string> TestGeneric::stopTrajectoryTracking() {
-  return uh->stopTrajectoryTracking();
-}
-
 tuple<bool, string> UAVHandler::stopTrajectoryTracking() {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -906,10 +849,6 @@ tuple<bool, string> UAVHandler::stopTrajectoryTracking() {
 //}
 
 /* resumeTrajectoryTracking() //{ */
-tuple<bool, string> TestGeneric::resumeTrajectoryTracking() {
-  return uh->resumeTrajectoryTracking();
-}
-
 tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -939,10 +878,6 @@ tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
 //}
 
 /* getPathSrv() //{ */
-tuple<std::optional<mrs_msgs::TrajectoryReference>, string> TestGeneric::getPathSrv(const mrs_msgs::Path &path_in) {
-  return uh->getPathSrv(path_in);
-}
-
 tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -967,10 +902,6 @@ tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathS
 // | ------------------------- getters ------------------------ |
 
 /* getHeightAgl() //{ */
-std::optional<double> TestGeneric::getHeightAgl(void) {
-  return uh->getHeightAgl();
-}
-
 std::optional<double> UAVHandler::getHeightAgl(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -986,10 +917,6 @@ std::optional<double> UAVHandler::getHeightAgl(void) {
 //}
 
 /* getCurrentConstraints() //{ */
-std::optional<mrs_msgs::DynamicsConstraints> TestGeneric::getCurrentConstraints(void) {
-  return uh->getCurrentConstraints();
-}
-
 std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -1005,10 +932,6 @@ std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(v
 //}
 
 /* getTrackerCmd() //{ */
-std::optional<mrs_msgs::TrackerCommand> TestGeneric::getTrackerCmd(void) {
-  return uh->getTrackerCmd();
-}
-
 std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -1024,10 +947,6 @@ std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
 //}
 
 /* isAtPosition() //{ */
-bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
-  return uh->isAtPosition(x,y,z,hdg,pos_tolerance);
-}
-
 bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
   auto res = checkConditions();
   if (!(std::get<0>(res)))
@@ -1055,10 +974,6 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
 //}
 
 /* isReferenceAtPosition() //{ */
-bool TestGeneric::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
-  return uh->isReferenceAtPosition(x,y,z,hdg,pos_tolerance);
-}
-
 bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
 
   if (!sh_tracker_cmd_.hasMsg()) {
@@ -1081,10 +996,6 @@ bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const d
 //}
 
 /* getActiveTracker() //{ */
-std::string TestGeneric::getActiveTracker(void) {
-  return uh->getActiveTracker();
-}
-
 std::string UAVHandler::getActiveTracker(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
@@ -1097,10 +1008,6 @@ std::string UAVHandler::getActiveTracker(void) {
 //}
 
 /* getActiveController() //{ */
-std::string TestGeneric::getActiveController(void) {
-  return uh->getActiveController();
-}
-
 std::string UAVHandler::getActiveController(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
@@ -1113,10 +1020,6 @@ std::string UAVHandler::getActiveController(void) {
 //}
 
 /* getActiveEstimator() //{ */
-std::string TestGeneric::getActiveEstimator(void) {
-  return uh->getActiveEstimator();
-}
-
 std::string UAVHandler::getActiveEstimator(void) {
 
   if (!sh_estim_manager_diag_.getMsg()) {
@@ -1129,10 +1032,6 @@ std::string UAVHandler::getActiveEstimator(void) {
 //}
 
 /* hasGoal() //{ */
-bool TestGeneric::hasGoal(void) {
-  return uh->hasGoal();
-}
-
 bool UAVHandler::hasGoal(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
@@ -1145,10 +1044,6 @@ bool UAVHandler::hasGoal(void) {
 //}
 
 /* mrsSystemReady() //{ */
-bool TestGeneric::mrsSystemReady(void) {
-  return uh->mrsSystemReady();
-}
-
 bool UAVHandler::mrsSystemReady(void) {
 
   bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
@@ -1165,10 +1060,6 @@ bool UAVHandler::mrsSystemReady(void) {
 //}
 
 /* isFlyingNormally() //{ */
-bool TestGeneric::isFlyingNormally(void) {
-  return uh->isFlyingNormally();
-}
-
 bool UAVHandler::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
@@ -1181,10 +1072,6 @@ bool UAVHandler::isFlyingNormally(void) {
 //}
 
 /* isOutputEnabled() //{ */
-bool TestGeneric::isOutputEnabled(void) {
-  return uh->isOutputEnabled();
-}
-
 bool UAVHandler::isOutputEnabled(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {

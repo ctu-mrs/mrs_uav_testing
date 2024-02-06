@@ -10,8 +10,13 @@ public:
 
 bool Tester::test() {
 
+  auto uh = makeUAV(_uav_name_);
+  if (isGazeboSimulation()){
+    uh.spawn(_gazebo_spawner_params_);
+  }
+
   {
-    auto [success, message] = activateMidAir();
+    auto [success, message] = uh.activateMidAir();
 
     if (!success) {
       ROS_ERROR("[%s]: midair activation failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
@@ -20,7 +25,7 @@ bool Tester::test() {
   }
 
   {
-    auto [success, message] = this->gotoAbs(0, 0, 2.0, 0);
+    auto [success, message] = uh.gotoAbs(0, 0, 2.0, 0);
 
     if (!success) {
       ROS_ERROR("[%s]: goto failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
@@ -30,7 +35,7 @@ bool Tester::test() {
 
   sleep(5.0);
 
-  if (this->isFlyingNormally()) {
+  if (uh.isFlyingNormally()) {
     return true;
   } else {
     ROS_ERROR("[%s]: not flying normally", ros::this_node::getName().c_str());
