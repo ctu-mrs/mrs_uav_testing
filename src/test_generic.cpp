@@ -3,18 +3,19 @@
 namespace mrs_uav_testing
 {
 
-DroneManager::DroneManager(std::string spawner_params, std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts){
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
 
-  initialize(spawner_params, uav_name, shopts);
+  initialize( uav_name, shopts, using_gazebo_sim);
 }
 
-void DroneManager::initialize(std::string spawner_params, std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts){
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
 
-  _gazebo_spawner_params_ = spawner_params;
   _uav_name_ = uav_name;
   shopts_ = shopts;
   nh_ = shopts_.nh;
   name_ = shopts.node_name;
+
+  is_gazebo_simulation_ = using_gazebo_sim;
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
   sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
@@ -57,10 +58,11 @@ void DroneManager::initialize(std::string spawner_params, std::string uav_name, 
 
   // | --------------------- service clients -------------------- |
 
-  //TODO: is it an issue that each DroneManager has its own spawn service client?
+  //TODO: is it an issue that each UAVHandler has its own spawn service client?
   sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
 
 
+  initialized_ = true;
 }
 
 /* constructors //{ */
@@ -111,6 +113,12 @@ void TestGeneric::initialize(void) {
   shopts_.queue_size         = 10;
   shopts_.transport_hints    = ros::TransportHints().tcpNoDelay();
 
+  // | ------------------ prepare the default uh ---------------- |
+
+  uh = std::make_unique<UAVHandler>(makeUAV("uav1"));
+  if (isGazeboSimulation()){
+    uh->spawn(_gazebo_spawner_params_);
+  }
 
   // | --------------------- finish the init -------------------- |
 
@@ -121,7 +129,8 @@ void TestGeneric::initialize(void) {
 
 // | --------------------- action methods --------------------- |
 
-tuple<bool, string> DroneManager::spawn(){
+tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
+  _gazebo_spawner_params_ = gazebo_spawner_params;
 
   // | ------------ wait for the spawner to be ready ------------ |
 
@@ -198,22 +207,61 @@ tuple<bool, string> DroneManager::spawn(){
 
   sleep(20.0);
 
+  spawned_ = true;
+
   return {true, "drone spawned"};
 }
 
 
-/* spawnGazeboUav() //{ */
-tuple<bool, string> TestGeneric::spawnGazeboUav() {
-  dm = std::make_unique<DroneManager>(_gazebo_spawner_params_, _uav_name_, shopts_);
-  return dm->spawn();
+/* checkConditions() //{ */
+tuple<bool, string> UAVHandler::checkConditions(void){
+  if (!initialized_){
+    ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: UAV handler for " << _uav_name_ << " is not initialized!");
+    return {false, "UAV handler for "+_uav_name_+" is not initialized!"};
+  }
+
+  if ((is_gazebo_simulation_) && (!spawned_)){
+    ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: Using Gazebo simulation, but UAV is not spawned!");
+    return {false, "Using Gazebo simulation, but UAV is not spawned!"};
+  }
+
+  return {true, "All clear."};
 }
-
-
 //}
+
+/* isGazeboSimulation() //{ */
+bool TestGeneric::isGazeboSimulation(void) {
+
+  if (is_gazebo_simulation_) {
+    return true;
+  }
+
+  ros::V_string node_list;
+  ros::master::getNodes(node_list);
+
+  for (auto& node : node_list) {
+    if (node.find("mrs_drone_spawner") != std::string::npos) {
+      ROS_INFO("[AutomaticStart]: MRS Gazebo Simulation detected");
+      is_gazebo_simulation_ = true;
+      return true;
+    }
+  }
+
+  return false;
+}
+//}
+
+/* makeUAV() //{ */
+UAVHandler TestGeneric::makeUAV(string uav_name) {
+  return UAVHandler(uav_name, shopts_, isGazeboSimulation());;
+}
+//}
+
+
 
 /* sleep() //{ */
 
-void TestGeneric::sleep(const double &duration) {
+void sleep(const double &duration) {
 
   ros::Duration(duration).sleep();
 }
@@ -222,10 +270,14 @@ void TestGeneric::sleep(const double &duration) {
 
 /* takeoff() //{ */
 tuple<bool, string> TestGeneric::takeoff(void) {
-  return dm->takeoff();
+  return uh->takeoff();
 }
 
-tuple<bool, string> DroneManager::takeoff(void) {
+tuple<bool, string> UAVHandler::takeoff(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
+
 
   // | ---------------- wait for ready to takeoff --------------- |
 
@@ -330,10 +382,13 @@ tuple<bool, string> DroneManager::takeoff(void) {
 /* land() //{ */
 
 tuple<bool, string> TestGeneric::land(void) {
-  return dm->land();
+  return uh->land();
 }
 
-tuple<bool, string> DroneManager::land(void) {
+tuple<bool, string> UAVHandler::land(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   if (!isFlyingNormally()) {
     return {false, "not flying normally in the beginning"};
@@ -399,10 +454,13 @@ tuple<bool, string> DroneManager::land(void) {
 
 /* landHome() //{ */
 tuple<bool, string> TestGeneric::landHome(void) {
-  return dm->landHome();
+  return uh->landHome();
 }
 
-tuple<bool, string> DroneManager::landHome(void) {
+tuple<bool, string> UAVHandler::landHome(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   if (!isFlyingNormally()) {
     return {false, "not flying normally in the beginning"};
@@ -440,7 +498,6 @@ tuple<bool, string> DroneManager::landHome(void) {
       break;
     }
 
-    sleep(0.01);
   }
 
   // | ------------- wait for the landing to finish ------------- |
@@ -468,10 +525,14 @@ tuple<bool, string> DroneManager::landHome(void) {
 
 /* activateMidAir() //{ */
 tuple<bool, string> TestGeneric::activateMidAir(void) {
-  return dm->activateMidAir();
+  ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: Here A");
+  return uh->activateMidAir();
 }
 
-tuple<bool, string> DroneManager::activateMidAir(void) {
+tuple<bool, string> UAVHandler::activateMidAir(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   // | ---------------- wait for ready to takeoff --------------- |
 
@@ -559,10 +620,13 @@ tuple<bool, string> DroneManager::activateMidAir(void) {
 
 /* gotoAbs() //{ */
 tuple<bool, string> TestGeneric::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
-  return dm->gotoAbs(x,y,z,hdg);
+  return uh->gotoAbs(x,y,z,hdg);
 }
 
-tuple<bool, string> DroneManager::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
+tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   mrs_msgs::Vec4 srv;
 
@@ -606,10 +670,13 @@ tuple<bool, string> DroneManager::gotoAbs(const double &x, const double &y, cons
 
 /* gotoRel() //{ */
 tuple<bool, string> TestGeneric::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
-  return dm->gotoRel(x,y,z,hdg);
+  return uh->gotoRel(x,y,z,hdg);
 }
 
-tuple<bool, string> DroneManager::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
+tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   auto start_pose = sh_tracker_cmd_.getMsg()->position;
   auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
@@ -657,10 +724,13 @@ tuple<bool, string> DroneManager::gotoRel(const double &x, const double &y, cons
 
 /* setPathSrv() //{ */
 tuple<bool, string> TestGeneric::setPathSrv(const mrs_msgs::Path &path_in) {
-  return dm->setPathSrv(path_in);
+  return uh->setPathSrv(path_in);
 }
 
-tuple<bool, string> DroneManager::setPathSrv(const mrs_msgs::Path &path_in) {
+tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   mrs_msgs::PathSrv srv;
   srv.request.path = path_in;
@@ -680,10 +750,13 @@ tuple<bool, string> DroneManager::setPathSrv(const mrs_msgs::Path &path_in) {
 
 /* setPathTopic() //{ */
 tuple<bool, string> TestGeneric::setPathTopic(const mrs_msgs::Path &path_in) {
-  return dm->setPathTopic(path_in);
+  return uh->setPathTopic(path_in);
 }
 
-tuple<bool, string> DroneManager::setPathTopic(const mrs_msgs::Path &path_in) {
+tuple<bool, string> UAVHandler::setPathTopic(const mrs_msgs::Path &path_in) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   ph_path_.publish(path_in);
 
@@ -694,10 +767,13 @@ tuple<bool, string> DroneManager::setPathTopic(const mrs_msgs::Path &path_in) {
 
 /* switchEstimator() //{ */
 tuple<bool, string> TestGeneric::switchEstimator(const std::string &estimator) {
-  return dm->switchEstimator(estimator);
+  return uh->switchEstimator(estimator);
 }
 
-tuple<bool, string> DroneManager::switchEstimator(const std::string &estimator) {
+tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   mrs_msgs::String srv;
   srv.request.value = estimator;
@@ -717,10 +793,13 @@ tuple<bool, string> DroneManager::switchEstimator(const std::string &estimator) 
 
 /* gotoTrajectoryStart() //{ */
 tuple<bool, string> TestGeneric::gotoTrajectoryStart() {
-  return dm->gotoTrajectoryStart();
+  return uh->gotoTrajectoryStart();
 }
 
-tuple<bool, string> DroneManager::gotoTrajectoryStart() {
+tuple<bool, string> UAVHandler::gotoTrajectoryStart() {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   {
     std_srvs::Trigger srv;
@@ -762,10 +841,13 @@ tuple<bool, string> DroneManager::gotoTrajectoryStart() {
 
 /* startTrajectoryTracking() //{ */
 tuple<bool, string> TestGeneric::startTrajectoryTracking() {
-  return dm->startTrajectoryTracking();
+  return uh->startTrajectoryTracking();
 }
 
-tuple<bool, string> DroneManager::startTrajectoryTracking() {
+tuple<bool, string> UAVHandler::startTrajectoryTracking() {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   {
     std_srvs::Trigger srv;
@@ -792,10 +874,13 @@ tuple<bool, string> DroneManager::startTrajectoryTracking() {
 
 /* stopTrajectoryTracking() //{ */
 tuple<bool, string> TestGeneric::stopTrajectoryTracking() {
-  return dm->stopTrajectoryTracking();
+  return uh->stopTrajectoryTracking();
 }
 
-tuple<bool, string> DroneManager::stopTrajectoryTracking() {
+tuple<bool, string> UAVHandler::stopTrajectoryTracking() {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   {
     std_srvs::Trigger srv;
@@ -822,10 +907,13 @@ tuple<bool, string> DroneManager::stopTrajectoryTracking() {
 
 /* resumeTrajectoryTracking() //{ */
 tuple<bool, string> TestGeneric::resumeTrajectoryTracking() {
-  return dm->resumeTrajectoryTracking();
+  return uh->resumeTrajectoryTracking();
 }
 
-tuple<bool, string> DroneManager::resumeTrajectoryTracking() {
+tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return res;
 
   {
     std_srvs::Trigger srv;
@@ -852,10 +940,13 @@ tuple<bool, string> DroneManager::resumeTrajectoryTracking() {
 
 /* getPathSrv() //{ */
 tuple<std::optional<mrs_msgs::TrajectoryReference>, string> TestGeneric::getPathSrv(const mrs_msgs::Path &path_in) {
-  return dm->getPathSrv(path_in);
+  return uh->getPathSrv(path_in);
 }
 
-tuple<std::optional<mrs_msgs::TrajectoryReference>, string> DroneManager::getPathSrv(const mrs_msgs::Path &path_in) {
+tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, string>({}, std::string(std::get<1>(res)));
 
   mrs_msgs::GetPathSrv srv;
   srv.request.path = path_in;
@@ -877,10 +968,13 @@ tuple<std::optional<mrs_msgs::TrajectoryReference>, string> DroneManager::getPat
 
 /* getHeightAgl() //{ */
 std::optional<double> TestGeneric::getHeightAgl(void) {
-  return dm->getHeightAgl();
+  return uh->getHeightAgl();
 }
 
-std::optional<double> DroneManager::getHeightAgl(void) {
+std::optional<double> UAVHandler::getHeightAgl(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return std::nullopt;
 
   if (sh_height_agl_.hasMsg()) {
     return {sh_height_agl_.getMsg()->value};
@@ -893,10 +987,13 @@ std::optional<double> DroneManager::getHeightAgl(void) {
 
 /* getCurrentConstraints() //{ */
 std::optional<mrs_msgs::DynamicsConstraints> TestGeneric::getCurrentConstraints(void) {
-  return dm->getCurrentConstraints();
+  return uh->getCurrentConstraints();
 }
 
-std::optional<mrs_msgs::DynamicsConstraints> DroneManager::getCurrentConstraints(void) {
+std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return std::nullopt;
 
   if (sh_current_constraints_.hasMsg()) {
     return {*sh_current_constraints_.getMsg()};
@@ -909,10 +1006,13 @@ std::optional<mrs_msgs::DynamicsConstraints> DroneManager::getCurrentConstraints
 
 /* getTrackerCmd() //{ */
 std::optional<mrs_msgs::TrackerCommand> TestGeneric::getTrackerCmd(void) {
-  return dm->getTrackerCmd();
+  return uh->getTrackerCmd();
 }
 
-std::optional<mrs_msgs::TrackerCommand> DroneManager::getTrackerCmd(void) {
+std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return std::nullopt;
 
   if (sh_tracker_cmd_.hasMsg()) {
     return {*sh_tracker_cmd_.getMsg()};
@@ -925,10 +1025,13 @@ std::optional<mrs_msgs::TrackerCommand> DroneManager::getTrackerCmd(void) {
 
 /* isAtPosition() //{ */
 bool TestGeneric::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
-  return dm->isAtPosition(x,y,z,hdg,pos_tolerance);
+  return uh->isAtPosition(x,y,z,hdg,pos_tolerance);
 }
 
-bool DroneManager::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+  auto res = checkConditions();
+  if (!(std::get<0>(res)))
+    return false;
 
   if (!sh_uav_state_.hasMsg()) {
     return false;
@@ -953,10 +1056,10 @@ bool DroneManager::isAtPosition(const double &x, const double &y, const double &
 
 /* isReferenceAtPosition() //{ */
 bool TestGeneric::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
-  return dm->isReferenceAtPosition(x,y,z,hdg,pos_tolerance);
+  return uh->isReferenceAtPosition(x,y,z,hdg,pos_tolerance);
 }
 
-bool DroneManager::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
 
   if (!sh_tracker_cmd_.hasMsg()) {
     return false;
@@ -979,10 +1082,10 @@ bool DroneManager::isReferenceAtPosition(const double &x, const double &y, const
 
 /* getActiveTracker() //{ */
 std::string TestGeneric::getActiveTracker(void) {
-  return dm->getActiveTracker();
+  return uh->getActiveTracker();
 }
 
-std::string DroneManager::getActiveTracker(void) {
+std::string UAVHandler::getActiveTracker(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
     return "";
@@ -995,10 +1098,10 @@ std::string DroneManager::getActiveTracker(void) {
 
 /* getActiveController() //{ */
 std::string TestGeneric::getActiveController(void) {
-  return dm->getActiveController();
+  return uh->getActiveController();
 }
 
-std::string DroneManager::getActiveController(void) {
+std::string UAVHandler::getActiveController(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
     return "";
@@ -1011,10 +1114,10 @@ std::string DroneManager::getActiveController(void) {
 
 /* getActiveEstimator() //{ */
 std::string TestGeneric::getActiveEstimator(void) {
-  return dm->getActiveEstimator();
+  return uh->getActiveEstimator();
 }
 
-std::string DroneManager::getActiveEstimator(void) {
+std::string UAVHandler::getActiveEstimator(void) {
 
   if (!sh_estim_manager_diag_.getMsg()) {
     return "";
@@ -1027,10 +1130,10 @@ std::string DroneManager::getActiveEstimator(void) {
 
 /* hasGoal() //{ */
 bool TestGeneric::hasGoal(void) {
-  return dm->hasGoal();
+  return uh->hasGoal();
 }
 
-bool DroneManager::hasGoal(void) {
+bool UAVHandler::hasGoal(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->tracker_status.have_goal;
@@ -1043,10 +1146,10 @@ bool DroneManager::hasGoal(void) {
 
 /* mrsSystemReady() //{ */
 bool TestGeneric::mrsSystemReady(void) {
-  return dm->mrsSystemReady();
+  return uh->mrsSystemReady();
 }
 
-bool DroneManager::mrsSystemReady(void) {
+bool UAVHandler::mrsSystemReady(void) {
 
   bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
   bool got_uav_manager_diag        = sh_uav_manager_diag_.hasMsg();
@@ -1063,10 +1166,10 @@ bool DroneManager::mrsSystemReady(void) {
 
 /* isFlyingNormally() //{ */
 bool TestGeneric::isFlyingNormally(void) {
-  return dm->isFlyingNormally();
+  return uh->isFlyingNormally();
 }
 
-bool DroneManager::isFlyingNormally(void) {
+bool UAVHandler::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->flying_normally;
@@ -1079,10 +1182,10 @@ bool DroneManager::isFlyingNormally(void) {
 
 /* isOutputEnabled() //{ */
 bool TestGeneric::isOutputEnabled(void) {
-  return dm->isOutputEnabled();
+  return uh->isOutputEnabled();
 }
 
-bool DroneManager::isOutputEnabled(void) {
+bool UAVHandler::isOutputEnabled(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->output_enabled;

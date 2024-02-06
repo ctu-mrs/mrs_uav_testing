@@ -17,7 +17,7 @@ bool Tester::test() {
     return false;
   }
 
-  this->sleep(5.0);
+  sleep(5.0);
 
   if (this->isFlyingNormally()) {
     return true;

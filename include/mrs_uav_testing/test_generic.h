@@ -40,19 +40,23 @@
 
 namespace mrs_uav_testing
 {
+  
+void sleep(const double &duration);
 
 using radians  = mrs_lib::geometry::radians;
 using sradians = mrs_lib::geometry::sradians;
 
 using namespace std;
 
-class DroneManager {
+class UAVHandler {
 public: 
-  DroneManager(std::string spawner_params, std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts);
-  void initialize(std::string spawner_params, std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts);
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+  void initialize( std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
 
 
-  tuple<bool, string> spawn();
+  tuple<bool, string> spawn(string gazebo_spawner_params);
+
+  tuple<bool, string> checkConditions(void);
 
   //TODO: consider if we need to add initialization checks
   tuple<bool, string> takeoff(void);
@@ -127,8 +131,12 @@ protected:
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
 
+  bool initialized_ = false;
+  bool spawned_ = false;
 
   string _uav_name_;
+
+  bool is_gazebo_simulation_;
   string _gazebo_spawner_params_;
 
   mrs_lib::SubscribeHandlerOptions shopts_;
@@ -147,8 +155,10 @@ public:
 
   std::shared_ptr<mrs_lib::ParamLoader> pl_;
 
+  UAVHandler makeUAV(string uav_name);
  //TODO: the below uses the default DroneMangager - deprecate, this should be specific for a drone {
-  tuple<bool, string> spawnGazeboUav();
+
+  bool isGazeboSimulation(void);
 
   tuple<bool, string> takeoff(void);
   tuple<bool, string> land(void);
@@ -188,19 +198,17 @@ protected:
 
   mrs_lib::SubscribeHandlerOptions shopts_;
 
+  bool is_gazebo_simulation_;
 
-  void sleep(const double &duration);
-
-
-  string _uav_name_; //TODO: remove, should be DroneManager specific
-  string _gazebo_spawner_params_; //TODO: remove, should be DroneManager specific
+  string _uav_name_; //TODO: remove, should be UAVHandler specific
+  string _gazebo_spawner_params_; //TODO: remove, should be UAVHandler specific
 
   string _test_name_;
   string name_;
 
   bool mrsSystemReady(void);
 
-  std::unique_ptr<DroneManager> dm; //the default drone manager, for compatibility, but user of TestGeneric should use his own so we can deprecate this.
+  std::unique_ptr<UAVHandler> uh; //the default drone manager, for compatibility, but user of TestGeneric should use his own so we can deprecate this.
 
 private:
   shared_ptr<ros::AsyncSpinner> spinner_;
