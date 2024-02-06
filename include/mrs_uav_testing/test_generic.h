@@ -136,7 +136,7 @@ protected:
 
   string _uav_name_;
 
-  bool is_gazebo_simulation_;
+  bool is_gazebo_simulation_ = false;
   string _gazebo_spawner_params_;
 
   mrs_lib::SubscribeHandlerOptions shopts_;
@@ -164,7 +164,7 @@ protected:
 
   mrs_lib::SubscribeHandlerOptions shopts_;
 
-  bool is_gazebo_simulation_;
+  bool is_gazebo_simulation_ = false;
 
   string _uav_name_; //TODO: remove, should be UAVHandler specific
   string _gazebo_spawner_params_; //TODO: remove, should be UAVHandler specific
