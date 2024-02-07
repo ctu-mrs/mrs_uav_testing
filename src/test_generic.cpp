@@ -115,6 +115,7 @@ void TestGeneric::initialize(void) {
 
   // | --------------------- finish the init -------------------- |
 
+  initialized_ = true;
   ROS_INFO("[%s]: initialized", name_.c_str());
 }
 
@@ -187,7 +188,9 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
 
     ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
 
+    ROS_INFO_STREAM("Waiting for the hw API A");
     if (sh_hw_api_status_.hasMsg()) {
+    ROS_INFO_STREAM("Waiting for the hw API B");
       if (sh_hw_api_status_.getMsg()->connected) {
         break;
       }
@@ -245,8 +248,12 @@ bool TestGeneric::isGazeboSimulation(void) {
 //}
 
 /* makeUAV() //{ */
-UAVHandler TestGeneric::makeUAV(string uav_name) {
-  return UAVHandler(uav_name, shopts_, isGazeboSimulation());;
+std::tuple<std::optional<UAVHandler>,string> TestGeneric::makeUAV(string uav_name) {
+  if (!initialized_){
+    return {std::nullopt, string("Can not spawn " + uav_name + " - testing is not initialized yet!")};
+  }
+  else
+    return {UAVHandler(uav_name, shopts_, isGazeboSimulation()), "Success!"};
 }
 //}
 

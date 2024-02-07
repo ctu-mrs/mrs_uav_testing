@@ -155,7 +155,7 @@ public:
 
   std::shared_ptr<mrs_lib::ParamLoader> pl_;
 
-  UAVHandler makeUAV(string uav_name);
+  std::tuple<std::optional<UAVHandler>,string> makeUAV(string uav_name);
   bool isGazeboSimulation(void);
 
 protected:
@@ -171,6 +171,9 @@ protected:
 
   string _test_name_;
   string name_;
+
+
+  bool initialized_ = false;
 
   bool mrsSystemReady(void);
 

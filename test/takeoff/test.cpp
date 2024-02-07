@@ -10,10 +10,12 @@ public:
 
 bool Tester::test() {
 
-  auto uh = makeUAV(_uav_name_);
-  if (isGazeboSimulation()){
-    uh.spawn(_gazebo_spawner_params_);
+  auto [uho, uh_message] = makeUAV(_uav_name_);
+  if (uho == std::nullopt){
+    ROS_ERROR("[%s]: Failed to create uav %s: %s", ros::this_node::getName().c_str(), _uav_name_.c_str(), uh_message.c_str());
+    return false;
   }
+  auto uh = *std::move(uho);
 
 
   auto [success, message] = uh.takeoff();
