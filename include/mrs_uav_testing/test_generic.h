@@ -50,8 +50,8 @@ using namespace std;
 
 class UAVHandler {
 public: 
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
-  void initialize( std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
+  void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
 
 
   tuple<bool, string> spawn(string gazebo_spawner_params);
@@ -142,6 +142,8 @@ protected:
   mrs_lib::SubscribeHandlerOptions shopts_;
   ros::NodeHandle                       nh_;
   string name_;
+
+  bool use_hw_api_ = true;
 };
 
 class TestGeneric {

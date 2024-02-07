@@ -3,12 +3,12 @@
 namespace mrs_uav_testing
 {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api){
 
-  initialize( uav_name, shopts, using_gazebo_sim);
+  initialize( uav_name, shopts, using_gazebo_sim, use_hw_api);
 }
 
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api){
 
   _uav_name_ = uav_name;
   shopts_ = shopts;
@@ -16,6 +16,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   name_ = shopts.node_name;
 
   is_gazebo_simulation_ = using_gazebo_sim;
+
+  use_hw_api_ = use_hw_api;
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
   sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
@@ -178,6 +180,7 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
     sleep(0.01);
   }
 
+  if (use_hw_api_){
   // | ------------- wait for the HW API to connect ------------- |
 
   while (true) {
@@ -198,6 +201,7 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
   }
 
   // | -------------- wait for PX4 to finish bootup ------------- |
+  }
 
   sleep(20.0);
 
