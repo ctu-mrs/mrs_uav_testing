@@ -188,9 +188,7 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
 
     ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
 
-    ROS_INFO_STREAM("Waiting for the hw API A");
     if (sh_hw_api_status_.hasMsg()) {
-    ROS_INFO_STREAM("Waiting for the hw API B");
       if (sh_hw_api_status_.getMsg()->connected) {
         break;
       }
