@@ -250,12 +250,12 @@ bool TestGeneric::isGazeboSimulation(void) {
 //}
 
 /* makeUAV() //{ */
-std::tuple<std::optional<UAVHandler>,string> TestGeneric::makeUAV(string uav_name) {
+std::tuple<std::optional<UAVHandler>,string> TestGeneric::makeUAV(string uav_name, bool use_hw_api) {
   if (!initialized_){
     return {std::nullopt, string("Can not spawn " + uav_name + " - testing is not initialized yet!")};
   }
   else
-    return {UAVHandler(uav_name, shopts_, isGazeboSimulation()), "Success!"};
+    return {UAVHandler(uav_name, shopts_, isGazeboSimulation(), use_hw_api), "Success!"};
 }
 //}
 
