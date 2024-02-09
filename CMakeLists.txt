@@ -43,7 +43,13 @@ target_link_libraries(MrsUavTesting_TestGeneric
   ${catkin_LIBRARIES}
   )
 
-if(CATKIN_ENABLE_TESTING)
+## --------------------------------------------------------------
+## |                           Testing                          |
+## --------------------------------------------------------------
+
+if(CATKIN_ENABLE_TESTING AND MRS_ENABLE_TESTING)
+
+  message(WARNING "Testing enabled.")
 
   add_subdirectory(test)
 
