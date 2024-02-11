@@ -36,8 +36,7 @@
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
 
-
-#include <gazebo_msgs/ModelState.h>
+/* #include <gazebo_msgs/ModelState.h> */
 
 //}
 
@@ -90,8 +89,7 @@ public:
   std::optional<double>                        getHeightAgl(void);
   std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
 
-
-  tuple<bool, string> moveTo(double x, double y, double z, double hdg);
+  /* tuple<bool, string> moveTo(double x, double y, double z, double hdg); */
 
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
@@ -136,7 +134,7 @@ public:
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
-  mrs_lib::PublisherHandler<gazebo_msgs::ModelState> ph_gazebo_model_state_;
+  /* mrs_lib::PublisherHandler<gazebo_msgs::ModelState> ph_gazebo_model_state_; */
 
 protected:
   bool initialized_ = false;

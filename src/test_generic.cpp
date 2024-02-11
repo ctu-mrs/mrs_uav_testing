@@ -58,7 +58,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
 
   ph_path_ = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
 
-  ph_gazebo_model_state_ = mrs_lib::PublisherHandler<gazebo_msgs::ModelState>(nh_, "/gazebo/set_model_state");
+  /* ph_gazebo_model_state_ = mrs_lib::PublisherHandler<gazebo_msgs::ModelState>(nh_, "/gazebo/set_model_state"); */
+
   // | --------------------- service clients -------------------- |
 
   // TODO: is it an issue that each UAVHandler has its own spawn service client?
@@ -1032,30 +1033,32 @@ std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(v
 //}
 
 /* moveTo() Implements direct transporting of a UAVs in the simulation//{ */
-tuple<bool, string> UAVHandler::moveTo(double x, double y, double z, double hdg) {
 
-  if (is_gazebo_simulation_) {
-    gazebo_msgs::ModelState msg;
-    msg.model_name = _uav_name_;
+/* tuple<bool, string> UAVHandler::moveTo(double x, double y, double z, double hdg) { */
 
-    msg.pose.position.x = x;
-    msg.pose.position.y = y;
-    msg.pose.position.z = z;
+/*   if (is_gazebo_simulation_) { */
+/*     gazebo_msgs::ModelState msg; */
+/*     msg.model_name = _uav_name_; */
 
-    double qw              = cos(hdg / 2.0);
-    double qz              = sin(hdg / 2.0);
-    msg.pose.orientation.x = 0;
-    msg.pose.orientation.y = 0;
-    msg.pose.orientation.z = qz;
-    msg.pose.orientation.w = qw;
+/*     msg.pose.position.x = x; */
+/*     msg.pose.position.y = y; */
+/*     msg.pose.position.z = z; */
 
-    ph_gazebo_model_state_.publish(msg);
-    return {true, "Success!"};
-  } else {
-    ROS_ERROR_ONCE("[%s]: Direct moving of UAVs outside of Gazebo simulation is not implemented!", ros::this_node::getName().c_str());
-    return {false, "Direct moving of UAVs outside of Gazebo simulation is not implemented!"};
-  }
-}
+/*     double qw              = cos(hdg / 2.0); */
+/*     double qz              = sin(hdg / 2.0); */
+/*     msg.pose.orientation.x = 0; */
+/*     msg.pose.orientation.y = 0; */
+/*     msg.pose.orientation.z = qz; */
+/*     msg.pose.orientation.w = qw; */
+
+/*     ph_gazebo_model_state_.publish(msg); */
+/*     return {true, "Success!"}; */
+/*   } else { */
+/*     ROS_ERROR_ONCE("[%s]: Direct moving of UAVs outside of Gazebo simulation is not implemented!", ros::this_node::getName().c_str()); */
+/*     return {false, "Direct moving of UAVs outside of Gazebo simulation is not implemented!"}; */
+/*   } */
+/* } */
+
 //}
 
 /* getTrackerCmd() //{ */
