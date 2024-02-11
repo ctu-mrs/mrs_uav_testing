@@ -57,7 +57,7 @@ public:
 
   void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
 
-  tuple<bool, string> spawn(string gazebo_spawner_params);
+  tuple<bool, string> spawnGazeboUAV(const string& gazebo_spawner_params);
 
   tuple<bool, string> checkPreconditions(void);
 

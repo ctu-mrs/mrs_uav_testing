@@ -131,7 +131,7 @@ void TestGeneric::initialize(void) {
 
 /* spawn() //{ */
 
-tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params) {
+tuple<bool, string> UAVHandler::spawnGazeboUAV(const string &gazebo_spawner_params) {
 
   _gazebo_spawner_params_ = gazebo_spawner_params;
 
@@ -265,7 +265,7 @@ bool TestGeneric::isGazeboSimulation(void) {
 std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getUAVHandler(const string &uav_name, const bool use_hw_api) {
 
   if (!initialized_) {
-    return {std::nullopt, string("Can not spawn " + uav_name + " - testing is not initialized yet!")};
+    return {std::nullopt, string("Can not obtain UAV handler for  " + uav_name + " - testing is not initialized yet!")};
   } else {
     return {std::make_shared<UAVHandler>(uav_name, shopts_, isGazeboSimulation(), use_hw_api), "Success!"};
   }
