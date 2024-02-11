@@ -36,6 +36,9 @@
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
 
+
+#include <gazebo_msgs/ModelState.h>
+
 //}
 
 namespace mrs_uav_testing
@@ -51,9 +54,9 @@ using namespace std;
 class UAVHandler {
 
 public:
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
 
-  void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+  void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
 
   tuple<bool, string> spawn(string gazebo_spawner_params);
 
@@ -86,6 +89,9 @@ public:
   std::optional<mrs_msgs::TrackerCommand>      getTrackerCmd(void);
   std::optional<double>                        getHeightAgl(void);
   std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
+
+
+  tuple<bool, string> moveTo(double x, double y, double z, double hdg);
 
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
@@ -130,6 +136,8 @@ public:
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
+  mrs_lib::PublisherHandler<gazebo_msgs::ModelState> ph_gazebo_model_state_;
+
 protected:
   bool initialized_ = false;
   bool spawned_     = false;
@@ -142,6 +150,7 @@ protected:
   mrs_lib::SubscribeHandlerOptions shopts_;
   ros::NodeHandle                  nh_;
   string                           name_;
+  bool                             use_hw_api_ = true;
 };
 
 //}
@@ -159,8 +168,9 @@ public:
 
   std::shared_ptr<mrs_lib::ParamLoader> pl_;
 
-  UAVHandler getUAVHandler(string uav_name);
-  bool       isGazeboSimulation(void);
+  std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> getUAVHandler(const string &uav_name, const bool use_hw_api = true);
+
+  bool isGazeboSimulation(void);
 
   void sleep(const double &duration);
 
@@ -177,6 +187,9 @@ protected:
 
   string _test_name_;
   string name_;
+
+
+  bool initialized_ = false;
 
   bool mrsSystemReady(void);
 

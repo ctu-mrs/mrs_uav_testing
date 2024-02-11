@@ -3,18 +3,12 @@
 namespace mrs_uav_testing
 {
 
-/* UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) //{ */
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api) {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) {
-
-  initialize(uav_name, shopts, using_gazebo_sim);
+  initialize(uav_name, shopts, using_gazebo_sim, use_hw_api);
 }
 
-//}
-
-/* initialize() //{ */
-
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) {
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api) {
 
   _uav_name_ = uav_name;
   shopts_    = shopts;
@@ -22,6 +16,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   name_      = shopts.node_name;
 
   is_gazebo_simulation_ = using_gazebo_sim;
+
+  use_hw_api_ = use_hw_api;
 
   sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
   sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
@@ -62,6 +58,7 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
 
   ph_path_ = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
 
+  ph_gazebo_model_state_ = mrs_lib::PublisherHandler<gazebo_msgs::ModelState>(nh_, "/gazebo/set_model_state");
   // | --------------------- service clients -------------------- |
 
   // TODO: is it an issue that each UAVHandler has its own spawn service client?
@@ -123,6 +120,7 @@ void TestGeneric::initialize(void) {
 
   // | --------------------- finish the init -------------------- |
 
+  initialized_ = true;
   ROS_INFO("[%s]: initialized", name_.c_str());
 }
 
@@ -188,26 +186,28 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params) {
     sleep(0.01);
   }
 
-  // | ------------- wait for the HW API to connect ------------- |
+  if (use_hw_api_) {
+    // | ------------- wait for the HW API to connect ------------- |
 
-  while (true) {
+    while (true) {
 
-    if (!ros::ok()) {
-      return {false, "shut down from outside"};
-    }
-
-    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
-
-    if (sh_hw_api_status_.hasMsg()) {
-      if (sh_hw_api_status_.getMsg()->connected) {
-        break;
+      if (!ros::ok()) {
+        return {false, "shut down from outside"};
       }
+
+      ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
+
+      if (sh_hw_api_status_.hasMsg()) {
+        if (sh_hw_api_status_.getMsg()->connected) {
+          break;
+        }
+      }
+
+      sleep(0.01);
     }
 
-    sleep(0.01);
+    // | -------------- wait for PX4 to finish bootup ------------- |
   }
-
-  // | -------------- wait for PX4 to finish bootup ------------- |
 
   sleep(20.0);
 
@@ -259,13 +259,15 @@ bool TestGeneric::isGazeboSimulation(void) {
   return false;
 }
 
-//}
-
 /* getUAVHandler() //{ */
 
-UAVHandler TestGeneric::getUAVHandler(string uav_name) {
+std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getUAVHandler(const string &uav_name, const bool use_hw_api) {
 
-  return UAVHandler(uav_name, shopts_, isGazeboSimulation());
+  if (!initialized_) {
+    return {std::nullopt, string("Can not spawn " + uav_name + " - testing is not initialized yet!")};
+  } else {
+    return {std::make_shared<UAVHandler>(uav_name, shopts_, isGazeboSimulation(), use_hw_api), "Success!"};
+  }
 }
 
 //}
@@ -1027,6 +1029,33 @@ std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(v
   }
 }
 
+//}
+
+/* moveTo() Implements direct transporting of a UAVs in the simulation//{ */
+tuple<bool, string> UAVHandler::moveTo(double x, double y, double z, double hdg) {
+
+  if (is_gazebo_simulation_) {
+    gazebo_msgs::ModelState msg;
+    msg.model_name = _uav_name_;
+
+    msg.pose.position.x = x;
+    msg.pose.position.y = y;
+    msg.pose.position.z = z;
+
+    double qw              = cos(hdg / 2.0);
+    double qz              = sin(hdg / 2.0);
+    msg.pose.orientation.x = 0;
+    msg.pose.orientation.y = 0;
+    msg.pose.orientation.z = qz;
+    msg.pose.orientation.w = qw;
+
+    ph_gazebo_model_state_.publish(msg);
+    return {true, "Success!"};
+  } else {
+    ROS_ERROR_ONCE("[%s]: Direct moving of UAVs outside of Gazebo simulation is not implemented!", ros::this_node::getName().c_str());
+    return {false, "Direct moving of UAVs outside of Gazebo simulation is not implemented!"};
+  }
+}
 //}
 
 /* getTrackerCmd() //{ */
