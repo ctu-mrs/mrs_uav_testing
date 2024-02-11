@@ -10,10 +10,7 @@ public:
 
 bool Tester::test() {
 
-  auto uh = makeUAV(_uav_name_);
-  if (isGazeboSimulation()){
-    uh.spawn(_gazebo_spawner_params_);
-  }
+  auto uh = getUAVHandler(_uav_name_);
 
   {
     auto [success, message] = uh.activateMidAir();

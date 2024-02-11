@@ -40,25 +40,28 @@
 
 namespace mrs_uav_testing
 {
-  
-void sleep(const double &duration);
 
 using radians  = mrs_lib::geometry::radians;
 using sradians = mrs_lib::geometry::sradians;
 
 using namespace std;
 
-class UAVHandler {
-public: 
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
-  void initialize( std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+/* class UAVHandler //{ */
 
+class UAVHandler {
+
+public:
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
+
+  void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim);
 
   tuple<bool, string> spawn(string gazebo_spawner_params);
 
-  tuple<bool, string> checkConditions(void);
+  tuple<bool, string> checkPreconditions(void);
 
-  //TODO: consider if we need to add initialization checks
+  void sleep(const double &duration);
+
+  // TODO: consider if we need to add initialization checks
   tuple<bool, string> takeoff(void);
   tuple<bool, string> land(void);
   tuple<bool, string> landHome(void);
@@ -89,10 +92,8 @@ public:
   tuple<bool, string> switchEstimator(const std::string &estimator);
 
   tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
-  
-  bool mrsSystemReady(void);
 
-protected:
+  bool mrsSystemReady(void);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>          sh_current_constraints_;
@@ -127,22 +128,25 @@ protected:
 
   mrs_lib::PublisherHandler<mrs_msgs::Path> ph_path_;
 
-
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
-
+protected:
   bool initialized_ = false;
-  bool spawned_ = false;
+  bool spawned_     = false;
 
   string _uav_name_;
 
-  bool is_gazebo_simulation_ = false;
+  bool   is_gazebo_simulation_ = false;
   string _gazebo_spawner_params_;
 
   mrs_lib::SubscribeHandlerOptions shopts_;
-  ros::NodeHandle                       nh_;
-  string name_;
+  ros::NodeHandle                  nh_;
+  string                           name_;
 };
+
+//}
+
+/* class TestGeneric //{ */
 
 class TestGeneric {
 
@@ -155,8 +159,10 @@ public:
 
   std::shared_ptr<mrs_lib::ParamLoader> pl_;
 
-  UAVHandler makeUAV(string uav_name);
-  bool isGazeboSimulation(void);
+  UAVHandler getUAVHandler(string uav_name);
+  bool       isGazeboSimulation(void);
+
+  void sleep(const double &duration);
 
 protected:
   ros::NodeHandle                       nh_;
@@ -166,8 +172,8 @@ protected:
 
   bool is_gazebo_simulation_ = false;
 
-  string _uav_name_; //TODO: remove, should be UAVHandler specific
-  string _gazebo_spawner_params_; //TODO: remove, should be UAVHandler specific
+  string _uav_name_;               // TODO: remove, should be UAVHandler specific
+  string _gazebo_spawner_params_;  // TODO: remove, should be UAVHandler specific
 
   string _test_name_;
   string name_;
@@ -177,6 +183,8 @@ protected:
 private:
   shared_ptr<ros::AsyncSpinner> spinner_;
 };
+
+//}
 
 }  // namespace mrs_uav_testing
 

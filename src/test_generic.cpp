@@ -3,17 +3,23 @@
 namespace mrs_uav_testing
 {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
+/* UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) //{ */
 
-  initialize( uav_name, shopts, using_gazebo_sim);
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) {
+
+  initialize(uav_name, shopts, using_gazebo_sim);
 }
 
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim){
+//}
+
+/* initialize() //{ */
+
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim) {
 
   _uav_name_ = uav_name;
-  shopts_ = shopts;
-  nh_ = shopts_.nh;
-  name_ = shopts.node_name;
+  shopts_    = shopts;
+  nh_        = shopts_.nh;
+  name_      = shopts.node_name;
 
   is_gazebo_simulation_ = using_gazebo_sim;
 
@@ -58,12 +64,14 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
 
   // | --------------------- service clients -------------------- |
 
-  //TODO: is it an issue that each UAVHandler has its own spawn service client?
-  sch_spawn_gazebo_uav_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
+  // TODO: is it an issue that each UAVHandler has its own spawn service client?
+  sch_spawn_gazebo_uav_ = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
 
 
   initialized_ = true;
 }
+
+//}
 
 /* constructors //{ */
 
@@ -122,7 +130,10 @@ void TestGeneric::initialize(void) {
 
 // | --------------------- action methods --------------------- |
 
-tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
+/* spawn() //{ */
+
+tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params) {
+
   _gazebo_spawner_params_ = gazebo_spawner_params;
 
   // | ------------ wait for the spawner to be ready ------------ |
@@ -205,24 +216,29 @@ tuple<bool, string> UAVHandler::spawn(string gazebo_spawner_params){
   return {true, "drone spawned"};
 }
 
+//}
 
-/* checkConditions() //{ */
-tuple<bool, string> UAVHandler::checkConditions(void){
-  if (!initialized_){
+/* checkPreconditions() //{ */
+
+tuple<bool, string> UAVHandler::checkPreconditions(void) {
+
+  if (!initialized_) {
     ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: UAV handler for " << _uav_name_ << " is not initialized!");
-    return {false, "UAV handler for "+_uav_name_+" is not initialized!"};
+    return {false, "UAV handler for " + _uav_name_ + " is not initialized!"};
   }
 
-  if ((is_gazebo_simulation_) && (!spawned_)){
+  if ((is_gazebo_simulation_) && (!spawned_)) {
     ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: Using Gazebo simulation, but UAV is not spawned!");
     return {false, "Using Gazebo simulation, but UAV is not spawned!"};
   }
 
   return {true, "All clear."};
 }
+
 //}
 
 /* isGazeboSimulation() //{ */
+
 bool TestGeneric::isGazeboSimulation(void) {
 
   if (is_gazebo_simulation_) {
@@ -232,7 +248,7 @@ bool TestGeneric::isGazeboSimulation(void) {
   ros::V_string node_list;
   ros::master::getNodes(node_list);
 
-  for (auto& node : node_list) {
+  for (auto &node : node_list) {
     if (node.find("mrs_drone_spawner") != std::string::npos) {
       ROS_INFO("[AutomaticStart]: MRS Gazebo Simulation detected");
       is_gazebo_simulation_ = true;
@@ -242,15 +258,17 @@ bool TestGeneric::isGazeboSimulation(void) {
 
   return false;
 }
+
 //}
 
-/* makeUAV() //{ */
-UAVHandler TestGeneric::makeUAV(string uav_name) {
-  return UAVHandler(uav_name, shopts_, isGazeboSimulation());;
+/* getUAVHandler() //{ */
+
+UAVHandler TestGeneric::getUAVHandler(string uav_name) {
+
+  return UAVHandler(uav_name, shopts_, isGazeboSimulation());
 }
+
 //}
-
-
 
 /* sleep() //{ */
 
@@ -262,11 +280,14 @@ void sleep(const double &duration) {
 //}
 
 /* takeoff() //{ */
-tuple<bool, string> UAVHandler::takeoff(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
-    return res;
 
+tuple<bool, string> UAVHandler::takeoff(void) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
 
   // | ---------------- wait for ready to takeoff --------------- |
 
@@ -369,10 +390,14 @@ tuple<bool, string> UAVHandler::takeoff(void) {
 //}
 
 /* land() //{ */
+
 tuple<bool, string> UAVHandler::land(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   if (!isFlyingNormally()) {
     return {false, "not flying normally in the beginning"};
@@ -437,10 +462,14 @@ tuple<bool, string> UAVHandler::land(void) {
 //}
 
 /* landHome() //{ */
+
 tuple<bool, string> UAVHandler::landHome(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   if (!isFlyingNormally()) {
     return {false, "not flying normally in the beginning"};
@@ -477,7 +506,6 @@ tuple<bool, string> UAVHandler::landHome(void) {
     if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "MpcController") {
       break;
     }
-
   }
 
   // | ------------- wait for the landing to finish ------------- |
@@ -504,10 +532,14 @@ tuple<bool, string> UAVHandler::landHome(void) {
 //}
 
 /* activateMidAir() //{ */
+
 tuple<bool, string> UAVHandler::activateMidAir(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   // | ---------------- wait for ready to takeoff --------------- |
 
@@ -594,10 +626,14 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
 //}
 
 /* gotoAbs() //{ */
+
 tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const double &z, const double &hdg) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   mrs_msgs::Vec4 srv;
 
@@ -640,10 +676,14 @@ tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const 
 //}
 
 /* gotoRel() //{ */
+
 tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   auto start_pose = sh_tracker_cmd_.getMsg()->position;
   auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
@@ -690,10 +730,14 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
 //}
 
 /* setPathSrv() //{ */
+
 tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   mrs_msgs::PathSrv srv;
   srv.request.path = path_in;
@@ -712,10 +756,14 @@ tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
 //}
 
 /* setPathTopic() //{ */
+
 tuple<bool, string> UAVHandler::setPathTopic(const mrs_msgs::Path &path_in) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   ph_path_.publish(path_in);
 
@@ -725,10 +773,14 @@ tuple<bool, string> UAVHandler::setPathTopic(const mrs_msgs::Path &path_in) {
 //}
 
 /* switchEstimator() //{ */
+
 tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   mrs_msgs::String srv;
   srv.request.value = estimator;
@@ -747,10 +799,14 @@ tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
 //}
 
 /* gotoTrajectoryStart() //{ */
+
 tuple<bool, string> UAVHandler::gotoTrajectoryStart() {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   {
     std_srvs::Trigger srv;
@@ -791,10 +847,14 @@ tuple<bool, string> UAVHandler::gotoTrajectoryStart() {
 //}
 
 /* startTrajectoryTracking() //{ */
+
 tuple<bool, string> UAVHandler::startTrajectoryTracking() {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   {
     std_srvs::Trigger srv;
@@ -820,10 +880,14 @@ tuple<bool, string> UAVHandler::startTrajectoryTracking() {
 //}
 
 /* stopTrajectoryTracking() //{ */
+
 tuple<bool, string> UAVHandler::stopTrajectoryTracking() {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   {
     std_srvs::Trigger srv;
@@ -849,10 +913,14 @@ tuple<bool, string> UAVHandler::stopTrajectoryTracking() {
 //}
 
 /* resumeTrajectoryTracking() //{ */
+
 tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return res;
+  }
 
   {
     std_srvs::Trigger srv;
@@ -878,10 +946,14 @@ tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
 //}
 
 /* getPathSrv() //{ */
+
 tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, string>({}, std::string(std::get<1>(res)));
+  }
 
   mrs_msgs::GetPathSrv srv;
   srv.request.path = path_in;
@@ -899,13 +971,35 @@ tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathS
 
 //}
 
+/* sleep() //{ */
+
+void UAVHandler::sleep(const double &duration) {
+
+  ros::Duration(duration).sleep();
+}
+
+//}
+
+/* sleep() //{ */
+
+void TestGeneric::sleep(const double &duration) {
+
+  ros::Duration(duration).sleep();
+}
+
+//}
+
 // | ------------------------- getters ------------------------ |
 
 /* getHeightAgl() //{ */
+
 std::optional<double> UAVHandler::getHeightAgl(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
-    return std::nullopt;
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
 
   if (sh_height_agl_.hasMsg()) {
     return {sh_height_agl_.getMsg()->value};
@@ -917,10 +1011,14 @@ std::optional<double> UAVHandler::getHeightAgl(void) {
 //}
 
 /* getCurrentConstraints() //{ */
+
 std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
-    return std::nullopt;
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
 
   if (sh_current_constraints_.hasMsg()) {
     return {*sh_current_constraints_.getMsg()};
@@ -932,10 +1030,14 @@ std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(v
 //}
 
 /* getTrackerCmd() //{ */
+
 std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
-    return std::nullopt;
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
 
   if (sh_tracker_cmd_.hasMsg()) {
     return {*sh_tracker_cmd_.getMsg()};
@@ -947,10 +1049,14 @@ std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
 //}
 
 /* isAtPosition() //{ */
+
 bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
-  auto res = checkConditions();
-  if (!(std::get<0>(res)))
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
     return false;
+  }
 
   if (!sh_uav_state_.hasMsg()) {
     return false;
@@ -974,6 +1080,7 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
 //}
 
 /* isReferenceAtPosition() //{ */
+
 bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
 
   if (!sh_tracker_cmd_.hasMsg()) {
@@ -996,6 +1103,7 @@ bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const d
 //}
 
 /* getActiveTracker() //{ */
+
 std::string UAVHandler::getActiveTracker(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
@@ -1008,6 +1116,7 @@ std::string UAVHandler::getActiveTracker(void) {
 //}
 
 /* getActiveController() //{ */
+
 std::string UAVHandler::getActiveController(void) {
 
   if (!sh_control_manager_diag_.getMsg()) {
@@ -1020,6 +1129,7 @@ std::string UAVHandler::getActiveController(void) {
 //}
 
 /* getActiveEstimator() //{ */
+
 std::string UAVHandler::getActiveEstimator(void) {
 
   if (!sh_estim_manager_diag_.getMsg()) {
@@ -1032,6 +1142,7 @@ std::string UAVHandler::getActiveEstimator(void) {
 //}
 
 /* hasGoal() //{ */
+
 bool UAVHandler::hasGoal(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
@@ -1044,6 +1155,7 @@ bool UAVHandler::hasGoal(void) {
 //}
 
 /* mrsSystemReady() //{ */
+
 bool UAVHandler::mrsSystemReady(void) {
 
   bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
@@ -1060,6 +1172,7 @@ bool UAVHandler::mrsSystemReady(void) {
 //}
 
 /* isFlyingNormally() //{ */
+
 bool UAVHandler::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
@@ -1072,6 +1185,7 @@ bool UAVHandler::isFlyingNormally(void) {
 //}
 
 /* isOutputEnabled() //{ */
+
 bool UAVHandler::isOutputEnabled(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
