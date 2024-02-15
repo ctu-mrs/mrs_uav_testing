@@ -22,7 +22,6 @@
 #include <mrs_msgs/Vec4.h>
 #include <mrs_msgs/GainManagerDiagnostics.h>
 #include <mrs_msgs/ConstraintManagerDiagnostics.h>
-#include <mrs_msgs/GazeboSpawnerDiagnostics.h>
 #include <mrs_msgs/String.h>
 #include <mrs_msgs/UavState.h>
 #include <mrs_msgs/PathSrv.h>
@@ -35,8 +34,6 @@
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
-
-/* #include <gazebo_msgs/ModelState.h> */
 
 //}
 
@@ -53,13 +50,11 @@ using namespace std;
 class UAVHandler {
 
 public:
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api = true);
 
-  void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api = true);
+  virtual void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api = true);
 
-  tuple<bool, string> spawnGazeboUAV(const string& gazebo_spawner_params);
-
-  tuple<bool, string> checkPreconditions(void);
+  virtual tuple<bool, string> checkPreconditions(void);
 
   void sleep(const double &duration);
 
@@ -89,7 +84,6 @@ public:
   std::optional<double>                        getHeightAgl(void);
   std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
 
-  /* tuple<bool, string> moveTo(double x, double y, double z, double hdg); */
 
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
@@ -105,7 +99,6 @@ public:
   mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>        sh_estim_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>       sh_gain_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics> sh_constraint_manager_diag_;
-  mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>     sh_gazebo_spawner_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavState>                     sh_uav_state_;
   mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>               sh_tracker_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_height_agl_;
@@ -128,22 +121,16 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_stop_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_spawn_gazebo_uav_;
 
   mrs_lib::PublisherHandler<mrs_msgs::Path> ph_path_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
-  /* mrs_lib::PublisherHandler<gazebo_msgs::ModelState> ph_gazebo_model_state_; */
 
 protected:
   bool initialized_ = false;
-  bool spawned_     = false;
 
   string _uav_name_;
-
-  bool   is_gazebo_simulation_ = false;
-  string _gazebo_spawner_params_;
 
   mrs_lib::SubscribeHandlerOptions shopts_;
   ros::NodeHandle                  nh_;
@@ -168,8 +155,6 @@ public:
 
   std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> getUAVHandler(const string &uav_name, const bool use_hw_api = true);
 
-  bool isGazeboSimulation(void);
-
   void sleep(const double &duration);
 
 protected:
@@ -178,10 +163,7 @@ protected:
 
   mrs_lib::SubscribeHandlerOptions shopts_;
 
-  bool is_gazebo_simulation_ = false;
-
   string _uav_name_;               // TODO: remove, should be UAVHandler specific
-  string _gazebo_spawner_params_;  // TODO: remove, should be UAVHandler specific
 
   string _test_name_;
   string name_;

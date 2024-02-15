@@ -3,19 +3,17 @@
 namespace mrs_uav_testing
 {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api) {
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api) {
 
-  initialize(uav_name, shopts, using_gazebo_sim, use_hw_api);
+  initialize(uav_name, shopts, use_hw_api);
 }
 
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool using_gazebo_sim, bool use_hw_api) {
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api) {
 
   _uav_name_ = uav_name;
   shopts_    = shopts;
   nh_        = shopts_.nh;
   name_      = shopts.node_name;
-
-  is_gazebo_simulation_ = using_gazebo_sim;
 
   use_hw_api_ = use_hw_api;
 
@@ -30,7 +28,6 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sh_uav_state_           = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
   sh_height_agl_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
   sh_max_height_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_gazebo_spawner_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GazeboSpawnerDiagnostics>(shopts_, "/mrs_drone_spawner/diagnostics");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
@@ -57,13 +54,6 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   // | ----------------------- publishers ----------------------- |
 
   ph_path_ = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
-
-  /* ph_gazebo_model_state_ = mrs_lib::PublisherHandler<gazebo_msgs::ModelState>(nh_, "/gazebo/set_model_state"); */
-
-  // | --------------------- service clients -------------------- |
-
-  // TODO: is it an issue that each UAVHandler has its own spawn service client?
-  sch_spawn_gazebo_uav_ = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/mrs_drone_spawner/spawn");
 
 
   initialized_ = true;
@@ -99,7 +89,6 @@ void TestGeneric::initialize(void) {
 
   pl_->loadParam("uav_name", _uav_name_, std::string());
   pl_->loadParam("test", _test_name_, std::string());
-  pl_->loadParam("gazebo_spawner_params", _gazebo_spawner_params_, std::string());
 
   name_ = "test/" + _uav_name_ + "/" + _test_name_;
 
@@ -129,95 +118,6 @@ void TestGeneric::initialize(void) {
 
 // | --------------------- action methods --------------------- |
 
-/* spawn() //{ */
-
-tuple<bool, string> UAVHandler::spawnGazeboUAV(const string &gazebo_spawner_params) {
-
-  _gazebo_spawner_params_ = gazebo_spawner_params;
-
-  // | ------------ wait for the spawner to be ready ------------ |
-
-  while (true) {
-
-    if (!ros::ok()) {
-      return {false, "shut down from outside"};
-    }
-
-    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the Gazebo drone spawner", name_.c_str());
-
-    if (sh_gazebo_spawner_diag_.hasMsg()) {
-      break;
-    }
-
-    sleep(0.01);
-  }
-
-  // | -------------------------- wait  ------------------------- |
-
-  sleep(1.0);
-
-  // | ------------------- call spawn service ------------------- |
-
-  {
-    mrs_msgs::String srv;
-
-    srv.request.value = _gazebo_spawner_params_;
-
-    bool service_call = sch_spawn_gazebo_uav_.call(srv);
-
-    if (!service_call || !srv.response.success) {
-      return {false, "gazebo drone spawner service call failed"};
-    }
-  }
-
-  // | ------------------ wait while processing ----------------- |
-
-  while (true) {
-
-    if (!ros::ok()) {
-      return {false, "shut down from outside"};
-    }
-
-    ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the drone to spawn", name_.c_str());
-
-    if (!sh_gazebo_spawner_diag_.getMsg()->processing) {
-      break;
-    }
-
-    sleep(0.01);
-  }
-
-  if (use_hw_api_) {
-    // | ------------- wait for the HW API to connect ------------- |
-
-    while (true) {
-
-      if (!ros::ok()) {
-        return {false, "shut down from outside"};
-      }
-
-      ROS_INFO_THROTTLE(1.0, "[%s]: waiting for the hw API", name_.c_str());
-
-      if (sh_hw_api_status_.hasMsg()) {
-        if (sh_hw_api_status_.getMsg()->connected) {
-          break;
-        }
-      }
-
-      sleep(0.01);
-    }
-
-    // | -------------- wait for PX4 to finish bootup ------------- |
-  }
-
-  sleep(20.0);
-
-  spawned_ = true;
-
-  return {true, "drone spawned"};
-}
-
-//}
 
 /* checkPreconditions() //{ */
 
@@ -228,37 +128,10 @@ tuple<bool, string> UAVHandler::checkPreconditions(void) {
     return {false, "UAV handler for " + _uav_name_ + " is not initialized!"};
   }
 
-  if ((is_gazebo_simulation_) && (!spawned_)) {
-    ROS_ERROR_STREAM("[" << ros::this_node::getName().c_str() << "]: Using Gazebo simulation, but UAV is not spawned!");
-    return {false, "Using Gazebo simulation, but UAV is not spawned!"};
-  }
-
   return {true, "All clear."};
 }
 
 //}
-
-/* isGazeboSimulation() //{ */
-
-bool TestGeneric::isGazeboSimulation(void) {
-
-  if (is_gazebo_simulation_) {
-    return true;
-  }
-
-  ros::V_string node_list;
-  ros::master::getNodes(node_list);
-
-  for (auto &node : node_list) {
-    if (node.find("mrs_drone_spawner") != std::string::npos) {
-      ROS_INFO("[AutomaticStart]: MRS Gazebo Simulation detected");
-      is_gazebo_simulation_ = true;
-      return true;
-    }
-  }
-
-  return false;
-}
 
 /* getUAVHandler() //{ */
 
@@ -267,7 +140,7 @@ std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getU
   if (!initialized_) {
     return {std::nullopt, string("Can not obtain UAV handler for  " + uav_name + " - testing is not initialized yet!")};
   } else {
-    return {std::make_shared<UAVHandler>(uav_name, shopts_, isGazeboSimulation(), use_hw_api), "Success!"};
+    return {std::make_shared<UAVHandler>(uav_name, shopts_, use_hw_api), "Success!"};
   }
 }
 
@@ -1029,35 +902,6 @@ std::optional<mrs_msgs::DynamicsConstraints> UAVHandler::getCurrentConstraints(v
     return {};
   }
 }
-
-//}
-
-/* moveTo() Implements direct transporting of a UAVs in the simulation//{ */
-
-/* tuple<bool, string> UAVHandler::moveTo(double x, double y, double z, double hdg) { */
-
-/*   if (is_gazebo_simulation_) { */
-/*     gazebo_msgs::ModelState msg; */
-/*     msg.model_name = _uav_name_; */
-
-/*     msg.pose.position.x = x; */
-/*     msg.pose.position.y = y; */
-/*     msg.pose.position.z = z; */
-
-/*     double qw              = cos(hdg / 2.0); */
-/*     double qz              = sin(hdg / 2.0); */
-/*     msg.pose.orientation.x = 0; */
-/*     msg.pose.orientation.y = 0; */
-/*     msg.pose.orientation.z = qz; */
-/*     msg.pose.orientation.w = qw; */
-
-/*     ph_gazebo_model_state_.publish(msg); */
-/*     return {true, "Success!"}; */
-/*   } else { */
-/*     ROS_ERROR_ONCE("[%s]: Direct moving of UAVs outside of Gazebo simulation is not implemented!", ros::this_node::getName().c_str()); */
-/*     return {false, "Direct moving of UAVs outside of Gazebo simulation is not implemented!"}; */
-/*   } */
-/* } */
 
 //}
 
