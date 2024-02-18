@@ -24,10 +24,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
   sh_constraint_manager_diag_ =
       mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
-  sh_gain_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_           = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_height_agl_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_          = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_gain_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
@@ -142,15 +142,6 @@ std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getU
   } else {
     return {std::make_shared<UAVHandler>(uav_name, shopts_, use_hw_api), "Success!"};
   }
-}
-
-//}
-
-/* sleep() //{ */
-
-void sleep(const double &duration) {
-
-  ros::Duration(duration).sleep();
 }
 
 //}
