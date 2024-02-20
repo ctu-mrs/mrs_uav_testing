@@ -2,11 +2,10 @@
 
   <arg name="UAV_NAME" default="" />
 
-  <arg name="mrs_simulator_config" default="$(find mrs_uav_testing)/config/default_mrs_simulator_config.yaml" />
-  <arg name="hw_api_config" default="" />
+  <arg name="custom_config" default="$(find mrs_uav_testing)/config/default_mrs_simulator_config.yaml" />
 
   <include file="$(find mrs_multirotor_simulator)/launch/multirotor_simulator.launch">
-    <arg name="custom_config" default="$(arg mrs_simulator_config)" />
+    <arg name="custom_config" default="$(arg custom_config)" />
   </include>
 
 </launch>
