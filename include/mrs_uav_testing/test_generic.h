@@ -75,6 +75,7 @@ public:
   bool isFlyingNormally(void);
   bool isOutputEnabled(void);
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+  bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance);
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
   std::string                                  getActiveTracker(void);

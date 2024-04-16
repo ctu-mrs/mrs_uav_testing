@@ -915,7 +915,7 @@ std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
 
 //}
 
-/* isAtPosition() //{ */
+/* isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) //{ */
 
 bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
 
@@ -935,6 +935,37 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
 
   if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
       abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, current_hdg)) < 0.2) {
+
+    return true;
+
+  } else {
+
+    return false;
+  }
+}
+
+//}
+
+/* isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance) //{ */
+
+bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return false;
+  }
+
+  if (!sh_uav_state_.hasMsg()) {
+    return false;
+  }
+
+  auto uav_state = sh_uav_state_.getMsg();
+
+  auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
+
+  if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(sradians::diff(hdg, current_hdg)) < 0.2) {
 
     return true;
 
