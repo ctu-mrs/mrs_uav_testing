@@ -85,10 +85,11 @@ public:
   std::optional<double>                        getHeightAgl(void);
   std::optional<mrs_msgs::DynamicsConstraints> getCurrentConstraints(void);
 
-
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
   tuple<bool, string> switchEstimator(const std::string &estimator);
+  tuple<bool, string> setGains(const std::string &gains);
+  tuple<bool, string> setConstraints(const std::string &constraints);
 
   tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
 
@@ -111,6 +112,8 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_home_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_switch_estimator_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_gains_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_constraints_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
@@ -164,7 +167,7 @@ protected:
 
   mrs_lib::SubscribeHandlerOptions shopts_;
 
-  string _uav_name_;               // TODO: remove, should be UAVHandler specific
+  string _uav_name_;  // TODO: remove, should be UAVHandler specific
 
   string _test_name_;
   string name_;

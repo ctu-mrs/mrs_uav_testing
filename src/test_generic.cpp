@@ -39,6 +39,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land");
   sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/uav_manager/land_home");
   sch_switch_estimator_  = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
+  sch_set_gains_         = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/gain_manager/set_gains");
+  sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
 
   sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
@@ -665,6 +667,58 @@ tuple<bool, string> UAVHandler::switchEstimator(const std::string &estimator) {
   }
 
   return {true, "estimator switched"};
+}
+
+//}
+
+/* setGains() //{ */
+
+tuple<bool, string> UAVHandler::setGains(const std::string &gains) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::String srv;
+  srv.request.value = gains;
+
+  {
+    bool service_call = sch_set_gains_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "gain setting service call failed"};
+    }
+  }
+
+  return {true, "gains set"};
+}
+
+//}
+
+/* setConstraints() //{ */
+
+tuple<bool, string> UAVHandler::setConstraints(const std::string &constraints) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::String srv;
+  srv.request.value = constraints;
+
+  {
+    bool service_call = sch_set_constraints_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "gain setting service call failed"};
+    }
+  }
+
+  return {true, "constraints set"};
 }
 
 //}
