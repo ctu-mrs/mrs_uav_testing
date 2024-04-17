@@ -484,6 +484,10 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
       return {true, "midair activation finished"};
     }
 
+    if (!control_diag->flying_normally && control_diag->active_controller == "EmergencyController" && control_diag->active_tracker == "LandoffTracker") {
+      return {false, "midair activation failed to finish"};
+    }
+
     sleep(0.01);
   }
 
