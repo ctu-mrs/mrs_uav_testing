@@ -88,6 +88,8 @@ public:
   tuple<bool, string> setPathSrv(const mrs_msgs::Path &path_in);
   tuple<bool, string> setPathTopic(const mrs_msgs::Path &path_in);
   tuple<bool, string> switchEstimator(const std::string &estimator);
+  tuple<bool, string> switchController(const std::string &controller);
+  tuple<bool, string> switchTracker(const std::string &tracker);
   tuple<bool, string> setGains(const std::string &gains);
   tuple<bool, string> setConstraints(const std::string &constraints);
 
@@ -112,6 +114,8 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_land_home_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_switch_estimator_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_switch_controller_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_switch_tracker_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_gains_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_constraints_;
 
