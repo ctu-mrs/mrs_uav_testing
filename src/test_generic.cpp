@@ -104,7 +104,6 @@ void TestGeneric::initialize(void) {
   // | ----------------------- transformer ---------------------- |
 
   transformer_ = std::make_shared<mrs_lib::Transformer>(nh_, "Test");
-  transformer_->setDefaultPrefix(_uav_name_);
   transformer_->retryLookupNewest(true);
 
   // | ----------------------- subscribers ---------------------- |
