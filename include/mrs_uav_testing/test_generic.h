@@ -107,6 +107,7 @@ public:
   mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>               sh_tracker_cmd_;
   mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_height_agl_;
   mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_max_height_;
+  mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>               sh_speed_;
 
   mrs_lib::ServiceClientHandler<std_srvs::SetBool> sch_arming_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_offboard_;
@@ -130,7 +131,8 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
 
-  mrs_lib::PublisherHandler<mrs_msgs::Path> ph_path_;
+  mrs_lib::PublisherHandler<mrs_msgs::Path>                ph_path_;
+  mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference> ph_trajectory_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 

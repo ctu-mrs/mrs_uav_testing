@@ -28,6 +28,7 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
   sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
   sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_             = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
@@ -57,8 +58,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_path_ = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
-
+  ph_path_       = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+  ph_trajectory_ = mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference>(nh_, "/" + _uav_name_ + "/control_manager/trajectory_reference");
 
   initialized_ = true;
 }
