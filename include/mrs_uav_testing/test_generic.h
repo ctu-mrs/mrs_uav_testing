@@ -31,6 +31,8 @@
 #include <mrs_msgs/String.h>
 #include <mrs_msgs/TrajectoryReference.h>
 #include <mrs_msgs/GetPathSrv.h>
+#include <mrs_msgs/VelocityReferenceStamped.h>
+#include <mrs_msgs/VelocityReferenceSrv.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -50,9 +52,10 @@ using namespace std;
 class UAVHandler {
 
 public:
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api = true);
+  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
 
-  virtual void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api = true);
+  virtual void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
+                          bool use_hw_api = true);
 
   virtual tuple<bool, string> checkPreconditions(void);
 
@@ -71,12 +74,17 @@ public:
   tuple<bool, string> resumeTrajectoryTracking();
   tuple<bool, string> stopTrajectoryTracking();
 
+  void callbackUavState(const mrs_msgs::UavState::ConstPtr msg);
+
   bool hasGoal(void);
   bool isFlyingNormally(void);
   bool isOutputEnabled(void);
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
   bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance);
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+
+  std::optional<double>          getSpeed(void);
+  std::optional<Eigen::Vector3d> getVelocity(const std::string frame_id);
 
   std::string                                  getActiveTracker(void);
   std::string                                  getActiveController(void);
@@ -131,11 +139,14 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
 
-  mrs_lib::PublisherHandler<mrs_msgs::Path>                ph_path_;
-  mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference> ph_trajectory_;
+  mrs_lib::PublisherHandler<mrs_msgs::Path>                     ph_path_;
+  mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference>      ph_trajectory_;
+  mrs_lib::PublisherHandler<mrs_msgs::VelocityReferenceStamped> ph_velocity_reference_;
+  mrs_lib::PublisherHandler<mrs_msgs::ReferenceStamped>         ph_reference_;
 
   mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus> sh_hw_api_status_;
 
+  std::shared_ptr<mrs_lib::Transformer> transformer_;
 
 protected:
   bool initialized_ = false;
@@ -177,7 +188,6 @@ protected:
 
   string _test_name_;
   string name_;
-
 
   bool initialized_ = false;
 

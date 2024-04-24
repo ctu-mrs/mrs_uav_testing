@@ -3,17 +3,18 @@
 namespace mrs_uav_testing
 {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api) {
+UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
 
-  initialize(uav_name, shopts, use_hw_api);
+  initialize(uav_name, shopts, transformer, use_hw_api);
 }
 
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, bool use_hw_api) {
+void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
 
-  _uav_name_ = uav_name;
-  shopts_    = shopts;
-  nh_        = shopts_.nh;
-  name_      = shopts.node_name;
+  _uav_name_   = uav_name;
+  shopts_      = shopts;
+  nh_          = shopts_.nh;
+  name_        = shopts.node_name;
+  transformer_ = transformer;
 
   use_hw_api_ = use_hw_api;
 
@@ -25,10 +26,11 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sh_constraint_manager_diag_ =
       mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_speed_             = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
+  sh_uav_state_ =
+      mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state", &UAVHandler::callbackUavState, this);
+  sh_height_agl_ = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_ = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_      = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
@@ -58,8 +60,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
 
   // | ----------------------- publishers ----------------------- |
 
-  ph_path_       = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
-  ph_trajectory_ = mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference>(nh_, "/" + _uav_name_ + "/control_manager/trajectory_reference");
+  ph_path_               = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
+  ph_trajectory_         = mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference>(nh_, "/" + _uav_name_ + "/control_manager/trajectory_reference");
+  ph_velocity_reference_ = mrs_lib::PublisherHandler<mrs_msgs::VelocityReferenceStamped>(nh_, "/" + _uav_name_ + "/control_manager/velocity_reference");
+  ph_reference_          = mrs_lib::PublisherHandler<mrs_msgs::ReferenceStamped>(nh_, "/" + _uav_name_ + "/control_manager/reference");
 
   initialized_ = true;
 }
@@ -145,7 +149,7 @@ std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getU
   if (!initialized_) {
     return {std::nullopt, string("Can not obtain UAV handler for  " + uav_name + " - testing is not initialized yet!")};
   } else {
-    return {std::make_shared<UAVHandler>(uav_name, shopts_, use_hw_api), "Success!"};
+    return {std::make_shared<UAVHandler>(uav_name, shopts_, transformer_, use_hw_api), "Success!"};
   }
 }
 
@@ -1204,6 +1208,57 @@ bool UAVHandler::isOutputEnabled(void) {
   } else {
     return false;
   }
+}
+
+//}
+
+/* getSpeed() //{ */
+
+std::optional<double> UAVHandler::getSpeed(void) {
+
+  if (!sh_speed_.hasMsg()) {
+    return {};
+  }
+
+  return sh_speed_.getMsg()->value;
+}
+
+//}
+
+/* getVelocity() //{ */
+
+std::optional<Eigen::Vector3d> UAVHandler::getVelocity(const std::string frame_id) {
+
+  if (!sh_uav_state_.hasMsg()) {
+    return {};
+  }
+
+  auto uav_state = sh_uav_state_.getMsg();
+
+  geometry_msgs::Vector3Stamped vel_world;
+
+  vel_world.header = uav_state->header;
+
+  vel_world.vector.x = uav_state->velocity.linear.x;
+  vel_world.vector.y = uav_state->velocity.linear.y;
+  vel_world.vector.z = uav_state->velocity.linear.z;
+
+  auto res = transformer_->transformSingle(vel_world, frame_id);
+
+  if (res) {
+    return Eigen::Vector3d(res->vector.x, res->vector.y, res->vector.z);
+  } else {
+    return {};
+  }
+}
+
+//}
+
+/* callbackUavState() //{ */
+
+void UAVHandler::callbackUavState(const mrs_msgs::UavState::ConstPtr msg) {
+
+  transformer_->setDefaultFrame(msg->header.frame_id);
 }
 
 //}
