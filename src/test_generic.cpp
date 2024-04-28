@@ -51,6 +51,7 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_goto_relative_        = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
   sch_set_heading_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading");
   sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading_relative");
+  sch_goto_altitude_        = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/goto_altitude");
 
   sch_goto_trajectory_start_      = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start");
   sch_start_trajectory_tracking_  = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking");
@@ -661,7 +662,7 @@ tuple<bool, string> UAVHandler::setHeading(const double &setpoint) {
 
 //}
 
-/* setHeading() //{ */
+/* setHeadingRelative() //{ */
 
 tuple<bool, string> UAVHandler::setHeadingRelative(const double &setpoint) {
 
@@ -713,6 +714,59 @@ tuple<bool, string> UAVHandler::setHeadingRelative(const double &setpoint) {
 
     if (abs(sradians::diff(initial_heading.value(), heading.value())) < 0.1) {
       return {true, "heading goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* gotoAltitude() //{ */
+
+tuple<bool, string> UAVHandler::gotoAltitude(const double &z) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  // | ----------------- save the initial state ----------------- |
+
+  auto start_pose = sh_tracker_cmd_.getMsg()->position;
+  auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
+
+  // | -------------------- call the service -------------------- |
+
+  mrs_msgs::Vec1 srv;
+
+  srv.request.goal = z;
+
+  {
+    bool service_call = sch_goto_altitude_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "goto altitude service call failed"};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (isAtPosition(start_pose.x, start_pose.y, z, start_hdg, 0.1)) {
+      return {true, "goal reached"};
     }
 
     sleep(0.01);

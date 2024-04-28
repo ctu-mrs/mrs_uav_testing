@@ -72,6 +72,7 @@ public:
   tuple<bool, string> gotoRel(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> setHeading(const double &setpoint);
   tuple<bool, string> setHeadingRelative(const double &hdg);
+  tuple<bool, string> gotoAltitude(const double &z);
   tuple<bool, string> gotoTrajectoryStart();
   tuple<bool, string> startTrajectoryTracking();
   tuple<bool, string> resumeTrajectoryTracking();
@@ -137,6 +138,7 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_relative_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_goto_altitude_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv> sch_get_path_;
 
