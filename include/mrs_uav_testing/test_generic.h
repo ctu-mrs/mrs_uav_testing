@@ -20,6 +20,7 @@
 #include <mrs_msgs/HwApiStatus.h>
 #include <mrs_msgs/EstimationDiagnostics.h>
 #include <mrs_msgs/Vec4.h>
+#include <mrs_msgs/Vec1.h>
 #include <mrs_msgs/GainManagerDiagnostics.h>
 #include <mrs_msgs/ConstraintManagerDiagnostics.h>
 #include <mrs_msgs/String.h>
@@ -69,6 +70,8 @@ public:
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> gotoRel(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> setHeading(const double &setpoint);
+  tuple<bool, string> setHeadingRelative(const double &hdg);
   tuple<bool, string> gotoTrajectoryStart();
   tuple<bool, string> startTrajectoryTracking();
   tuple<bool, string> resumeTrajectoryTracking();
@@ -84,6 +87,7 @@ public:
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
   std::optional<double>          getSpeed(void);
+  std::optional<double>          getHeading(void);
   std::optional<Eigen::Vector3d> getVelocity(const std::string frame_id);
 
   std::string                                  getActiveTracker(void);
@@ -131,6 +135,8 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_relative_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv> sch_get_path_;
 

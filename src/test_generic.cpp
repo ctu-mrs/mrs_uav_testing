@@ -47,8 +47,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_set_gains_         = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/gain_manager/set_gains");
   sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
 
-  sch_goto_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
-  sch_goto_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
+  sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
+  sch_goto_relative_        = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
+  sch_set_heading_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading");
+  sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading_relative");
 
   sch_goto_trajectory_start_      = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start");
   sch_start_trajectory_tracking_  = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking");
@@ -607,6 +609,120 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
 
 //}
 
+/* setHeading() //{ */
+
+tuple<bool, string> UAVHandler::setHeading(const double &setpoint) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::Vec1 srv;
+
+  srv.request.goal = setpoint;
+
+  {
+    bool service_call = sch_set_heading_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "set heading service call failed"};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    auto heading = getHeading();
+
+    if (!heading) {
+      return {false, "could not obtain current heading"};
+    }
+
+    if (abs(sradians::diff(setpoint, heading.value())) < 0.1) {
+      return {true, "heading goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* setHeading() //{ */
+
+tuple<bool, string> UAVHandler::setHeadingRelative(const double &setpoint) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  // | -------------- remember the initial heading -------------- |
+
+  auto initial_heading = getHeading();
+
+  if (!initial_heading) {
+    return {false, "could not obtain the initial heading"};
+  }
+
+  // | ------------------ set heading relative ------------------ |
+
+  mrs_msgs::Vec1 srv;
+
+  srv.request.goal = setpoint;
+
+  {
+    bool service_call = sch_set_heading_relative_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "set heading relative service call failed"};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    auto heading = getHeading();
+
+    if (!heading) {
+      return {false, "could not obtain current heading"};
+    }
+
+    if (abs(sradians::diff(initial_heading.value(), heading.value())) < 0.1) {
+      return {true, "heading goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
 /* setPathSrv() //{ */
 
 tuple<bool, string> UAVHandler::setPathSrv(const mrs_msgs::Path &path_in) {
@@ -1044,12 +1160,16 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
     return false;
   }
 
+  auto heading = getHeading();
+
+  if (!heading) {
+    return false;
+  }
+
   auto uav_state = sh_uav_state_.getMsg();
 
-  auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
-
   if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
-      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, current_hdg)) < 0.2) {
+      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, heading.value())) < 0.2) {
 
     return true;
 
@@ -1075,12 +1195,16 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hd
     return false;
   }
 
+  auto heading = getHeading();
+
+  if (!heading) {
+    return false;
+  }
+
   auto uav_state = sh_uav_state_.getMsg();
 
-  auto current_hdg = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
-
   if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
-      abs(sradians::diff(hdg, current_hdg)) < 0.2) {
+      abs(sradians::diff(hdg, heading.value())) < 0.2) {
 
     return true;
 
@@ -1219,6 +1343,30 @@ std::optional<double> UAVHandler::getSpeed(void) {
   }
 
   return sh_speed_.getMsg()->value;
+}
+
+//}
+
+/* getHeading() //{ */
+
+std::optional<double> UAVHandler::getHeading(void) {
+
+  if (!sh_uav_state_.hasMsg()) {
+    return {};
+  }
+
+  auto uav_state = sh_uav_state_.getMsg();
+
+  double heading;
+
+  try {
+    heading = mrs_lib::AttitudeConverter(uav_state->pose.orientation).getHeading();
+  }
+  catch (...) {
+    return {};
+  }
+
+  return {heading};
 }
 
 //}
