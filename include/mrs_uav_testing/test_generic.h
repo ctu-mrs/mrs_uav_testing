@@ -34,6 +34,7 @@
 #include <mrs_msgs/GetPathSrv.h>
 #include <mrs_msgs/VelocityReferenceStamped.h>
 #include <mrs_msgs/VelocityReferenceSrv.h>
+#include <mrs_msgs/ReferenceStampedSrv.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -80,14 +81,21 @@ public:
 
   tuple<bool, string> gotoRelativeService(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> gotoService(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> setReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+  tuple<bool, string> setReferenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+
+  tuple<bool, string> gotoReference(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+  tuple<bool, string> gotoReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+  tuple<bool, string> referenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+  tuple<bool, string> referenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
 
   void callbackUavState(const mrs_msgs::UavState::ConstPtr msg);
 
   bool hasGoal(void);
   bool isFlyingNormally(void);
   bool isOutputEnabled(void);
-  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
-  bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance);
+  bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance, const std::string frame_id = "");
+  bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance, const std::string frame_id = "");
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
 
   std::optional<bool> isStationary(void);
@@ -139,12 +147,13 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_gains_;
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_constraints_;
 
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv> sch_path_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>    sch_goto_relative_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_set_heading_relative_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>    sch_goto_altitude_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>                sch_goto_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>             sch_path_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>                sch_goto_relative_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>                sch_set_heading_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>                sch_set_heading_relative_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>                sch_goto_altitude_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::ReferenceStampedSrv> sch_reference_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv> sch_get_path_;
 

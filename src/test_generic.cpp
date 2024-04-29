@@ -53,6 +53,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading_relative");
   sch_goto_altitude_        = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/goto_altitude");
 
+  sch_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::ReferenceStampedSrv>(nh_, "/" + _uav_name_ + "/control_manager/reference");
+
   sch_goto_trajectory_start_      = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start");
   sch_start_trajectory_tracking_  = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking");
   sch_stop_trajectory_tracking_   = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking");
@@ -576,7 +578,7 @@ tuple<bool, string> UAVHandler::gotoService(const double &x, const double &y, co
     }
   }
 
-  return {false, "goto service triggered"};
+  return {true, "goto service triggered"};
 }
 
 //}
@@ -626,6 +628,176 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
 
 //}
 
+/* gotoReference() //{ */
+
+tuple<bool, string> UAVHandler::gotoReference(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  // | ------------------ create the reference ------------------ |
+
+  mrs_msgs::ReferenceStamped ref_in;
+
+  ref_in.header.frame_id      = frame_id;
+  ref_in.reference.position.x = x;
+  ref_in.reference.position.y = y;
+  ref_in.reference.position.z = z;
+  ref_in.reference.heading    = hdg;
+
+  // | ------------------- issue the reference ------------------ |
+
+  {
+    auto [success, message] = referenceService(x, y, z, hdg, frame_id);
+
+    if (!success) {
+      ROS_ERROR("[%s]: reference service failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
+      return {success, message};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (isAtPosition(x, y, z, hdg, 0.1, frame_id)) {
+      return {true, "goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* gotoReferenceTopic() //{ */
+
+tuple<bool, string> UAVHandler::gotoReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  // | ------------------ create the reference ------------------ |
+
+  mrs_msgs::ReferenceStamped ref_in;
+
+  ref_in.header.frame_id      = frame_id;
+  ref_in.reference.position.x = x;
+  ref_in.reference.position.y = y;
+  ref_in.reference.position.z = z;
+  ref_in.reference.heading    = hdg;
+
+  // | ------------------- issue the reference ------------------ |
+
+  {
+    auto [success, message] = referenceTopic(x, y, z, hdg, frame_id);
+
+    if (!success) {
+      ROS_ERROR("[%s]: reference topic failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
+      return {success, message};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (isAtPosition(x, y, z, hdg, 0.1, frame_id)) {
+      return {true, "goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* referenceService() //{ */
+
+tuple<bool, string> UAVHandler::referenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::ReferenceStampedSrv srv;
+
+  srv.request.header.frame_id = frame_id;
+  srv.request.header.stamp    = ros::Time::now();
+
+  srv.request.reference.position.x = x;
+  srv.request.reference.position.y = y;
+  srv.request.reference.position.z = z;
+  srv.request.reference.heading    = hdg;
+
+  {
+    bool service_call = sch_reference_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "reference service call failed"};
+    }
+  }
+
+  return {true, "reference service triggered"};
+}
+
+//}
+
+/* referenceTopic() //{ */
+
+tuple<bool, string> UAVHandler::referenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::ReferenceStamped msg;
+
+  msg.header.frame_id = frame_id;
+  msg.header.stamp    = ros::Time::now();
+
+  msg.reference.position.x = x;
+  msg.reference.position.y = y;
+  msg.reference.position.z = z;
+  msg.reference.heading    = hdg;
+
+  ph_reference_.publish(msg);
+
+  return {true, "reference published"};
+}
+
+//}
+
 /* gotoRelativeService() //{ */
 
 tuple<bool, string> UAVHandler::gotoRelativeService(const double &x, const double &y, const double &z, const double &hdg) {
@@ -635,9 +807,6 @@ tuple<bool, string> UAVHandler::gotoRelativeService(const double &x, const doubl
   if (!(std::get<0>(res))) {
     return res;
   }
-
-  auto start_pose = sh_tracker_cmd_.getMsg()->position;
-  auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
 
   {
     mrs_msgs::Vec4 srv;
@@ -1278,9 +1447,9 @@ std::optional<mrs_msgs::TrackerCommand> UAVHandler::getTrackerCmd(void) {
 
 //}
 
-/* isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) //{ */
+/* isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance, const std::string frame_id) //{ */
 
-bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance) {
+bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance, const std::string frame_id) {
 
   auto res = checkPreconditions();
 
@@ -1300,8 +1469,26 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
 
   auto uav_state = sh_uav_state_.getMsg();
 
-  if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
-      abs(z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(hdg, heading.value())) < 0.2) {
+  // | ---- transform the input to the current control frame ---- |
+
+  mrs_msgs::ReferenceStamped ref_in;
+
+  ref_in.header.frame_id      = frame_id == "" ? uav_state->header.frame_id : frame_id;
+  ref_in.reference.position.x = x;
+  ref_in.reference.position.y = y;
+  ref_in.reference.position.z = z;
+  ref_in.reference.heading    = hdg;
+
+  auto ref_transformed = transformer_->transformSingle(ref_in, uav_state->header.frame_id);
+
+  if (!ref_transformed) {
+    return false;
+  }
+
+  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance &&
+      abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(ref_transformed->reference.position.z - uav_state->pose.position.z) < pos_tolerance &&
+      abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
 
     return true;
 
@@ -1313,9 +1500,9 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
 
 //}
 
-/* isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance) //{ */
+/* isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance, const std::string frame_id) //{ */
 
-bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance) {
+bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance, const std::string frame_id) {
 
   auto res = checkPreconditions();
 
@@ -1335,8 +1522,25 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hd
 
   auto uav_state = sh_uav_state_.getMsg();
 
-  if (abs(x - uav_state->pose.position.x) < pos_tolerance && abs(y - uav_state->pose.position.y) < pos_tolerance &&
-      abs(sradians::diff(hdg, heading.value())) < 0.2) {
+  // | ---- transform the input to the current control frame ---- |
+
+  mrs_msgs::ReferenceStamped ref_in;
+
+  ref_in.header.frame_id      = frame_id == "" ? uav_state->header.frame_id : frame_id;
+  ref_in.reference.position.x = x;
+  ref_in.reference.position.y = y;
+  ref_in.reference.position.z = uav_state->pose.position.z;
+  ref_in.reference.heading    = hdg;
+
+  auto ref_transformed = transformer_->transformSingle(ref_in, uav_state->header.frame_id);
+
+  if (!ref_transformed) {
+    return false;
+  }
+
+  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance &&
+      abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
 
     return true;
 
