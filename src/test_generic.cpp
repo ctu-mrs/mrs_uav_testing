@@ -1400,6 +1400,33 @@ tuple<bool, string> UAVHandler::validateReference(const mrs_msgs::ReferenceStamp
 
 //}
 
+/* validateReferenceList() //{ */
+
+tuple<bool, std::optional<mrs_msgs::ValidateReferenceList::Response>> UAVHandler::validateReferenceList(
+    const mrs_msgs::ValidateReferenceList::Request &request) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {false, {}};
+  }
+
+  mrs_msgs::ValidateReferenceList srv;
+  srv.request = request;
+
+  {
+    bool service_call = sch_validate_reference_list_.call(srv);
+
+    if (!service_call) {
+      return {false, srv.response};
+    } else {
+      return {true, srv.response};
+    }
+  }
+}
+
+//}
+
 /* sleep() //{ */
 
 void UAVHandler::sleep(const double &duration) {

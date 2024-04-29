@@ -126,7 +126,8 @@ public:
 
   bool mrsSystemReady(void);
 
-  tuple<bool, string> validateReference(const mrs_msgs::ReferenceStamped &msg);
+  tuple<bool, string>                                                   validateReference(const mrs_msgs::ReferenceStamped &msg);
+  tuple<bool, std::optional<mrs_msgs::ValidateReferenceList::Response>> validateReferenceList(const mrs_msgs::ValidateReferenceList::Request &request);
 
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>          sh_current_constraints_;
