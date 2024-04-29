@@ -58,6 +58,8 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_stop_trajectory_tracking_   = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking");
   sch_resume_trajectory_tracking_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/resume_trajectory_tracking");
 
+  sch_hover_ = mrs_lib::ServiceClientHandler<std_srvs::Trigger>(nh_, "/" + _uav_name_ + "/control_manager/hover");
+
   sch_path_     = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
   sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/get_path");
 
@@ -516,18 +518,12 @@ tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const 
     return res;
   }
 
-  mrs_msgs::Vec4 srv;
-
-  srv.request.goal[0] = x;
-  srv.request.goal[1] = y;
-  srv.request.goal[2] = z;
-  srv.request.goal[3] = hdg;
-
   {
-    bool service_call = sch_goto_.call(srv);
+    auto [success, message] = gotoService(x, y, z, hdg);
 
-    if (!service_call || !srv.response.success) {
-      return {false, "goto service call failed"};
+    if (!success) {
+      ROS_ERROR("[%s]: goto service failed with message: '%s'", ros::this_node::getName().c_str(), message.c_str());
+      return {success, message};
     }
   }
 
@@ -544,7 +540,6 @@ tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const 
     }
 
     if (isAtPosition(x, y, z, hdg, 0.1)) {
-
       return {true, "goal reached"};
     }
 
@@ -556,9 +551,84 @@ tuple<bool, string> UAVHandler::gotoAbs(const double &x, const double &y, const 
 
 //}
 
+/* gotoService() //{ */
+
+tuple<bool, string> UAVHandler::gotoService(const double &x, const double &y, const double &z, const double &hdg) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::Vec4 srv;
+
+  srv.request.goal[0] = x;
+  srv.request.goal[1] = y;
+  srv.request.goal[2] = z;
+  srv.request.goal[3] = hdg;
+
+  {
+    bool service_call = sch_goto_.call(srv);
+
+    if (!service_call || !srv.response.success) {
+      return {false, "goto service call failed"};
+    }
+  }
+
+  return {false, "goto service triggered"};
+}
+
+//}
+
 /* gotoRel() //{ */
 
 tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const double &z, const double &hdg) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  auto start_pose = sh_tracker_cmd_.getMsg()->position;
+  auto start_hdg  = sh_tracker_cmd_.getMsg()->heading;
+
+  {
+    auto [success, message] = gotoRelativeService(x, y, z, hdg);
+
+    if (!success) {
+      return {false, message};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (isAtPosition(start_pose.x + x, start_pose.y + y, start_pose.z + z, start_hdg + hdg, 0.1)) {
+      return {true, "goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* gotoRelativeService() //{ */
+
+tuple<bool, string> UAVHandler::gotoRelativeService(const double &x, const double &y, const double &z, const double &hdg) {
 
   auto res = checkPreconditions();
 
@@ -586,26 +656,7 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
     }
   }
 
-  // | -------------------- check for result -------------------- |
-
-  while (true) {
-
-    if (!ros::ok()) {
-      return {false, "shut down from outside"};
-    }
-
-    if (!isFlyingNormally()) {
-      return {false, "not flying normally"};
-    }
-
-    if (isAtPosition(start_pose.x + x, start_pose.y + y, start_pose.z + z, start_hdg + hdg, 0.1)) {
-      return {true, "goal reached"};
-    }
-
-    sleep(0.01);
-  }
-
-  return {false, "reached end of the method without assertion"};
+  return {true, "goto relative service triggered"};
 }
 
 //}
@@ -1097,6 +1148,33 @@ tuple<bool, string> UAVHandler::resumeTrajectoryTracking() {
 
 //}
 
+/* hover() //{ */
+
+tuple<bool, string> UAVHandler::hover() {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  {
+    std_srvs::Trigger srv;
+
+    {
+      bool service_call = sch_hover_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "hover service call failed"};
+      }
+    }
+  }
+
+  return {true, "hover triggered"};
+}
+
+//}
+
 /* getPathSrv() //{ */
 
 tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
@@ -1368,6 +1446,31 @@ bool UAVHandler::isFlyingNormally(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->flying_normally;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* isStationary() //{ */
+
+std::optional<bool> UAVHandler::isStationary(void) {
+
+  if (!sh_control_manager_diag_.hasMsg()) {
+    return {};
+  }
+
+  auto ctrl_diag = sh_control_manager_diag_.getMsg();
+
+  std::optional<double> speed = getSpeed();
+
+  if (!speed) {
+    return {};
+  }
+
+  if (!ctrl_diag->tracker_status.have_goal && std::abs(speed.value()) < 0.2) {
+    return true;
   } else {
     return false;
   }

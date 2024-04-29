@@ -78,6 +78,9 @@ public:
   tuple<bool, string> resumeTrajectoryTracking();
   tuple<bool, string> stopTrajectoryTracking();
 
+  tuple<bool, string> gotoRelativeService(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> gotoService(const double &x, const double &y, const double &z, const double &hdg);
+
   void callbackUavState(const mrs_msgs::UavState::ConstPtr msg);
 
   bool hasGoal(void);
@@ -86,6 +89,8 @@ public:
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
   bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance);
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
+
+  std::optional<bool> isStationary(void);
 
   std::optional<double>          getSpeed(void);
   std::optional<double>          getHeading(void);
@@ -105,6 +110,7 @@ public:
   tuple<bool, string> switchTracker(const std::string &tracker);
   tuple<bool, string> setGains(const std::string &gains);
   tuple<bool, string> setConstraints(const std::string &constraints);
+  tuple<bool, string> hover();
 
   tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
 
@@ -146,6 +152,8 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_stop_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
+
+  mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_hover_;
 
   mrs_lib::PublisherHandler<mrs_msgs::Path>                     ph_path_;
   mrs_lib::PublisherHandler<mrs_msgs::TrajectoryReference>      ph_trajectory_;
