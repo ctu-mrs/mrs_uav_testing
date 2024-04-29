@@ -35,6 +35,8 @@
 #include <mrs_msgs/VelocityReferenceStamped.h>
 #include <mrs_msgs/VelocityReferenceSrv.h>
 #include <mrs_msgs/ReferenceStampedSrv.h>
+#include <mrs_msgs/ValidateReference.h>
+#include <mrs_msgs/ValidateReferenceList.h>
 
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
@@ -124,6 +126,8 @@ public:
 
   bool mrsSystemReady(void);
 
+  tuple<bool, string> validateReference(const mrs_msgs::ReferenceStamped &msg);
+
   mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>          sh_current_constraints_;
   mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>        sh_uav_manager_diag_;
@@ -161,6 +165,9 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_stop_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
+
+  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>     sch_validate_reference_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceList> sch_validate_reference_list_;
 
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_hover_;
 

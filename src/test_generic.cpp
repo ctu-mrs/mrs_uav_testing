@@ -65,6 +65,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_path_     = mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
   sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/get_path");
 
+  sch_validate_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference");
+  sch_validate_reference_list_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceList>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference_list");
+
   // | ----------------------- publishers ----------------------- |
 
   ph_path_               = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
@@ -1366,6 +1370,32 @@ tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathS
   }
 
   return {srv.response.trajectory, "path set"};
+}
+
+//}
+
+/* validateReference() //{ */
+
+tuple<bool, string> UAVHandler::validateReference(const mrs_msgs::ReferenceStamped &msg) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  mrs_msgs::ValidateReference srv;
+  srv.request.reference = msg;
+
+  {
+    bool service_call = sch_validate_reference_.call(srv);
+
+    if (!service_call) {
+      return {false, "reference validation service call failed"};
+    } else {
+      return {srv.response.success, srv.response.message};
+    }
+  }
 }
 
 //}
