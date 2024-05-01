@@ -26,11 +26,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sh_constraint_manager_diag_ =
       mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state", &UAVHandler::callbackUavState, this);
-  sh_height_agl_ = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_ = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_speed_      = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
+  sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_             = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
 
   sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
 
@@ -130,6 +129,7 @@ void TestGeneric::initialize(void) {
   // | --------------------- finish the init -------------------- |
 
   initialized_ = true;
+
   ROS_INFO("[%s]: initialized", name_.c_str());
 }
 
@@ -1814,15 +1814,6 @@ std::optional<Eigen::Vector3d> UAVHandler::getVelocity(const std::string frame_i
   } else {
     return {};
   }
-}
-
-//}
-
-/* callbackUavState() //{ */
-
-void UAVHandler::callbackUavState(const mrs_msgs::UavState::ConstPtr msg) {
-
-  transformer_->setDefaultFrame(msg->header.frame_id);
 }
 
 //}

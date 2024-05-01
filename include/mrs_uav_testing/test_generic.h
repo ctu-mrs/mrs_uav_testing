@@ -91,8 +91,6 @@ public:
   tuple<bool, string> referenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> referenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
 
-  void callbackUavState(const mrs_msgs::UavState::ConstPtr msg);
-
   bool hasGoal(void);
   bool isFlyingNormally(void);
   bool isOutputEnabled(void);
