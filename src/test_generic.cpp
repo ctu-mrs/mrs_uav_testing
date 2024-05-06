@@ -68,6 +68,10 @@ void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptio
   sch_validate_reference_list_ =
       mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceList>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference_list");
 
+  sch_tranform_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::TransformReferenceSrv>(nh_, "/" + _uav_name_ + "/control_manager/transform_reference");
+  sch_tranform_vector3_   = mrs_lib::ServiceClientHandler<mrs_msgs::TransformVector3Srv>(nh_, "/" + _uav_name_ + "/control_manager/transform_vector3");
+  sch_tranform_pose_      = mrs_lib::ServiceClientHandler<mrs_msgs::TransformPoseSrv>(nh_, "/" + _uav_name_ + "/control_manager/transform_pose");
+
   // | ----------------------- publishers ----------------------- |
 
   ph_path_               = mrs_lib::PublisherHandler<mrs_msgs::Path>(nh_, "/" + _uav_name_ + "/trajectory_generation/path");
@@ -1394,6 +1398,90 @@ tuple<bool, string> UAVHandler::validateReference(const mrs_msgs::ReferenceStamp
       return {false, "reference validation service call failed"};
     } else {
       return {srv.response.success, srv.response.message};
+    }
+  }
+}
+
+//}
+
+/* transformReference() //{ */
+
+std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::ReferenceStamped>> UAVHandler::transformReference(const mrs_msgs::ReferenceStamped &msg,
+                                                                                                                       std::string target_frame) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
+
+  mrs_msgs::TransformReferenceSrv srv;
+  srv.request.reference = msg;
+  srv.request.frame_id  = target_frame;
+
+  {
+    bool service_call = sch_tranform_reference_.call(srv);
+
+    if (!service_call) {
+      return {false, "Reference validation service call failed", {}};
+    } else {
+      return {srv.response.success, srv.response.message, srv.response.reference};
+    }
+  }
+}
+
+//}
+
+/* transformPose() //{ */
+
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::PoseStamped>> UAVHandler::transformPose(const geometry_msgs::PoseStamped &msg,
+                                                                                                                  std::string target_frame) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
+
+  mrs_msgs::TransformPoseSrv srv;
+  srv.request.pose     = msg;
+  srv.request.frame_id = target_frame;
+
+  {
+    bool service_call = sch_tranform_pose_.call(srv);
+
+    if (!service_call) {
+      return {false, "Pose validation service call failed", {}};
+    } else {
+      return {srv.response.success, srv.response.message, srv.response.pose};
+    }
+  }
+}
+
+//}
+
+/* transformVector3() //{ */
+
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::Vector3Stamped>> UAVHandler::transformVector3(
+    const geometry_msgs::Vector3Stamped &msg, std::string target_frame) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return {};
+  }
+
+  mrs_msgs::TransformVector3Srv srv;
+  srv.request.vector   = msg;
+  srv.request.frame_id = target_frame;
+
+  {
+    bool service_call = sch_tranform_vector3_.call(srv);
+
+    if (!service_call) {
+      return {false, "Vector3 validation service call failed", {}};
+    } else {
+      return {srv.response.success, srv.response.message, srv.response.vector};
     }
   }
 }
