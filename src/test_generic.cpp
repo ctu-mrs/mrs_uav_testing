@@ -3,35 +3,37 @@
 namespace mrs_uav_testing
 {
 
-UAVHandler::UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
+UAVHandler::UAVHandler(std::string uav_name, std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
+                       bool use_hw_api) {
 
   initialize(uav_name, shopts, transformer, use_hw_api);
 }
 
-void UAVHandler::initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
+void UAVHandler::initialize(std::string uav_name, std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
+                            bool use_hw_api) {
 
   _uav_name_   = uav_name;
   shopts_      = shopts;
-  nh_          = shopts_.nh;
-  name_        = shopts.node_name;
+  nh_          = shopts_->nh;
+  name_        = shopts->node_name;
   transformer_ = transformer;
 
   use_hw_api_ = use_hw_api;
 
-  sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
-  sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
-  sh_uav_manager_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
-  sh_tracker_cmd_          = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
-  sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
+  sh_control_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::ControlManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
+  sh_current_constraints_  = mrs_lib::SubscribeHandler<mrs_msgs::DynamicsConstraints>(*shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
+  sh_uav_manager_diag_     = mrs_lib::SubscribeHandler<mrs_msgs::UavManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
+  sh_tracker_cmd_          = mrs_lib::SubscribeHandler<mrs_msgs::TrackerCommand>(*shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
+  sh_estim_manager_diag_   = mrs_lib::SubscribeHandler<mrs_msgs::EstimationDiagnostics>(*shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
   sh_constraint_manager_diag_ =
-      mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
-  sh_gain_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_speed_             = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(shopts_, "/" + _uav_name_ + "/control_manager/speed");
+      mrs_lib::SubscribeHandler<mrs_msgs::ConstraintManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
+  sh_gain_manager_diag_ = mrs_lib::SubscribeHandler<mrs_msgs::GainManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_uav_state_         = mrs_lib::SubscribeHandler<mrs_msgs::UavState>(*shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_        = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_             = mrs_lib::SubscribeHandler<mrs_msgs::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
 
-  sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(shopts_, "/" + _uav_name_ + "/hw_api/status");
+  sh_hw_api_status_ = mrs_lib::SubscribeHandler<mrs_msgs::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
 
   // | --------------------- service clients -------------------- |
 
@@ -122,13 +124,15 @@ void TestGeneric::initialize(void) {
 
   // | ----------------------- subscribers ---------------------- |
 
-  shopts_.nh                 = nh_;
-  shopts_.node_name          = name_;
-  shopts_.no_message_timeout = mrs_lib::no_timeout;
-  shopts_.threadsafe         = true;
-  shopts_.autostart          = true;
-  shopts_.queue_size         = 10;
-  shopts_.transport_hints    = ros::TransportHints().tcpNoDelay();
+  shopts_ = std::make_shared<mrs_lib::SubscribeHandlerOptions>();
+
+  shopts_->nh                 = nh_;
+  shopts_->node_name          = name_;
+  shopts_->no_message_timeout = mrs_lib::no_timeout;
+  shopts_->threadsafe         = true;
+  shopts_->autostart          = true;
+  shopts_->queue_size         = 10;
+  shopts_->transport_hints    = ros::TransportHints().tcpNoDelay();
 
   // | --------------------- finish the init -------------------- |
 

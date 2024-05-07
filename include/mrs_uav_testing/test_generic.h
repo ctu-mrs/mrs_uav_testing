@@ -59,9 +59,10 @@ using namespace std;
 class UAVHandler {
 
 public:
-  UAVHandler(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
+  UAVHandler(std::string uav_name, std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
+             bool use_hw_api = true);
 
-  virtual void initialize(std::string uav_name, mrs_lib::SubscribeHandlerOptions shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
+  virtual void initialize(std::string uav_name, std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer,
                           bool use_hw_api = true);
 
   virtual tuple<bool, string> checkPreconditions(void);
@@ -199,10 +200,10 @@ protected:
 
   string _uav_name_;
 
-  mrs_lib::SubscribeHandlerOptions shopts_;
-  ros::NodeHandle                  nh_;
-  string                           name_;
-  bool                             use_hw_api_ = true;
+  std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts_;
+  ros::NodeHandle                                   nh_;
+  string                                            name_;
+  bool                                              use_hw_api_ = true;
 };
 
 //}
@@ -228,7 +229,7 @@ protected:
   ros::NodeHandle                       nh_;
   std::shared_ptr<mrs_lib::Transformer> transformer_;
 
-  mrs_lib::SubscribeHandlerOptions shopts_;
+  std::shared_ptr<mrs_lib::SubscribeHandlerOptions> shopts_;
 
   string _uav_name_;  // TODO: remove, should be UAVHandler specific
 
