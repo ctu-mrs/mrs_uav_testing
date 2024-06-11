@@ -77,6 +77,7 @@ public:
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> gotoRel(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> gotoFcu(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> setHeading(const double &setpoint);
   tuple<bool, string> setHeadingRelative(const double &hdg);
   tuple<bool, string> gotoAltitude(const double &z);
@@ -89,6 +90,7 @@ public:
   tuple<bool, string> gotoService(const double &x, const double &y, const double &z, const double &hdg);
   tuple<bool, string> setReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> setReferenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
+  tuple<bool, string> gotoFcuService(const double &x, const double &y, const double &z, const double &hdg);
 
   tuple<bool, string> gotoReference(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> gotoReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
@@ -163,6 +165,7 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::String>  sch_set_constraints_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>                sch_goto_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>                sch_goto_fcu_;
   mrs_lib::ServiceClientHandler<mrs_msgs::PathSrv>             sch_path_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>                sch_goto_relative_;
   mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>                sch_set_heading_;

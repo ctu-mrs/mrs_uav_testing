@@ -49,6 +49,7 @@ void UAVHandler::initialize(std::string uav_name, std::shared_ptr<mrs_lib::Subsc
   sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::String>(nh_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
 
   sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto");
+  sch_goto_fcu_             = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_fcu");
   sch_goto_relative_        = mrs_lib::ServiceClientHandler<mrs_msgs::Vec4>(nh_, "/" + _uav_name_ + "/control_manager/goto_relative");
   sch_set_heading_          = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading");
   sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::Vec1>(nh_, "/" + _uav_name_ + "/control_manager/set_heading_relative");
@@ -640,6 +641,75 @@ tuple<bool, string> UAVHandler::gotoRel(const double &x, const double &y, const 
 
 //}
 
+/* gotoFcu() //{ */
+
+tuple<bool, string> UAVHandler::gotoFcu(const double &x, const double &y, const double &z, const double &hdg) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  this->sleep(2.0);
+
+  auto tracker_cmd = getTrackerCmd();
+
+  if (!tracker_cmd) {
+    return {false, "missing tracker_cmd"};
+  }
+
+  // | ------- get the desired position in the world frame ------ |
+
+  mrs_msgs::ReferenceStamped ref_in;
+
+  ref_in.header.frame_id      = _uav_name_ + "/fcu_untilted";
+  ref_in.reference.position.x = x;
+  ref_in.reference.position.y = y;
+  ref_in.reference.position.z = z;
+  ref_in.reference.heading    = hdg;
+
+  auto ref_transformed = transformer_->transformSingle(ref_in, tracker_cmd->header.frame_id);
+
+  if (!ref_transformed) {
+    return {false, "could not transform the reference"};
+  }
+
+  // | -------------------- call the service -------------------- |
+
+  {
+    auto [success, message] = gotoFcuService(x, y, z, hdg);
+
+    if (!success) {
+      return {false, message};
+    }
+  }
+
+  // | -------------------- check for result -------------------- |
+
+  while (true) {
+
+    if (!ros::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (!isFlyingNormally()) {
+      return {false, "not flying normally"};
+    }
+
+    if (isAtPosition(ref_transformed->reference.position.x, ref_transformed->reference.position.y, ref_transformed->reference.position.z,
+                     ref_transformed->reference.heading, 0.3, ref_transformed->header.frame_id)) {
+      return {true, "goal reached"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
 /* gotoReference() //{ */
 
 tuple<bool, string> UAVHandler::gotoReference(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id) {
@@ -838,6 +908,38 @@ tuple<bool, string> UAVHandler::gotoRelativeService(const double &x, const doubl
   }
 
   return {true, "goto relative service triggered"};
+}
+
+//}
+
+/* gotoFcuService() //{ */
+
+tuple<bool, string> UAVHandler::gotoFcuService(const double &x, const double &y, const double &z, const double &hdg) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  {
+    mrs_msgs::Vec4 srv;
+
+    srv.request.goal[0] = x;
+    srv.request.goal[1] = y;
+    srv.request.goal[2] = z;
+    srv.request.goal[3] = hdg;
+
+    {
+      bool service_call = sch_goto_fcu_.call(srv);
+
+      if (!service_call || !srv.response.success) {
+        return {false, "goto fcu service call failed"};
+      }
+    }
+  }
+
+  return {true, "goto fcu service triggered"};
 }
 
 //}
