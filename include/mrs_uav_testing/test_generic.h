@@ -36,7 +36,7 @@
 #include <mrs_msgs/VelocityReferenceSrv.h>
 #include <mrs_msgs/ReferenceStampedSrv.h>
 #include <mrs_msgs/ValidateReference.h>
-#include <mrs_msgs/ValidateReferenceList.h>
+#include <mrs_msgs/ValidateReferenceArray.h>
 #include <mrs_msgs/TransformReferenceSrv.h>
 #include <mrs_msgs/TransformVector3Srv.h>
 #include <mrs_msgs/TransformPoseSrv.h>
@@ -132,7 +132,7 @@ public:
 
   tuple<bool, string> validateReference(const mrs_msgs::ReferenceStamped &msg);
 
-  tuple<bool, std::optional<mrs_msgs::ValidateReferenceList::Response>> validateReferenceList(const mrs_msgs::ValidateReferenceList::Request &request);
+  tuple<bool, std::optional<mrs_msgs::ValidateReferenceArray::Response>> validateReferenceArray(const mrs_msgs::ValidateReferenceArray::Request &request);
 
   std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::PoseStamped>> transformPose(const geometry_msgs::PoseStamped &msg,
                                                                                                         std::string                       target_frame);
@@ -181,7 +181,7 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>     sch_validate_reference_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceList> sch_validate_reference_list_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceArray> sch_validate_reference_array_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::TransformReferenceSrv> sch_tranform_reference_;
   mrs_lib::ServiceClientHandler<mrs_msgs::TransformVector3Srv>   sch_tranform_vector3_;

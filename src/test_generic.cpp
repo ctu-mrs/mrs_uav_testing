@@ -68,8 +68,8 @@ void UAVHandler::initialize(std::string uav_name, std::shared_ptr<mrs_lib::Subsc
   sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::GetPathSrv>(nh_, "/" + _uav_name_ + "/trajectory_generation/get_path");
 
   sch_validate_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference");
-  sch_validate_reference_list_ =
-      mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceList>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference_list");
+  sch_validate_reference_array_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceArray>(nh_, "/" + _uav_name_ + "/control_manager/validate_reference_array");
 
   sch_tranform_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::TransformReferenceSrv>(nh_, "/" + _uav_name_ + "/control_manager/transform_reference");
   sch_tranform_vector3_   = mrs_lib::ServiceClientHandler<mrs_msgs::TransformVector3Srv>(nh_, "/" + _uav_name_ + "/control_manager/transform_vector3");
@@ -1594,10 +1594,10 @@ std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::Vector
 
 //}
 
-/* validateReferenceList() //{ */
+/* ValidateReferenceArray() //{ */
 
-tuple<bool, std::optional<mrs_msgs::ValidateReferenceList::Response>> UAVHandler::validateReferenceList(
-    const mrs_msgs::ValidateReferenceList::Request &request) {
+tuple<bool, std::optional<mrs_msgs::ValidateReferenceArray::Response>> UAVHandler::validateReferenceArray(
+    const mrs_msgs::ValidateReferenceArray::Request &request) {
 
   auto res = checkPreconditions();
 
@@ -1605,11 +1605,11 @@ tuple<bool, std::optional<mrs_msgs::ValidateReferenceList::Response>> UAVHandler
     return {false, {}};
   }
 
-  mrs_msgs::ValidateReferenceList srv;
+  mrs_msgs::ValidateReferenceArray srv;
   srv.request = request;
 
   {
-    bool service_call = sch_validate_reference_list_.call(srv);
+    bool service_call = sch_validate_reference_array_.call(srv);
 
     if (!service_call) {
       return {false, srv.response};
