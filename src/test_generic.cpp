@@ -1460,12 +1460,12 @@ tuple<bool, string> UAVHandler::hover() {
 
 /* getPathSrv() //{ */
 
-tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
+tuple<std::optional<mrs_msgs::TrajectoryReference>, std::optional<Eigen::VectorXd>, string> UAVHandler::getPathSrv(const mrs_msgs::Path &path_in) {
 
   auto res = checkPreconditions();
 
   if (!(std::get<0>(res))) {
-    return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, string>({}, std::string(std::get<1>(res)));
+    return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, std::optional<Eigen::VectorXd>, string>({}, {}, std::string(std::get<1>(res)));
   }
 
   mrs_msgs::GetPathSrv srv;
@@ -1475,11 +1475,17 @@ tuple<std::optional<mrs_msgs::TrajectoryReference>, string> UAVHandler::getPathS
     bool service_call = sch_get_path_.call(srv);
 
     if (!service_call || !srv.response.success) {
-      return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, string>({}, "path service call failed");
+      return std::make_tuple<std::optional<mrs_msgs::TrajectoryReference>, std::optional<Eigen::VectorXd>, string>({}, {}, "path service call failed");
     }
   }
 
-  return {srv.response.trajectory, "path set"};
+  Eigen::VectorXd waypoint_trajectory_idxs = Eigen::VectorXd::Zero(srv.response.waypoint_trajectory_idxs.size());
+
+  for (size_t i = 0; i < srv.response.waypoint_trajectory_idxs.size(); i++) {
+    waypoint_trajectory_idxs(i) = srv.response.waypoint_trajectory_idxs.at(i);
+  }
+
+  return {srv.response.trajectory, waypoint_trajectory_idxs, "path set"};
 }
 
 //}

@@ -126,7 +126,7 @@ public:
   tuple<bool, string> setConstraints(const std::string &constraints);
   tuple<bool, string> hover();
 
-  tuple<std::optional<mrs_msgs::TrajectoryReference>, string> getPathSrv(const mrs_msgs::Path &path_in);
+  tuple<std::optional<mrs_msgs::TrajectoryReference>, std::optional<Eigen::VectorXd>, string> getPathSrv(const mrs_msgs::Path &path_in);
 
   bool mrsSystemReady(void);
 
@@ -180,7 +180,7 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_resume_trajectory_tracking_;
   mrs_lib::ServiceClientHandler<std_srvs::Trigger> sch_goto_trajectory_start_;
 
-  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>     sch_validate_reference_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReference>      sch_validate_reference_;
   mrs_lib::ServiceClientHandler<mrs_msgs::ValidateReferenceArray> sch_validate_reference_array_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::TransformReferenceSrv> sch_tranform_reference_;
