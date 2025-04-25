@@ -1,15 +1,23 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(mrs_uav_testing)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-Wall)
 add_definitions(-Wextra)
+add_definitions(-Wpedantic)
 
-set(CATKIN_DEPENDENCIES
-  cmake_modules
-  roscpp
+if(MRS_ENABLE_TESTING)
+  message(WARNING "Setting optimizaton levels for tests")
+  add_definitions("-O0")
+  add_definitions("-g")
+endif()
+
+set(DEPENDENCIES
+  ament_cmake
+  rclcpp
+  rclcpp_components
   mrs_lib
   mrs_msgs
   )
@@ -18,19 +26,14 @@ set(LIBRARIES
   MrsUavTesting_TestGeneric
   )
 
-find_package(catkin REQUIRED COMPONENTS
-  ${CATKIN_DEPENDENCIES}
-  )
-
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
-  LIBRARIES ${LIBRARIES}
-  )
+foreach(DEP IN LISTS DEPENDENCIES)
+  find_package(${DEP} REQUIRED)
+endforeach()
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
+  ${rclcpp_INCLUDE_DIRS}
+  ${mrs_lib_INCLUDE_DIRS}
   )
 
 # Test Generic
@@ -39,36 +42,52 @@ add_library(MrsUavTesting_TestGeneric
   src/test_generic.cpp
   )
 
-target_link_libraries(MrsUavTesting_TestGeneric
-  ${catkin_LIBRARIES}
+ament_target_dependencies(MrsUavTesting_TestGeneric
+  rclcpp
+  mrs_lib
   )
 
 ## --------------------------------------------------------------
 ## |                           Testing                          |
 ## --------------------------------------------------------------
 
-if(CATKIN_ENABLE_TESTING AND MRS_ENABLE_TESTING)
+if(BUILD_TESTING)
 
-  message(WARNING "Testing enabled.")
-
-  add_subdirectory(test)
+  # add_subdirectory(test)
 
 endif()
 
 ## --------------------------------------------------------------
-## |                           Install                          |
+## |                           install                          |
 ## --------------------------------------------------------------
 
-install(TARGETS ${LIBRARIES}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-  )
+ament_export_libraries(
+  ${LIBRARIES}
+)
 
-install(DIRECTORY include/mrs_uav_testing/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  )
+install(TARGETS
+  ${LIBRARIES}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-install(DIRECTORY launch config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+install(
+  DIRECTORY include
+  DESTINATION .
+)
+
+ament_export_include_directories(
+  include
+)
+
+ament_export_targets(
+  export_${PROJECT_NAME} HAS_LIBRARY_TARGET
+)
+
+ament_export_dependencies(
+  ${DEPENDENCIES}
+)
+
+ament_package()
