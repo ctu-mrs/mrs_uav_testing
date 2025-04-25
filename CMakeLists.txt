@@ -20,6 +20,7 @@ set(DEPENDENCIES
   rclcpp_components
   mrs_lib
   mrs_msgs
+  tf2_ros
   )
 
 set(LIBRARIES
@@ -51,9 +52,10 @@ ament_target_dependencies(MrsUavTesting_TestGeneric
 ## |                           Testing                          |
 ## --------------------------------------------------------------
 
+# BUILD_TESTING is true by default when building with colcon
 if(BUILD_TESTING)
 
-  # add_subdirectory(test)
+  add_subdirectory(test)
 
 endif()
 
@@ -76,6 +78,16 @@ install(TARGETS
 install(
   DIRECTORY include
   DESTINATION .
+)
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_include_directories(

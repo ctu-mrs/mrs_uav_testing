@@ -107,11 +107,10 @@ TestGeneric::TestGeneric() {
 void TestGeneric::initialize(void) {
 
   node_     = rclcpp::Node::make_shared("test");
+  clock_    = node_->get_clock();
   executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 
   executor_->add_node(node_);
-
-  main_thread_ = std::thread(&TestGeneric::spin, this);
 
   RCLCPP_INFO(node_->get_logger(), "[%s]: ROS node initialized", name_.c_str());
 
@@ -119,10 +118,9 @@ void TestGeneric::initialize(void) {
 
   pl_ = std::make_shared<mrs_lib::ParamLoader>(node_, "Test");
 
-  pl_->loadParam("uav_name", _uav_name_, std::string());
   pl_->loadParam("test", _test_name_, std::string());
 
-  name_ = "test/" + _uav_name_ + "/" + _test_name_;
+  name_ = "test/" + _test_name_;
 
   // | ----------------------- transformer ---------------------- |
 
@@ -138,6 +136,14 @@ void TestGeneric::initialize(void) {
   shopts_->no_message_timeout = mrs_lib::no_timeout;
   shopts_->threadsafe         = true;
   shopts_->autostart          = true;
+
+  // | ----------------------- publishers ----------------------- |
+
+  publisher_result_ = node_->create_publisher<std_msgs::msg::Bool>("/test_result", rclcpp::SystemDefaultsQoS());
+
+  // | ------------------ start the main thread ----------------- |
+
+  main_thread_ = std::thread(&TestGeneric::spin, this);
 
   // | --------------------- finish the init -------------------- |
 
@@ -155,6 +161,31 @@ void TestGeneric::spin() {
   printf("[TestGeneric]: spinning");
 
   executor_->spin();
+}
+
+//}
+
+/* join() //{ */
+
+void TestGeneric::join() {
+
+  printf("[TestGeneric]: joined");
+
+  main_thread_.join();
+}
+
+//}
+
+/* reportTestResult() //{ */
+
+void TestGeneric::reportTestResult(const bool result) {
+
+  printf("[%s]: publishing result %s", name_.c_str(), result ? "SUCCESS" : "FAILED");
+
+  std_msgs::msg::Bool result_msg;
+  result_msg.data = result;
+
+  publisher_result_->publish(result_msg);
 }
 
 //}

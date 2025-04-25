@@ -41,6 +41,8 @@
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
+#include <std_msgs/msg/bool.hpp>
+
 //}
 
 namespace mrs_uav_testing
@@ -223,18 +225,21 @@ public:
 
   void sleep(const double &duration);
 
+  void join();
+
+  void reportTestResult(const bool result);
+
 protected:
   rclcpp::Node::SharedPtr  node_;
   rclcpp::Clock::SharedPtr clock_;
 
-  void        spin();
   std::thread main_thread_;
 
   std::shared_ptr<mrs_lib::Transformer> transformer_;
 
   std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts_;
 
-  string _uav_name_;  // TODO: remove, should be UAVHandler specific
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_result_;
 
   string _test_name_;
   string name_;
@@ -244,6 +249,8 @@ protected:
   bool mrsSystemReady(void);
 
 private:
+  void spin();
+
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
 };
 
