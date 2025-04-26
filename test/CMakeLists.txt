@@ -8,3 +8,7 @@ function(add_ros_isolated_launch_test path)
 endfunction()
 
 add_subdirectory(./takeoff)
+
+add_subdirectory(./goto)
+
+add_subdirectory(./goto_relative)

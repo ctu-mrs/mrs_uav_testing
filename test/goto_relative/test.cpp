@@ -29,11 +29,22 @@ bool Tester::test(void) {
     uh = uhopt.value();
   }
 
-  auto [success, message] = uh->takeoff();
+  {
+    auto [success, message] = uh->activateMidAir();
 
-  if (!success) {
-    RCLCPP_ERROR(node_->get_logger(), "takeoff failed with message: '%s'", message.c_str());
-    return false;
+    if (!success) {
+      RCLCPP_ERROR(node_->get_logger(), "midair activation failed with message: '%s'", message.c_str());
+      return false;
+    }
+  }
+
+  {
+    auto [success, message] = uh->gotoRel(1, 2, 3, 1);
+
+    if (!success) {
+      RCLCPP_ERROR(node_->get_logger(), "goto relative failed with message: '%s'", message.c_str());
+      return false;
+    }
   }
 
   sleep(5.0);
