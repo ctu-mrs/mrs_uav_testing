@@ -14,6 +14,12 @@ if(MRS_ENABLE_TESTING)
   add_definitions("-g")
 endif()
 
+if(COVERAGE)
+  message(WARNING "building with --coverage, the performance might be limited")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+endif()
+
 set(DEPENDENCIES
   ament_cmake
   rclcpp
@@ -54,6 +60,8 @@ ament_target_dependencies(MrsUavTesting_TestGeneric
 
 # BUILD_TESTING is true by default when building with colcon
 if(BUILD_TESTING)
+
+  message(WARNING "building for testing")
 
   add_subdirectory(test)
 
