@@ -77,8 +77,8 @@ def generate_test_description():
             launch_ros.actions.Node(
                 package='mrs_uav_testing',
                 namespace='',
-                executable='test_takeoff',
-                name='test_takeoff',
+                executable='test_goto_absolute',
+                name='test_goto_absolute',
             )
         )
 

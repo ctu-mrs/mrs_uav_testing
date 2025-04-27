@@ -9,6 +9,6 @@ endfunction()
 
 add_subdirectory(./takeoff)
 
-add_subdirectory(./goto)
+add_subdirectory(./goto_absolute)
 
 add_subdirectory(./goto_relative)

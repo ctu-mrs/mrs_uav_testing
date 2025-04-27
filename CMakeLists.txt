@@ -61,8 +61,6 @@ ament_target_dependencies(MrsUavTesting_TestGeneric
 # BUILD_TESTING is true by default when building with colcon
 if(BUILD_TESTING)
 
-  message(WARNING "building for testing")
-
   add_subdirectory(test)
 
 endif()

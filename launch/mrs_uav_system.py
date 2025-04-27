@@ -176,7 +176,7 @@ def generate_launch_description():
             launch_arguments={
                 'custom_config': automatic_start_config,
             }.items(),
-            condition=UnlessCondition(run_automatic_start)
+            condition=IfCondition(run_automatic_start)
         )
     )
 

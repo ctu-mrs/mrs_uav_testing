@@ -34,7 +34,7 @@ def generate_test_description():
                     ])
                 ]),
                 launch_arguments={
-                    'run_automatic_start': "false",
+                    'run_automatic_start': "true",
                     'uav_name': uav_name,
                     'platform_config': platform_config,
                 }.items()

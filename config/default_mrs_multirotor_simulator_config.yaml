@@ -1,9 +1,6 @@
 individual_takeoff_platform:
   enabled: true
 
-simulation_rate: 120.0 # Hz
-clock_rate: 120.0 # Hz
-
 uav_names: [
   "uav1",
 ]
