@@ -7,7 +7,7 @@ import launch
 import launch_ros
 import launch_testing.actions
 import launch_testing.asserts
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, GroupAction
 import rclpy
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution, TextSubstitution
@@ -25,48 +25,57 @@ def generate_test_description():
     platform_config=get_package_share_directory("mrs_multirotor_simulator")+"/config/mrs_uav_system/"+uav_type+".yaml"
 
     ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                PathJoinSubstitution([
-                    FindPackageShare('mrs_uav_testing'),
-                    'launch',
-                    'mrs_uav_system.py'
-                    ])
-                ]),
-                launch_arguments={
-                    'run_automatic_start': "true",
-                    'uav_name': uav_name,
-                    'platform_config': platform_config,
-                }.items()
-            ),
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([
+                    PathJoinSubstitution([
+                        FindPackageShare('mrs_uav_testing'),
+                        'launch',
+                        'mrs_uav_system.py'
+                        ])
+                    ]),
+                    launch_arguments={
+                        'run_automatic_start': "true",
+                        'uav_name': uav_name,
+                        'platform_config': platform_config,
+                    }.items()
+                )
+            ]
         )
+    )
 
     ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                PathJoinSubstitution([
-                    FindPackageShare('mrs_uav_testing'),
-                        'launch',
-                        'mrs_multirotor_simulator.py'
-                    ])
-                ]),
-                launch_arguments={
-                    'custom_config': "./config/mrs_simulator.yaml",
-                }.items()
-            )
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([
+                    PathJoinSubstitution([
+                        FindPackageShare('mrs_uav_testing'),
+                            'launch',
+                            'mrs_multirotor_simulator.py'
+                        ])
+                    ]),
+                    launch_arguments={
+                        'custom_config': "./config/mrs_simulator.yaml",
+                    }.items()
+                )
+            ]
         )
+    )
 
     ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                PathJoinSubstitution([
-                    FindPackageShare('mrs_multirotor_simulator'),
-                        'launch',
-                        'hw_api.py'
-                    ])
-                ]),
-            )
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([
+                    PathJoinSubstitution([
+                        FindPackageShare('mrs_multirotor_simulator'),
+                            'launch',
+                            'hw_api.py'
+                        ])
+                    ]),
+                )
+            ]
         )
+    )
 
     # starts the integration interactor
     ld.add_action(

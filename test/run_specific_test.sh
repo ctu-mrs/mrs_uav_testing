@@ -11,6 +11,6 @@ done
 
 colcon test-result --delete-yes
 
-colcon test --packages-select mrs_uav_testing --ctest-args -R 'test_goto_absolute'
+colcon test --packages-select mrs_uav_testing --ctest-args -R 'test_takeoff'
 
 colcon test-result --all --verbose
