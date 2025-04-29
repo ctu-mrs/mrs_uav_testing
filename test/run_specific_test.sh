@@ -11,6 +11,6 @@ done
 
 colcon test-result --delete-yes
 
-colcon test --packages-select mrs_uav_testing --ctest-args -R 'takeoff'
+colcon test --packages-select mrs_uav_testing --ctest-args -R 'takeoff' --event-handlers console_direct+
 
 colcon test-result --all --verbose
