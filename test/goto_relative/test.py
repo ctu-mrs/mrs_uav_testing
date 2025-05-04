@@ -7,7 +7,7 @@ import launch
 import launch_ros
 import launch_testing.actions
 import launch_testing.asserts
-from launch.actions import IncludeLaunchDescription, GroupAction
+from launch.actions import IncludeLaunchDescription, GroupAction, SetEnvironmentVariable
 import rclpy
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution, TextSubstitution
@@ -18,11 +18,27 @@ from std_msgs.msg import Bool
 
 def generate_test_description():
 
+    SetEnvironmentVariable('RMW_IMPLEMENTATION', 'rmw_zenoh_cpp')
+
     ld = launch.LaunchDescription()
 
     uav_type="x500"
     uav_name="uav1"
     platform_config=get_package_share_directory("mrs_multirotor_simulator")+"/config/mrs_uav_system/"+uav_type+".yaml"
+
+    launch_file_path = os.path.abspath(__file__)
+    launch_dir = os.path.dirname(launch_file_path)
+
+    test_name = os.path.basename(launch_dir)
+
+    ld.add_action(
+            launch_ros.actions.Node(
+                package='rmw_zenoh_cpp',
+                namespace='',
+                executable='rmw_zenohd',
+                name='zenoh_router',
+            )
+        )
 
     ld.add_action(
         GroupAction([
@@ -83,8 +99,8 @@ def generate_test_description():
             launch_ros.actions.Node(
                 package='mrs_uav_testing',
                 namespace='',
-                executable='test_goto_relative',
-                name='test_goto_relative',
+                executable='test_'+test_name,
+                name='test_'+test_name,
             )
         )
 

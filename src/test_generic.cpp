@@ -112,7 +112,7 @@ void TestGeneric::initialize(void) {
 
   executor_->add_node(node_);
 
-  RCLCPP_INFO(node_->get_logger(), "[%s]: ROS node initialized", name_.c_str());
+  RCLCPP_INFO(node_->get_logger(), "ROS node initialized");
 
   // | ----------------------- load params ---------------------- |
 
