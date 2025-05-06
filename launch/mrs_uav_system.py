@@ -39,7 +39,7 @@ def generate_launch_description():
 
     ld.add_action(declare_run_automatic_start)
 
-    # #} end of standalone
+    # #} end of standalorun_automatic_start
 
     # #{ custom_config
 
