@@ -41,6 +41,20 @@ def generate_launch_description():
 
     # #} end of standalorun_automatic_start
 
+    # #{ standalone
+
+    standalone = LaunchConfiguration('standalone')
+
+    declare_standalone = DeclareLaunchArgument(
+        'standalone',
+        default_value='false',
+        description='Whether to start in standalone mode.'
+    )
+
+    ld.add_action(declare_standalone)
+
+    # #} end of standalorun_automatic_start
+
     # #{ custom_config
 
     custom_config = LaunchConfiguration('custom_config')
@@ -186,6 +200,7 @@ def generate_launch_description():
                 FindPackageShare('mrs_uav_core'), '/launch/core.py'
             ]),
             launch_arguments={
+                'standalone': standalone,
                 'custom_config': custom_config,
                 'platform_config': platform_config,
                 'world_config': world_config,

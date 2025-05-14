@@ -46,7 +46,9 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   sch_offboard_          = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/hw_api/offboard");
   sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/midair_activation");
   sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land");
+  sch_eland_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland");
   sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home");
+  sch_land_there_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there");
   sch_switch_estimator_  = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
   sch_switch_controller_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_controller");
   sch_switch_tracker_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker");
@@ -403,6 +405,78 @@ tuple<bool, string> UAVHandler::land(void) {
 
 //}
 
+/* eland() //{ */
+
+tuple<bool, string> UAVHandler::eland(void) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  if (!isFlyingNormally()) {
+    return {false, "not flying normally in the beginning"};
+  }
+
+  // | -------------------- call eland service ------------------- |
+
+  RCLCPP_INFO(node_->get_logger(), "[%s]: calling for emergency landing", name_.c_str());
+
+  {
+    std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
+
+    {
+      auto response = sch_eland_.callSync(request);
+
+      if (!response || !response.value()->success) {
+        return {false, "eland service call failed"};
+      }
+    }
+  }
+
+  // | ---------------------- wait a second --------------------- |
+
+  sleep(1.0);
+
+  // | -------- wait till the right controller is active -------- |
+
+  while (true) {
+
+    if (!rclcpp::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "EmergencyController") {
+      break;
+    }
+
+    sleep(0.01);
+  }
+
+  // | ------------- wait for the elanding to finish ------------- |
+
+  while (true) {
+
+    if (!rclcpp::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[%s]: waiting for the elanding to finish", name_.c_str());
+
+    if (!isOutputEnabled()) {
+
+      return {true, "elanding finished"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
 /* landHome() //{ */
 
 tuple<bool, string> UAVHandler::landHome(void) {
@@ -429,6 +503,80 @@ tuple<bool, string> UAVHandler::landHome(void) {
 
       if (!response || !response.value()->success) {
         return {false, "land home service call failed"};
+      }
+    }
+  }
+
+  // | ---------------------- wait a second --------------------- |
+
+  sleep(1.0);
+
+  // | -------- wait till the right controller is active -------- |
+
+  while (true) {
+
+    if (!rclcpp::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "MpcController") {
+      break;
+    }
+  }
+
+  // | ------------- wait for the landing to finish ------------- |
+
+  while (true) {
+
+    if (!rclcpp::ok()) {
+      return {false, "shut down from outside"};
+    }
+
+    RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[%s]: waiting for the landing to finish", name_.c_str());
+
+    if (!isOutputEnabled()) {
+
+      return {true, "landing finished"};
+    }
+
+    sleep(0.01);
+  }
+
+  return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* landThere() //{ */
+
+tuple<bool, string> UAVHandler::landThere(const double x, const double y, const double heading) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  if (!isFlyingNormally()) {
+    return {false, "not flying normally in the beginning"};
+  }
+
+  // | ----------------- call land home service ----------------- |
+
+  RCLCPP_INFO(node_->get_logger(), "[%s]: calling for landing there", name_.c_str());
+
+  {
+    std::shared_ptr<mrs_msgs::srv::ReferenceStampedSrv::Request> request = std::make_shared<mrs_msgs::srv::ReferenceStampedSrv::Request>();
+
+    request->reference.position.x = x;
+    request->reference.position.y = y;
+    request->reference.heading    = heading;
+
+    {
+      auto response = sch_land_there_.callSync(request);
+
+      if (!response || !response.value()->success) {
+        return {false, "land there service call failed"};
       }
     }
   }

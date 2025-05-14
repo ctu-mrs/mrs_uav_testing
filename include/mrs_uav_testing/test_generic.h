@@ -66,10 +66,11 @@ public:
 
   void sleep(const double &duration);
 
-  // TODO: consider if we need to add initialization checks
   tuple<bool, string> takeoff(void);
   tuple<bool, string> land(void);
+  tuple<bool, string> eland(void);
   tuple<bool, string> landHome(void);
+  tuple<bool, string> landThere(const double x, const double y, const double heading);
   tuple<bool, string> activateMidAir(void);
 
   tuple<bool, string> gotoAbs(const double &x, const double &y, const double &z, const double &hdg);
@@ -147,16 +148,18 @@ public:
   mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>               sh_max_height_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>               sh_speed_;
 
-  mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool> sch_arming_;
-  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger> sch_offboard_;
-  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger> sch_midair_activation_;
-  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger> sch_land_;
-  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger> sch_land_home_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>  sch_switch_estimator_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>  sch_switch_controller_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>  sch_switch_tracker_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>  sch_set_gains_;
-  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>  sch_set_constraints_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool>             sch_arming_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_offboard_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_midair_activation_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_land_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_eland_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_land_home_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv> sch_land_there_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_switch_estimator_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_switch_controller_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_switch_tracker_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_gains_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_constraints_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_fcu_;
