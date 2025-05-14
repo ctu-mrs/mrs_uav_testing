@@ -122,6 +122,17 @@ void TestGeneric::initialize(void) {
 
   pl_->loadParam("test", _test_name_, std::string());
 
+  std::vector<std::string> config_files;
+
+  pl_->loadParam("config_files", config_files, std::vector<std::string>());
+
+  if (config_files.size() > 0) {
+
+    for (size_t i = 0; i < config_files.size(); i++) {
+      pl_->addYamlFile(config_files[i]);
+    }
+  }
+
   name_ = "test/" + _test_name_;
 
   // | ----------------------- transformer ---------------------- |
