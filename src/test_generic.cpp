@@ -54,6 +54,7 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   sch_switch_tracker_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker");
   sch_set_gains_         = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/gain_manager/set_gains");
   sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
+  sch_takeoff_           = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/takeoff");
 
   sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_fcu_             = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_fcu");

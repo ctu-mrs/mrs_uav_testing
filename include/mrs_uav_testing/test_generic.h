@@ -160,6 +160,7 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_switch_tracker_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_gains_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_constraints_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_takeoff_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_fcu_;

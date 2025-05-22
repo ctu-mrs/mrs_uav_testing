@@ -4,8 +4,7 @@ import launch
 import os
 import sys
 
-from launch.actions import IncludeLaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription, GroupAction, SetEnvironmentVariable, DeclareLaunchArgument
 from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
@@ -183,30 +182,34 @@ def generate_launch_description():
     uav_name=os.getenv('UAV_NAME', "uav1")
 
     ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                FindPackageShare('mrs_uav_autostart'), '/launch/automatic_start.py'
-            ]),
-            launch_arguments={
-                'custom_config': automatic_start_config,
-            }.items(),
-            condition=IfCondition(run_automatic_start)
-        )
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([
+                    FindPackageShare('mrs_uav_autostart'), '/launch/automatic_start.py'
+                ]),
+                launch_arguments={
+                    'custom_config': automatic_start_config,
+                }.items(),
+                condition=IfCondition(run_automatic_start)
+            )
+        ])
     )
 
     ld.add_action(
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                FindPackageShare('mrs_uav_core'), '/launch/core.py'
-            ]),
-            launch_arguments={
-                'standalone': standalone,
-                'custom_config': custom_config,
-                'platform_config': platform_config,
-                'world_config': world_config,
-                'network_config': network_config,
-            }.items()
-        )
+        GroupAction([
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([
+                    FindPackageShare('mrs_uav_core'), '/launch/core.py'
+                ]),
+                launch_arguments={
+                    'standalone': standalone,
+                    'custom_config': custom_config,
+                    'platform_config': platform_config,
+                    'world_config': world_config,
+                    'network_config': network_config,
+                }.items()
+            )
+        ])
     )
 
     return ld
