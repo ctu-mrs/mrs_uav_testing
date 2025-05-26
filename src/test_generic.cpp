@@ -404,7 +404,7 @@ tuple<bool, string> UAVHandler::land(void) {
 
     RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[%s]: waiting for the landing to finish", name_.c_str());
 
-    if (!isOutputEnabled()) {
+    if (!isArmed()) {
 
       return {true, "landing finished"};
     }
@@ -2145,6 +2145,19 @@ bool UAVHandler::isOutputEnabled(void) {
 
   if (sh_control_manager_diag_.hasMsg()) {
     return sh_control_manager_diag_.getMsg()->output_enabled;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* isArmed() //{ */
+
+bool UAVHandler::isArmed(void) {
+
+  if (sh_hw_api_status_.hasMsg()) {
+    return sh_hw_api_status_.getMsg()->armed;
   } else {
     return false;
   }
