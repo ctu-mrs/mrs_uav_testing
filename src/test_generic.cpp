@@ -190,6 +190,17 @@ void TestGeneric::join() {
 
 //}
 
+/* stop() //{ */
+
+void TestGeneric::stop() {
+
+  printf("[TestGeneric]: stopping");
+
+  executor_->cancel();
+}
+
+//}
+
 /* reportTestResult() //{ */
 
 void TestGeneric::reportTestResult(const bool result) {

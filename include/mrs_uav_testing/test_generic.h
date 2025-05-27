@@ -232,6 +232,8 @@ public:
 
   void join();
 
+  void stop();
+
   void reportTestResult(const bool result);
 
 protected:
