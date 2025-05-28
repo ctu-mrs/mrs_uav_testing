@@ -175,6 +175,8 @@ void TestGeneric::spin() {
   printf("[TestGeneric]: spinning");
 
   executor_->spin();
+
+  printf("[TestGeneric]: executor spin() has died, shit");
 }
 
 //}
