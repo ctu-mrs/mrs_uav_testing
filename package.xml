@@ -18,6 +18,7 @@
   <depend>mrs_msgs</depend>
   <depend>launch_ros</depend>
   <depend>yaml-cpp</depend>
+  <depend>backward_ros</depend>
 
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>launch</test_depend>

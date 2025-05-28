@@ -27,6 +27,7 @@ set(DEPENDENCIES
   mrs_lib
   mrs_msgs
   tf2_ros
+  backward_ros
   )
 
 set(LIBRARIES
