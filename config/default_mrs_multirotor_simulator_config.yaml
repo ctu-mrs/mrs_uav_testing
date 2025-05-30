@@ -1,8 +1,6 @@
 individual_takeoff_platform:
   enabled: true
 
-realtime_factor: 1.0
-
 uav_names: [
   "uav1",
 ]

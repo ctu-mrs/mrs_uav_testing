@@ -121,7 +121,13 @@ void TestGeneric::initialize(void) {
 
   pl_ = std::make_shared<mrs_lib::ParamLoader>(node_, "Test");
 
-  pl_->loadParam("test", _test_name_, std::string());
+  pl_->loadParam("test_name", _test_name_, std::string());
+
+  if (!pl_->loadedSuccessfully()) {
+    RCLCPP_INFO(node_->get_logger(), "failed to load mandatory parameters");
+    rclcpp::shutdown();
+    exit(1);
+  }
 
   std::vector<std::string> config_files;
 
@@ -708,15 +714,33 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
     std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
 
     {
+      std::cout << "Test: calling midair activation" << std::endl;
+
       auto response = sch_midair_activation_.callSync(request);
 
-      if (!response || !response.value()->success) {
+      std::cout << "Test: midair activation result returned" << std::endl;
+
+      if (!response) {
+
+        std::cout << "Test: midair call activation failed" << std::endl;
+
         return {false, "midair activation service call failed"};
+
+      } else {
+
+        if (!response.value()->success) {
+
+          std::cout << "Test: midair call activation failed: " << response.value()->message << std::endl;
+
+          return {false, "midair activation service call failed"};
+        }
       }
     }
   }
 
   // | --------------- waiting for flying normally -------------- |
+
+  std::cout << "Test: waiting for flying normally" << std::endl;
 
   while (true) {
 
