@@ -37,6 +37,7 @@
 #include <mrs_msgs/srv/transform_reference_srv.hpp>
 #include <mrs_msgs/srv/transform_vector3_srv.hpp>
 #include <mrs_msgs/srv/transform_pose_srv.hpp>
+#include <mrs_msgs/srv/constraints_override.hpp>
 
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -123,6 +124,7 @@ public:
   tuple<bool, string> switchTracker(const std::string &tracker);
   tuple<bool, string> setGains(const std::string &gains);
   tuple<bool, string> setConstraints(const std::string &constraints);
+  tuple<bool, string> overrideConstraints(const double hor_a, const double ver_a);
   tuple<bool, string> hover();
 
   tuple<std::optional<mrs_msgs::msg::TrajectoryReference>, std::optional<Eigen::VectorXd>, string> getPathSrv(const mrs_msgs::msg::Path &path_in);
@@ -162,6 +164,7 @@ public:
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_gains_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_set_constraints_;
   mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_takeoff_;
+  mrs_lib::ServiceClientHandler<mrs_msgs::srv::ConstraintsOverride> sch_override_constraints_;
 
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>                sch_goto_fcu_;

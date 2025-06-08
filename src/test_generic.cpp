@@ -42,19 +42,20 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
 
   // | --------------------- service clients -------------------- |
 
-  sch_arming_            = mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool>(node_, "/" + _uav_name_ + "/hw_api/arming");
-  sch_offboard_          = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/hw_api/offboard");
-  sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/midair_activation");
-  sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land");
-  sch_eland_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland");
-  sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home");
-  sch_land_there_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there");
-  sch_switch_estimator_  = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
-  sch_switch_controller_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_controller");
-  sch_switch_tracker_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker");
-  sch_set_gains_         = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/gain_manager/set_gains");
-  sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
-  sch_takeoff_           = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/takeoff");
+  sch_arming_               = mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool>(node_, "/" + _uav_name_ + "/hw_api/arming");
+  sch_offboard_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/hw_api/offboard");
+  sch_midair_activation_    = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/midair_activation");
+  sch_land_                 = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land");
+  sch_eland_                = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland");
+  sch_land_home_            = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home");
+  sch_land_there_           = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there");
+  sch_switch_estimator_     = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
+  sch_switch_controller_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_controller");
+  sch_switch_tracker_       = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker");
+  sch_set_gains_            = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/gain_manager/set_gains");
+  sch_set_constraints_      = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
+  sch_takeoff_              = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/takeoff");
+  sch_override_constraints_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ConstraintsOverride>(node_, "/" + _uav_name_ + "/constraint_manager/constraints_override");
 
   sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto");
   sch_goto_fcu_             = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_fcu");
@@ -1528,6 +1529,30 @@ tuple<bool, string> UAVHandler::setConstraints(const std::string &constraints) {
 }
 
 //}
+
+tuple<bool, string> UAVHandler::overrideConstraints(const double hor_a, const double ver_a) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  std::shared_ptr<mrs_msgs::srv::ConstraintsOverride::Request> request = std::make_shared<mrs_msgs::srv::ConstraintsOverride::Request>();
+
+  request->acceleration_horizontal = hor_a;
+  request->acceleration_vertical   = ver_a;
+
+  {
+    auto response = sch_override_constraints_.callSync(request);
+
+    if (!response || !response.value()->success) {
+      return {false, "constraints override service call failed"};
+    }
+  }
+
+  return {true, "constrainsts were overriden"};
+}
 
 /* gotoTrajectoryStart() //{ */
 
