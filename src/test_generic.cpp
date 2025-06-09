@@ -1291,7 +1291,7 @@ tuple<bool, string> UAVHandler::setHeadingRelative(const double &setpoint) {
       return {false, "could not obtain current heading"};
     }
 
-    if (abs(sradians::diff(initial_heading.value(), heading.value())) < 0.1) {
+    if (abs(sradians::diff(initial_heading.value() + setpoint, heading.value())) < 0.1) {
       return {true, "heading goal reached"};
     }
 
