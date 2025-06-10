@@ -70,6 +70,7 @@ public:
   tuple<bool, string> takeoff(void);
   tuple<bool, string> land(void);
   tuple<bool, string> eland(void);
+  tuple<bool, string> failsafe(void);
   tuple<bool, string> landHome(void);
   tuple<bool, string> landThere(const double x, const double y, const double heading);
   tuple<bool, string> activateMidAir(void);
@@ -156,6 +157,7 @@ public:
   mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_midair_activation_;
   mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_land_;
   mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_eland_;
+  mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_failsafe_;
   mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>             sch_land_home_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv> sch_land_there_;
   mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>              sch_switch_estimator_;
