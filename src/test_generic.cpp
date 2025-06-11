@@ -254,6 +254,50 @@ std::tuple<std::optional<std::shared_ptr<UAVHandler>>, string> TestGeneric::getU
 
 //}
 
+/* arming() //{ */
+
+tuple<bool, string> UAVHandler::arming(const bool input) {
+
+  std::shared_ptr<std_srvs::srv::SetBool::Request> request = std::make_shared<std_srvs::srv::SetBool::Request>();
+
+  request->data = input;
+
+  {
+    auto response = sch_arming_.callSync(request);
+
+    if (!response) {
+      return {false, "arming service call failed"};
+    } else if (!response.value()->success) {
+      return {false, "arming service call failed: " + response.value()->message};
+    }
+  }
+
+  return {true, "armed"};
+}
+
+//}
+
+/* offboard() //{ */
+
+tuple<bool, string> UAVHandler::offboard() {
+
+  std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
+
+  {
+    auto response = sch_offboard_.callSync(request);
+
+    if (!response) {
+      return {false, "offboard service call failed"};
+    } else if (!response.value()->success) {
+      return {false, "offboard service call failed: " + response.value()->message};
+    }
+  }
+
+  return {true, "offboard trigerred"};
+}
+
+//}
+
 /* takeoff() //{ */
 
 tuple<bool, string> UAVHandler::takeoff(void) {
@@ -287,17 +331,11 @@ tuple<bool, string> UAVHandler::takeoff(void) {
   RCLCPP_INFO(node_->get_logger(), "[%s]: arming the drone", name_.c_str());
 
   {
+    auto [success, message] = arming(true);
 
-    std::shared_ptr<std_srvs::srv::SetBool::Request> request = std::make_shared<std_srvs::srv::SetBool::Request>();
-
-    request->data = true;
-
-    {
-      auto response = sch_arming_.callSync(request);
-
-      if (!response || !response.value()->success) {
-        return {false, "arming service call failed"};
-      }
+    if (!success) {
+      RCLCPP_ERROR(node_->get_logger(), "arming failed with message: '%s'", message.c_str());
+      return {false, message};
     }
   }
 
@@ -322,14 +360,11 @@ tuple<bool, string> UAVHandler::takeoff(void) {
   // | ------------------- switch to offboard ------------------- |
 
   {
-    std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
+    auto [success, message] = offboard();
 
-    {
-      auto response = sch_offboard_.callSync(request);
-
-      if (!response || !response.value()->success) {
-        return {false, "offboard service call failed"};
-      }
+    if (!success) {
+      RCLCPP_ERROR(node_->get_logger(), "offboard trigger failed with message: '%s'", message.c_str());
+      return {false, message};
     }
   }
 
@@ -362,6 +397,27 @@ tuple<bool, string> UAVHandler::takeoff(void) {
   }
 
   return {false, "reached end of the method without assertion"};
+}
+
+//}
+
+/* takeoffService() //{ */
+
+tuple<bool, string> UAVHandler::takeoffService() {
+
+  std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
+
+  {
+    auto response = sch_takeoff_.callSync(request);
+
+    if (!response) {
+      return {false, "takeoff service call failed"};
+    } else if (!response.value()->success) {
+      return {false, "takeoff service call failed: " + response.value()->message};
+    }
+  }
+
+  return {true, "takeoff trigerred"};
 }
 
 //}

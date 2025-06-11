@@ -68,6 +68,8 @@ public:
   void sleep(const double &duration);
 
   tuple<bool, string> takeoff(void);
+  tuple<bool, string> arming(const bool input);
+  tuple<bool, string> offboard(void);
   tuple<bool, string> land(void);
   tuple<bool, string> eland(void);
   tuple<bool, string> failsafe(void);
@@ -91,6 +93,7 @@ public:
   tuple<bool, string> setReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> setReferenceService(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> gotoFcuService(const double &x, const double &y, const double &z, const double &hdg);
+  tuple<bool, string> takeoffService(void);
 
   tuple<bool, string> gotoReference(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
   tuple<bool, string> gotoReferenceTopic(const double &x, const double &y, const double &z, const double &hdg, const std::string &frame_id);
