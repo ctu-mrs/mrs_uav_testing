@@ -8,16 +8,14 @@ add_definitions(-Wall)
 add_definitions(-Wextra)
 add_definitions(-Wpedantic)
 
-if(MRS_ENABLE_TESTING)
-  message(WARNING "Setting optimizaton levels for tests")
+if(ENABLE_COVERAGE)
+  message(WARNING "building for coverage, the performance might be limited")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs")
+
   add_definitions("-O1")
   add_definitions("-g")
-endif()
-
-if(COVERAGE)
-  message(WARNING "building with --coverage, the performance might be limited")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 endif()
 
 set(DEPENDENCIES
@@ -59,8 +57,7 @@ ament_target_dependencies(MrsUavTesting_TestGeneric
 ## |                           Testing                          |
 ## --------------------------------------------------------------
 
-# BUILD_TESTING is true by default when building with colcon
-if(BUILD_TESTING)
+if(ENABLE_TESTS)
 
   add_subdirectory(test)
 
