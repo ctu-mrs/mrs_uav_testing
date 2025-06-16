@@ -26,6 +26,18 @@ def generate_launch_description():
     pkg_name = "mrs_uav_testing"
     this_pkg_path = get_package_share_directory(pkg_name)
 
+    # #{ uav_name
+
+    uav_name = LaunchConfiguration('uav_name')
+
+    ld.add_action(DeclareLaunchArgument(
+        'uav_name',
+        default_value=os.getenv('UAV_NAME', "uav1"),
+        description="The uav name used for namespacing.",
+    ))
+
+    # #} end of custom_config
+
     # #{ run_automatic_start
 
     run_automatic_start = LaunchConfiguration('run_automatic_start')
@@ -179,8 +191,6 @@ def generate_launch_description():
 
     # #} end of automatic_start_config
 
-    uav_name=os.getenv('UAV_NAME', "uav1")
-
     ld.add_action(
         GroupAction([
             IncludeLaunchDescription(
@@ -189,6 +199,7 @@ def generate_launch_description():
                 ]),
                 launch_arguments={
                     'custom_config': automatic_start_config,
+                    'uav_name': uav_name,
                 }.items(),
                 condition=IfCondition(run_automatic_start)
             )
@@ -202,6 +213,7 @@ def generate_launch_description():
                     FindPackageShare('mrs_uav_core'), '/launch/core.py'
                 ]),
                 launch_arguments={
+                    'uav_name': uav_name,
                     'standalone': standalone,
                     'custom_config': custom_config,
                     'platform_config': platform_config,
