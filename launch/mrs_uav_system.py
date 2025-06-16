@@ -191,6 +191,18 @@ def generate_launch_description():
 
     # #} end of automatic_start_config
 
+    # #{ use_sim_time
+
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
+    ld.add_action(DeclareLaunchArgument(
+        'use_sim_time',
+        default_value="true",
+        description="Should the node subscribe to sim time?",
+    ))
+
+    # #} end of custom_config
+
     ld.add_action(
         GroupAction([
             IncludeLaunchDescription(
@@ -200,6 +212,7 @@ def generate_launch_description():
                 launch_arguments={
                     'custom_config': automatic_start_config,
                     'uav_name': uav_name,
+                    'use_sim_time': use_sim_time,
                 }.items(),
                 condition=IfCondition(run_automatic_start)
             )
@@ -215,6 +228,7 @@ def generate_launch_description():
                 launch_arguments={
                     'uav_name': uav_name,
                     'standalone': standalone,
+                    'use_sim_time': use_sim_time,
                     'custom_config': custom_config,
                     'platform_config': platform_config,
                     'world_config': world_config,
