@@ -48,6 +48,7 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   sch_land_                 = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land");
   sch_eland_                = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland");
   sch_failsafe_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe");
+  sch_escalating_failsafe_  = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe_escalating");
   sch_land_home_            = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home");
   sch_land_there_           = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there");
   sch_switch_estimator_     = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
@@ -597,6 +598,37 @@ tuple<bool, string> UAVHandler::failsafe(void) {
   }
 
   return {true, "failsafe called"};
+}
+
+//}
+
+/* escalatingFailsafe() //{ */
+
+tuple<bool, string> UAVHandler::escalatingFailsafe(void) {
+
+  auto res = checkPreconditions();
+
+  if (!(std::get<0>(res))) {
+    return res;
+  }
+
+  // | ---------------- call failsafe service ------------------- |
+
+  RCLCPP_INFO(node_->get_logger(), "[%s]: calling for escalating failsafe", name_.c_str());
+
+  {
+    std::shared_ptr<std_srvs::srv::Trigger::Request> request = std::make_shared<std_srvs::srv::Trigger::Request>();
+
+    {
+      auto response = sch_escalating_failsafe_.callSync(request);
+
+      if (!response || !response.value()->success) {
+        return {false, "escalating failsafe service call failed"};
+      }
+    }
+  }
+
+  return {true, "escalating failsafe called"};
 }
 
 //}
