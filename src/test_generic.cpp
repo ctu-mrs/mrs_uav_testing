@@ -1622,6 +1622,8 @@ tuple<bool, string> UAVHandler::setConstraints(const std::string &constraints) {
 
 //}
 
+/* overrideConstraints() //{ */
+
 tuple<bool, string> UAVHandler::overrideConstraints(const double hor_a, const double ver_a) {
 
   auto res = checkPreconditions();
@@ -1645,6 +1647,8 @@ tuple<bool, string> UAVHandler::overrideConstraints(const double hor_a, const do
 
   return {true, "constrainsts were overriden"};
 }
+
+//}
 
 /* gotoTrajectoryStart() //{ */
 
@@ -1979,9 +1983,9 @@ tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> UAVH
     auto response = sch_validate_reference_array_.callSync(request);
 
     if (!response) {
-      return {false, *response.value()};
+      return {false, {}};
     } else {
-      return {true, *response.value()};
+      return {true, *(response.value())};
     }
   }
 }
