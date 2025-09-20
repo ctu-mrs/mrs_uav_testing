@@ -1645,7 +1645,7 @@ tuple<bool, string> UAVHandler::setConstraints(const std::string &constraints) {
     auto response = sch_set_constraints_.callSync(request);
 
     if (!response || !response.value()->success) {
-      return {false, "gain setting service call failed"};
+      return {false, "constraints setting service call failed"};
     }
   }
 
