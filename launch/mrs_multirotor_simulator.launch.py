@@ -55,7 +55,7 @@ def generate_launch_description():
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
-                FindPackageShare('mrs_multirotor_simulator'), '/launch/multirotor_simulator.py'
+                FindPackageShare('mrs_multirotor_simulator'), '/launch/multirotor_simulator.launch.py'
             ]),
             launch_arguments={
                 'custom_config': custom_config,

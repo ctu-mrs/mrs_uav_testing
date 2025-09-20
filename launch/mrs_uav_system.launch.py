@@ -207,7 +207,7 @@ def generate_launch_description():
         GroupAction([
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([
-                    FindPackageShare('mrs_uav_autostart'), '/launch/automatic_start.py'
+                    FindPackageShare('mrs_uav_autostart'), '/launch/automatic_start.launch.py'
                 ]),
                 launch_arguments={
                     'custom_config': automatic_start_config,
@@ -223,7 +223,7 @@ def generate_launch_description():
         GroupAction([
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([
-                    FindPackageShare('mrs_uav_core'), '/launch/core.py'
+                    FindPackageShare('mrs_uav_core'), '/launch/core.launch.py'
                 ]),
                 launch_arguments={
                     'uav_name': uav_name,
