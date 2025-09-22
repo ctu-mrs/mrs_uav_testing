@@ -59,9 +59,11 @@ using namespace std;
 class UAVHandler {
 
 public:
-  UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
+  UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts,
+             std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
 
-  virtual void initialize(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
+  virtual void initialize(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts,
+                          std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api = true);
 
   virtual tuple<bool, string> checkPreconditions(void);
 
@@ -138,11 +140,15 @@ public:
 
   tuple<bool, string> validateReference(const mrs_msgs::msg::ReferenceStamped &msg);
 
-  tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> validateReferenceArray(const mrs_msgs::srv::ValidateReferenceArray::Request &request);
+  tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> validateReferenceArray(
+      const mrs_msgs::srv::ValidateReferenceArray::Request &request);
 
-  std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> transformPose(const geometry_msgs::msg::PoseStamped &msg, std::string target_frame);
-  tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>>      transformReference(const mrs_msgs::msg::ReferenceStamped &msg, std::string target_frame);
-  tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>>   transformVector3(const geometry_msgs::msg::Vector3Stamped &msg, std::string target_frame);
+  std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> transformPose(const geometry_msgs::msg::PoseStamped &msg,
+                                                                                                             std::string target_frame);
+  tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>>      transformReference(const mrs_msgs::msg::ReferenceStamped &msg,
+                                                                                                                  std::string target_frame);
+  tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>>   transformVector3(const geometry_msgs::msg::Vector3Stamped &msg,
+                                                                                                                std::string target_frame);
 
   mrs_lib::SubscriberHandler<mrs_msgs::msg::ControlManagerDiagnostics>    sh_control_manager_diag_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::DynamicsConstraints>          sh_current_constraints_;
@@ -216,6 +222,9 @@ protected:
 
   rclcpp::Node::SharedPtr  node_;
   rclcpp::Clock::SharedPtr clock_;
+
+  rclcpp::CallbackGroup::SharedPtr cbkgrp_subs_;
+  rclcpp::CallbackGroup::SharedPtr cbkgrp_sc_;
 
   string name_;
   bool   use_hw_api_ = true;

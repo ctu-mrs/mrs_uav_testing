@@ -5,7 +5,8 @@ namespace mrs_uav_testing
 
 /* UAVHandler::UAVHandler //{ */
 
-UAVHandler::UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
+UAVHandler::UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts,
+                       std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
 
   initialize(node, uav_name, shopts, transformer, use_hw_api);
 }
@@ -14,7 +15,11 @@ UAVHandler::UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name,
 
 /* UAVHandler::initialize() //{ */
 
-void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts, std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
+void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts,
+                            std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
+
+  cbkgrp_subs_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  cbkgrp_sc_   = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   _uav_name_ = uav_name;
   shopts_    = shopts;
@@ -22,68 +27,81 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   clock_     = node->get_clock();
   name_      = shopts->node_name;
 
+  shopts_->subscription_options.callback_group = cbkgrp_subs_;
+
   transformer_ = transformer;
 
   use_hw_api_ = use_hw_api;
 
-  sh_control_manager_diag_    = mrs_lib::SubscriberHandler<mrs_msgs::msg::ControlManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
-  sh_current_constraints_     = mrs_lib::SubscriberHandler<mrs_msgs::msg::DynamicsConstraints>(*shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
-  sh_uav_manager_diag_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
-  sh_tracker_cmd_             = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(*shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
-  sh_estim_manager_diag_      = mrs_lib::SubscriberHandler<mrs_msgs::msg::EstimationDiagnostics>(*shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
-  sh_constraint_manager_diag_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::ConstraintManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
-  sh_gain_manager_diag_       = mrs_lib::SubscriberHandler<mrs_msgs::msg::GainManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_               = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavState>(*shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_height_agl_              = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_              = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_speed_                   = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
+  sh_control_manager_diag_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::ControlManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/control_manager/diagnostics");
+  sh_current_constraints_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::DynamicsConstraints>(*shopts_, "/" + _uav_name_ + "/control_manager/current_constraints");
+  sh_uav_manager_diag_    = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/uav_manager/diagnostics");
+  sh_tracker_cmd_         = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(*shopts_, "/" + _uav_name_ + "/control_manager/tracker_cmd");
+  sh_estim_manager_diag_  = mrs_lib::SubscriberHandler<mrs_msgs::msg::EstimationDiagnostics>(*shopts_, "/" + _uav_name_ + "/estimation_manager/diagnostics");
+  sh_constraint_manager_diag_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::ConstraintManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
+  sh_gain_manager_diag_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::GainManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
+  sh_uav_state_         = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavState>(*shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_             = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
 
   sh_hw_api_status_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
 
   // | --------------------- service clients -------------------- |
 
-  sch_arming_               = mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool>(node_, "/" + _uav_name_ + "/hw_api/arming");
-  sch_offboard_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/hw_api/offboard");
-  sch_midair_activation_    = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/midair_activation");
-  sch_land_                 = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land");
-  sch_eland_                = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland");
-  sch_failsafe_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe");
-  sch_escalating_failsafe_  = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe_escalating");
-  sch_land_home_            = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home");
-  sch_land_there_           = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there");
-  sch_switch_estimator_     = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator");
-  sch_switch_controller_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_controller");
-  sch_switch_tracker_       = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker");
-  sch_set_gains_            = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/gain_manager/set_gains");
-  sch_set_constraints_      = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/constraint_manager/set_constraints");
-  sch_takeoff_              = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/takeoff");
-  sch_override_constraints_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ConstraintsOverride>(node_, "/" + _uav_name_ + "/constraint_manager/constraints_override");
+  sch_arming_            = mrs_lib::ServiceClientHandler<std_srvs::srv::SetBool>(node_, "/" + _uav_name_ + "/hw_api/arming", cbkgrp_sc_);
+  sch_offboard_          = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/hw_api/offboard", cbkgrp_sc_);
+  sch_midair_activation_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/midair_activation", cbkgrp_sc_);
+  sch_land_              = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land", cbkgrp_sc_);
+  sch_eland_             = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/eland", cbkgrp_sc_);
+  sch_failsafe_          = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe", cbkgrp_sc_);
+  sch_escalating_failsafe_ =
+      mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/failsafe_escalating", cbkgrp_sc_);
+  sch_land_home_         = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/land_home", cbkgrp_sc_);
+  sch_land_there_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/uav_manager/land_there", cbkgrp_sc_);
+  sch_switch_estimator_  = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/estimation_manager/change_estimator", cbkgrp_sc_);
+  sch_switch_controller_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_controller", cbkgrp_sc_);
+  sch_switch_tracker_    = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/control_manager/switch_tracker", cbkgrp_sc_);
+  sch_set_gains_         = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/gain_manager/set_gains", cbkgrp_sc_);
+  sch_set_constraints_   = mrs_lib::ServiceClientHandler<mrs_msgs::srv::String>(node_, "/" + _uav_name_ + "/constraint_manager/set_constraints", cbkgrp_sc_);
+  sch_takeoff_           = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/uav_manager/takeoff", cbkgrp_sc_);
+  sch_override_constraints_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::srv::ConstraintsOverride>(node_, "/" + _uav_name_ + "/constraint_manager/constraints_override", cbkgrp_sc_);
 
-  sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto");
-  sch_goto_fcu_             = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_fcu");
-  sch_goto_relative_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_relative");
-  sch_set_heading_          = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/set_heading");
-  sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/set_heading_relative");
-  sch_goto_altitude_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/goto_altitude");
+  sch_goto_                 = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto", cbkgrp_sc_);
+  sch_goto_fcu_             = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_fcu", cbkgrp_sc_);
+  sch_goto_relative_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec4>(node_, "/" + _uav_name_ + "/control_manager/goto_relative", cbkgrp_sc_);
+  sch_set_heading_          = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/set_heading", cbkgrp_sc_);
+  sch_set_heading_relative_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/set_heading_relative", cbkgrp_sc_);
+  sch_goto_altitude_        = mrs_lib::ServiceClientHandler<mrs_msgs::srv::Vec1>(node_, "/" + _uav_name_ + "/control_manager/goto_altitude", cbkgrp_sc_);
 
-  sch_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/control_manager/reference");
+  sch_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ReferenceStampedSrv>(node_, "/" + _uav_name_ + "/control_manager/reference", cbkgrp_sc_);
 
-  sch_goto_trajectory_start_      = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start");
-  sch_start_trajectory_tracking_  = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking");
-  sch_stop_trajectory_tracking_   = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking");
-  sch_resume_trajectory_tracking_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/resume_trajectory_tracking");
+  sch_goto_trajectory_start_ =
+      mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/goto_trajectory_start", cbkgrp_sc_);
+  sch_start_trajectory_tracking_ =
+      mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/start_trajectory_tracking", cbkgrp_sc_);
+  sch_stop_trajectory_tracking_ =
+      mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/stop_trajectory_tracking", cbkgrp_sc_);
+  sch_resume_trajectory_tracking_ =
+      mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/resume_trajectory_tracking", cbkgrp_sc_);
 
-  sch_hover_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/hover");
+  sch_hover_ = mrs_lib::ServiceClientHandler<std_srvs::srv::Trigger>(node_, "/" + _uav_name_ + "/control_manager/hover", cbkgrp_sc_);
 
-  sch_path_     = mrs_lib::ServiceClientHandler<mrs_msgs::srv::PathSrv>(node_, "/" + _uav_name_ + "/trajectory_generation/path");
-  sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::GetPathSrv>(node_, "/" + _uav_name_ + "/trajectory_generation/get_path");
+  sch_path_     = mrs_lib::ServiceClientHandler<mrs_msgs::srv::PathSrv>(node_, "/" + _uav_name_ + "/trajectory_generation/path", cbkgrp_sc_);
+  sch_get_path_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::GetPathSrv>(node_, "/" + _uav_name_ + "/trajectory_generation/get_path", cbkgrp_sc_);
 
-  sch_validate_reference_       = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ValidateReference>(node_, "/" + _uav_name_ + "/control_manager/validate_reference");
-  sch_validate_reference_array_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::ValidateReferenceArray>(node_, "/" + _uav_name_ + "/control_manager/validate_reference_array");
+  sch_validate_reference_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::srv::ValidateReference>(node_, "/" + _uav_name_ + "/control_manager/validate_reference", cbkgrp_sc_);
+  sch_validate_reference_array_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::srv::ValidateReferenceArray>(node_, "/" + _uav_name_ + "/control_manager/validate_reference_array", cbkgrp_sc_);
 
-  sch_tranform_reference_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformReferenceSrv>(node_, "/" + _uav_name_ + "/control_manager/transform_reference");
-  sch_tranform_vector3_   = mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformVector3Srv>(node_, "/" + _uav_name_ + "/control_manager/transform_vector3");
-  sch_tranform_pose_      = mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformPoseSrv>(node_, "/" + _uav_name_ + "/control_manager/transform_pose");
+  sch_tranform_reference_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformReferenceSrv>(node_, "/" + _uav_name_ + "/control_manager/transform_reference", cbkgrp_sc_);
+  sch_tranform_vector3_ =
+      mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformVector3Srv>(node_, "/" + _uav_name_ + "/control_manager/transform_vector3", cbkgrp_sc_);
+  sch_tranform_pose_ = mrs_lib::ServiceClientHandler<mrs_msgs::srv::TransformPoseSrv>(node_, "/" + _uav_name_ + "/control_manager/transform_pose", cbkgrp_sc_);
 
   // | ----------------------- publishers ----------------------- |
 
@@ -537,7 +555,8 @@ tuple<bool, string> UAVHandler::eland(void) {
       return {false, "shut down from outside"};
     }
 
-    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" && sh_control_manager_diag_.getMsg()->active_controller == "EmergencyController") {
+    if (sh_control_manager_diag_.getMsg()->active_tracker == "LandoffTracker" &&
+        sh_control_manager_diag_.getMsg()->active_controller == "EmergencyController") {
       break;
     }
 
@@ -877,7 +896,8 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
 
     auto control_diag = sh_control_manager_diag_.getMsg();
 
-    if (control_diag->flying_normally && control_diag->active_controller != "MidairActivationController" && control_diag->active_tracker != "MidairActivationTracker") {
+    if (control_diag->flying_normally && control_diag->active_controller != "MidairActivationController" &&
+        control_diag->active_tracker != "MidairActivationTracker") {
       return {true, "midair activation finished"};
     }
 
@@ -1067,7 +1087,8 @@ tuple<bool, string> UAVHandler::gotoFcu(const double &x, const double &y, const 
       return {false, "not flying normally"};
     }
 
-    if (isAtPosition(ref_transformed->reference.position.x, ref_transformed->reference.position.y, ref_transformed->reference.position.z, ref_transformed->reference.heading, 0.3, ref_transformed->header.frame_id)) {
+    if (isAtPosition(ref_transformed->reference.position.x, ref_transformed->reference.position.y, ref_transformed->reference.position.z,
+                     ref_transformed->reference.heading, 0.3, ref_transformed->header.frame_id)) {
       return {true, "goal reached"};
     }
 
@@ -1917,7 +1938,8 @@ tuple<bool, string> UAVHandler::validateReference(const mrs_msgs::msg::Reference
 
 /* transformReference() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>> UAVHandler::transformReference(const mrs_msgs::msg::ReferenceStamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>> UAVHandler::transformReference(
+    const mrs_msgs::msg::ReferenceStamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -1945,7 +1967,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::Refere
 
 /* transformPose() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> UAVHandler::transformPose(const geometry_msgs::msg::PoseStamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> UAVHandler::transformPose(
+    const geometry_msgs::msg::PoseStamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -1973,7 +1996,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::P
 
 /* transformVector3() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>> UAVHandler::transformVector3(const geometry_msgs::msg::Vector3Stamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>> UAVHandler::transformVector3(
+    const geometry_msgs::msg::Vector3Stamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -2001,7 +2025,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::V
 
 /* ValidateReferenceArray() //{ */
 
-tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> UAVHandler::validateReferenceArray(const mrs_msgs::srv::ValidateReferenceArray::Request &request_in) {
+tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> UAVHandler::validateReferenceArray(
+    const mrs_msgs::srv::ValidateReferenceArray::Request &request_in) {
 
   auto res = checkPreconditions();
 
@@ -2139,7 +2164,10 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &z,
     return false;
   }
 
-  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance && abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance && abs(ref_transformed->reference.position.z - uav_state->pose.position.z) < pos_tolerance && abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
+  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance &&
+      abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(ref_transformed->reference.position.z - uav_state->pose.position.z) < pos_tolerance &&
+      abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
 
     return true;
 
@@ -2189,7 +2217,9 @@ bool UAVHandler::isAtPosition(const double &x, const double &y, const double &hd
     return false;
   }
 
-  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance && abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance && abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
+  if (abs(ref_transformed->reference.position.x - uav_state->pose.position.x) < pos_tolerance &&
+      abs(ref_transformed->reference.position.y - uav_state->pose.position.y) < pos_tolerance &&
+      abs(sradians::diff(ref_transformed->reference.heading, heading.value())) < 0.2) {
 
     return true;
 
@@ -2211,7 +2241,8 @@ bool UAVHandler::isReferenceAtPosition(const double &x, const double &y, const d
 
   auto tracker_cmd = sh_tracker_cmd_.getMsg();
 
-  if (abs(x - tracker_cmd->position.x) < pos_tolerance && abs(y - tracker_cmd->position.y) < pos_tolerance && abs(z - tracker_cmd->position.z) < pos_tolerance && abs(sradians::diff(hdg, tracker_cmd->heading)) < 0.2) {
+  if (abs(x - tracker_cmd->position.x) < pos_tolerance && abs(y - tracker_cmd->position.y) < pos_tolerance &&
+      abs(z - tracker_cmd->position.z) < pos_tolerance && abs(sradians::diff(hdg, tracker_cmd->heading)) < 0.2) {
 
     return true;
 
@@ -2286,7 +2317,8 @@ bool UAVHandler::mrsSystemReady(void) {
   bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
   bool got_uav_state               = sh_uav_state_.hasMsg();
 
-  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag && got_uav_state;
+  return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag &&
+         got_uav_state;
 }
 
 //}
