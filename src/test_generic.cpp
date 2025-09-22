@@ -18,8 +18,8 @@ UAVHandler::UAVHandler(const rclcpp::Node::SharedPtr node, std::string uav_name,
 void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_name, std::shared_ptr<mrs_lib::SubscriberHandlerOptions> shopts,
                             std::shared_ptr<mrs_lib::Transformer> transformer, bool use_hw_api) {
 
-  cbkgrp_subs_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-  cbkgrp_sc_   = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  cbkgrp_subs_ = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  cbkgrp_sc_   = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
   _uav_name_ = uav_name;
   shopts_    = shopts;
