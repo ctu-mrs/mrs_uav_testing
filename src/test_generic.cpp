@@ -45,8 +45,7 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   sh_height_agl_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
   sh_max_height_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
   sh_speed_             = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
-
-  sh_hw_api_status_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
+  sh_hw_api_status_     = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
 
   // | --------------------- service clients -------------------- |
 
@@ -364,7 +363,7 @@ tuple<bool, string> UAVHandler::takeoff(void) {
 
   // | --------------------- check if armed --------------------- |
 
-  if (!sh_hw_api_status_.getMsg()->armed) {
+  if (!isArmed()) {
     return {false, "not armed"};
   }
 
@@ -393,7 +392,7 @@ tuple<bool, string> UAVHandler::takeoff(void) {
 
   // | ------------------ check if in offboard ------------------ |
 
-  if (!sh_hw_api_status_.getMsg()->offboard) {
+  if (!isInOffboard()) {
     return {false, "not in offboard"};
   }
 
@@ -501,7 +500,6 @@ tuple<bool, string> UAVHandler::land(void) {
     RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[%s]: waiting for the landing to finish", name_.c_str());
 
     if (!isArmed()) {
-
       return {true, "landing finished"};
     }
 
@@ -848,7 +846,7 @@ tuple<bool, string> UAVHandler::activateMidAir(void) {
 
   // | --------------------- check if armed --------------------- |
 
-  if (!sh_hw_api_status_.getMsg()->armed) {
+  if (!isArmed()) {
     return {false, "not armed"};
   }
 
@@ -2380,6 +2378,19 @@ bool UAVHandler::isArmed(void) {
 
   if (sh_hw_api_status_.hasMsg()) {
     return sh_hw_api_status_.getMsg()->armed;
+  } else {
+    return false;
+  }
+}
+
+//}
+
+/* isInOffboard() //{ */
+
+bool UAVHandler::isInOffboard(void) {
+
+  if (sh_hw_api_status_.hasMsg()) {
+    return sh_hw_api_status_.getMsg()->offboard;
   } else {
     return false;
   }

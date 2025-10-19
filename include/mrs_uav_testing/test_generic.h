@@ -107,6 +107,7 @@ public:
   bool isFlyingNormally(void);
   bool isOutputEnabled(void);
   bool isArmed(void);
+  bool isInOffboard(void);
   bool isAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance, const std::string frame_id = "");
   bool isAtPosition(const double &x, const double &y, const double &hdg, const double &pos_tolerance, const std::string frame_id = "");
   bool isReferenceAtPosition(const double &x, const double &y, const double &z, const double &hdg, const double &pos_tolerance);
