@@ -1936,8 +1936,8 @@ tuple<bool, string> UAVHandler::validateReference(const mrs_msgs::msg::Reference
 
 /* transformReference() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>> UAVHandler::transformReference(
-    const mrs_msgs::msg::ReferenceStamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::ReferenceStamped>>
+UAVHandler::transformReference(const mrs_msgs::msg::ReferenceStamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -1965,8 +1965,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<mrs_msgs::msg::Refere
 
 /* transformPose() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> UAVHandler::transformPose(
-    const geometry_msgs::msg::PoseStamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>>
+UAVHandler::transformPose(const geometry_msgs::msg::PoseStamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -1994,8 +1994,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::P
 
 /* transformVector3() //{ */
 
-std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>> UAVHandler::transformVector3(
-    const geometry_msgs::msg::Vector3Stamped &msg, std::string target_frame) {
+std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::Vector3Stamped>>
+UAVHandler::transformVector3(const geometry_msgs::msg::Vector3Stamped &msg, std::string target_frame) {
 
   auto res = checkPreconditions();
 
@@ -2023,8 +2023,8 @@ std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::V
 
 /* ValidateReferenceArray() //{ */
 
-tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> UAVHandler::validateReferenceArray(
-    const mrs_msgs::srv::ValidateReferenceArray::Request &request_in) {
+tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>>
+UAVHandler::validateReferenceArray(const mrs_msgs::srv::ValidateReferenceArray::Request &request_in) {
 
   auto res = checkPreconditions();
 
@@ -2464,4 +2464,4 @@ std::optional<Eigen::Vector3d> UAVHandler::getVelocity(const std::string frame_i
 
 //}
 
-}  // namespace mrs_uav_testing
+} // namespace mrs_uav_testing
