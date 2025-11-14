@@ -7,8 +7,8 @@ function(add_ros_isolated_launch_test path)
   add_launch_test("${path}" RUNNER "${RUNNER}" ${ARGN})
 endfunction()
 
-add_subdirectory(./takeoff)
+add_subdirectory(takeoff)
 
-add_subdirectory(./goto_absolute)
+add_subdirectory(goto_absolute)
 
-add_subdirectory(./goto_relative)
+add_subdirectory(goto_relative)
