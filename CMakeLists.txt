@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.28)
 project(mrs_uav_testing)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -26,32 +26,35 @@ set(DEPENDENCIES
   mrs_msgs
   tf2_ros
   backward_ros
-  )
-
-set(LIBRARIES
-  MrsUavTesting_TestGeneric
-  )
+)
 
 foreach(DEP IN LISTS DEPENDENCIES)
   find_package(${DEP} REQUIRED)
 endforeach()
 
-include_directories(
-  include
-  ${rclcpp_INCLUDE_DIRS}
-  ${mrs_lib_INCLUDE_DIRS}
-  )
+add_library(MrsUavTesting_MrsUavTesting)
+add_library(mrs_uav_testing::mrs_uav_testing ALIAS MrsUavTesting_MrsUavTesting)
+set_target_properties(MrsUavTesting_MrsUavTesting
+  PROPERTIES
+    EXPORT_NAME mrs_uav_testing
+    OUTPUT_NAME mrs_uav_testing
+)
 
-# Test Generic
+target_sources(MrsUavTesting_MrsUavTesting
+  PRIVATE
+    "src/test_generic.cpp"
+  PUBLIC FILE_SET HEADERS BASE_DIRS "include"
+  FILES
+    "include/mrs_uav_testing/test_generic.h"
+)
 
-add_library(MrsUavTesting_TestGeneric
-  src/test_generic.cpp
-  )
-
-ament_target_dependencies(MrsUavTesting_TestGeneric
-  rclcpp
-  mrs_lib
-  )
+target_link_libraries(MrsUavTesting_MrsUavTesting
+  PUBLIC
+    rclcpp::rclcpp
+    mrs_lib::mrs_lib
+    tf2_ros::tf2_ros
+    ${mrs_msgs_TARGETS}
+)
 
 ## --------------------------------------------------------------
 ## |                           Testing                          |
@@ -67,21 +70,13 @@ endif()
 ## |                           install                          |
 ## --------------------------------------------------------------
 
-ament_export_libraries(
-  ${LIBRARIES}
-)
-
-install(TARGETS
-  ${LIBRARIES}
+install(
+  TARGETS MrsUavTesting_MrsUavTesting
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-)
-
-install(
-  DIRECTORY include
-  DESTINATION .
+  FILE_SET HEADERS DESTINATION "include/${PROJECT_NAME}"
 )
 
 install(
@@ -94,12 +89,16 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-ament_export_include_directories(
-  include
-)
-
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
+)
+
+ament_export_include_directories(
+  "include/${PROJECT_NAME}"
+)
+
+ament_export_libraries(
+  MrsUavTesting_MrsUavTesting
 )
 
 ament_export_dependencies(
