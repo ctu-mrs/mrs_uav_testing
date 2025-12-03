@@ -21,6 +21,7 @@
 #include <mrs_msgs/srv/vec1.hpp>
 #include <mrs_msgs/msg/gain_manager_diagnostics.hpp>
 #include <mrs_msgs/msg/constraint_manager_diagnostics.hpp>
+#include <mrs_msgs/msg/safety_area_manager_diagnostics.hpp>
 #include <mrs_msgs/srv/string.hpp>
 #include <mrs_msgs/msg/uav_state.hpp>
 #include <mrs_msgs/srv/path_srv.hpp>
@@ -157,6 +158,7 @@ public:
   mrs_lib::SubscriberHandler<mrs_msgs::msg::EstimationDiagnostics>        sh_estim_manager_diag_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::GainManagerDiagnostics>       sh_gain_manager_diag_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::ConstraintManagerDiagnostics> sh_constraint_manager_diag_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::SafetyAreaManagerDiagnostics> sh_safety_area_manager_diag_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::UavState>                     sh_uav_state_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>               sh_tracker_cmd_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>               sh_height_agl_;

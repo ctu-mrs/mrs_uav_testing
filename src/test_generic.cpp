@@ -41,11 +41,13 @@ void UAVHandler::initialize(const rclcpp::Node::SharedPtr node, std::string uav_
   sh_constraint_manager_diag_ =
       mrs_lib::SubscriberHandler<mrs_msgs::msg::ConstraintManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/constraint_manager/diagnostics");
   sh_gain_manager_diag_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::GainManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/gain_manager/diagnostics");
-  sh_uav_state_         = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavState>(*shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
-  sh_height_agl_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
-  sh_max_height_        = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
-  sh_speed_             = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
-  sh_hw_api_status_     = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
+  sh_safety_area_manager_diag_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::SafetyAreaManagerDiagnostics>(*shopts_, "/" + _uav_name_ + "/safety_area_manager/diagnostics");
+  sh_uav_state_     = mrs_lib::SubscriberHandler<mrs_msgs::msg::UavState>(*shopts_, "/" + _uav_name_ + "/estimation_manager/uav_state");
+  sh_height_agl_    = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/height_agl");
+  sh_max_height_    = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/estimation_manager/max_flight_z_agl");
+  sh_speed_         = mrs_lib::SubscriberHandler<mrs_msgs::msg::Float64Stamped>(*shopts_, "/" + _uav_name_ + "/control_manager/speed");
+  sh_hw_api_status_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiStatus>(*shopts_, "/" + _uav_name_ + "/hw_api/status");
 
   // | --------------------- service clients -------------------- |
 
@@ -2308,15 +2310,16 @@ bool UAVHandler::hasGoal(void) {
 
 bool UAVHandler::mrsSystemReady(void) {
 
-  bool got_control_manager_diag    = sh_control_manager_diag_.hasMsg();
-  bool got_uav_manager_diag        = sh_uav_manager_diag_.hasMsg();
-  bool got_gain_manager_diag       = sh_gain_manager_diag_.hasMsg();
-  bool got_constraint_manager_diag = sh_constraint_manager_diag_.hasMsg();
-  bool got_estimation_manager_diag = sh_estim_manager_diag_.hasMsg();
-  bool got_uav_state               = sh_uav_state_.hasMsg();
+  bool got_control_manager_diag     = sh_control_manager_diag_.hasMsg();
+  bool got_uav_manager_diag         = sh_uav_manager_diag_.hasMsg();
+  bool got_gain_manager_diag        = sh_gain_manager_diag_.hasMsg();
+  bool got_safety_area_manager_diag = sh_safety_area_manager_diag_.hasMsg();
+  bool got_constraint_manager_diag  = sh_constraint_manager_diag_.hasMsg();
+  bool got_estimation_manager_diag  = sh_estim_manager_diag_.hasMsg();
+  bool got_uav_state                = sh_uav_state_.hasMsg();
 
   return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag &&
-         got_uav_state;
+         got_uav_state && got_safety_area_manager_diag;
 }
 
 //}
