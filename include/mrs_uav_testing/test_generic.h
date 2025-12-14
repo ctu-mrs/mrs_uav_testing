@@ -142,8 +142,8 @@ public:
 
   tuple<bool, string> validateReference(const mrs_msgs::msg::ReferenceStamped &msg);
 
-  tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>> validateReferenceArray(
-      const mrs_msgs::srv::ValidateReferenceArray::Request &request);
+  tuple<bool, std::optional<mrs_msgs::srv::ValidateReferenceArray::Response>>
+  validateReferenceArray(const mrs_msgs::srv::ValidateReferenceArray::Request &request);
 
   std::tuple<bool, std::optional<std::string>, std::optional<geometry_msgs::msg::PoseStamped>> transformPose(const geometry_msgs::msg::PoseStamped &msg,
                                                                                                              std::string target_frame);
@@ -285,6 +285,6 @@ private:
 
 //}
 
-}  // namespace mrs_uav_testing
+} // namespace mrs_uav_testing
 
-#endif  // TEST_GENERIC_H
+#endif // TEST_GENERIC_H
