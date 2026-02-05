@@ -12,11 +12,11 @@ public:
   }
 
   bool test(void);
+
+  std::shared_ptr<mrs_uav_testing::UAVHandler> uh_;
 };
 
 bool Tester::test(void) {
-
-  std::shared_ptr<mrs_uav_testing::UAVHandler> uh;
 
   {
     auto [uhopt, message] = getUAVHandler("uav1");
@@ -26,11 +26,11 @@ bool Tester::test(void) {
       return false;
     }
 
-    uh = uhopt.value();
+    uh_ = uhopt.value();
   }
 
   {
-    auto [success, message] = uh->activateMidAir();
+    auto [success, message] = uh_->activateMidAir();
 
     if (!success) {
       RCLCPP_ERROR(node_->get_logger(), "midair activation failed with message: '%s'", message.c_str());
@@ -39,7 +39,7 @@ bool Tester::test(void) {
   }
 
   {
-    auto [success, message] = uh->gotoRel(1, 2, 3, 1);
+    auto [success, message] = uh_->gotoRel(1, 2, 3, 1);
 
     if (!success) {
       RCLCPP_ERROR(node_->get_logger(), "goto relative failed with message: '%s'", message.c_str());
@@ -49,7 +49,7 @@ bool Tester::test(void) {
 
   sleep(5.0);
 
-  if (uh->isFlyingNormally()) {
+  if (uh_->isFlyingNormally()) {
     return true;
   } else {
     RCLCPP_ERROR(node_->get_logger(), "not flying normally");
