@@ -48,22 +48,21 @@
             ros.ament-cmake-core
             ros.builtin-interfaces
             ros.rclcpp
-            ros.launch_ros
+            ros.launch-ros
             mrs_lib_pkg
             mrs_msgs_pkg
             pkgs.yaml-cpp
-            pkgs.backward-ros
+            pkgs.boost
+            ros.backward-ros
+            ros.tf2-geometry-msgs
+            ros.tf2-eigen
           ];
 
           # PUBLIC dependencies. 
           # These automatically transition to any downstream package.
           propagatedBuildInputs = [ 
             ros.rclcpp
-            ros.launch_ros
-            mrs_lib_pkg
-            mrs_msgs_pkg
-            pkgs.yaml-cpp
-            pkgs.backward-ros
+            ros.launch-ros
           ];
         };
 
