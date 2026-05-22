@@ -49,13 +49,6 @@
             ros.builtin-interfaces
             ros.rclcpp
             ros.launch-ros
-            mrs_lib_pkg
-            mrs_msgs_pkg
-            pkgs.yaml-cpp
-            pkgs.boost
-            ros.backward-ros
-            ros.tf2-geometry-msgs
-            ros.tf2-eigen
           ];
 
           # PUBLIC dependencies. 
@@ -63,6 +56,13 @@
           propagatedBuildInputs = [ 
             ros.rclcpp
             ros.launch-ros
+            ros.backward-ros
+            pkgs.boost
+            pkgs.yaml-cpp
+            mrs_lib_pkg
+            mrs_msgs_pkg
+            ros.tf2-geometry-msgs
+            ros.tf2-eigen
           ];
         };
 
