@@ -11,6 +11,9 @@
     mrs_lib_repo.url = "github:ctu-mrs/mrs_lib/nix";
     mrs_lib_repo.inputs.nixpkgs.follows = "nix-ros-overlay/nixpkgs";
     mrs_lib_repo.inputs.nix-ros-overlay.follows = "nix-ros-overlay";
+    mrs_lib_repo.inputs.ros-nixpkgs.follows = "ros-nixpkgs";
+    mrs_lib_repo.inputs.devenv.follows = "devenv";
+    mrs_lib_repo.inputs.flake-parts.follows = "flake-parts";
   };
 
   outputs = inputs@{ flake-parts, ... }:
