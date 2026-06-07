@@ -58,7 +58,7 @@ def generate_launch_description():
 
     declare_standalone = DeclareLaunchArgument(
         'standalone',
-        default_value='true',
+        default_value='false',
         description='Whether to start in standalone mode.'
     )
 
