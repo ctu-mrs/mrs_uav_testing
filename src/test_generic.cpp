@@ -158,7 +158,11 @@ void TestGeneric::initialize(void) {
   if (config_files.size() > 0) {
 
     for (size_t i = 0; i < config_files.size(); i++) {
-      pl_->addYamlFile(config_files[i]);
+      if (!pl_->addYamlFile(config_files[i])) {
+        RCLCPP_ERROR(node_->get_logger(), "failed to load config file '%s'", config_files[i].c_str());
+        rclcpp::shutdown();
+        exit(1);
+      }
     }
   }
 
