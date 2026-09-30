@@ -166,31 +166,6 @@ def generate_launch_description():
 
     # #} end of network_config
 
-    # #{ automatic_start_config
-
-    automatic_start_config = LaunchConfiguration('automatic_start_config')
-
-    # this adds the args to the list of args available for this launch files
-    # these args can be listed at runtime using -s flag
-    # default_value is required to if the arg is supposed to be optional at launch time
-    ld.add_action(DeclareLaunchArgument(
-        'automatic_start_config',
-        default_value="",
-        description="Path to the custom configuration file. The path can be absolute, starting with '/' or relative to the current working directory",
-        ))
-
-    # behaviour:
-    #     automatic_start_config == "" => automatic_start_config: ""
-    #     automatic_start_config == "/<path>" => automatic_start_config: "/<path>"
-    #     automatic_start_config == "<path>" => automatic_start_config: "$(pwd)/<path>"
-    automatic_start_config = IfElseSubstitution(
-            condition=PythonExpression(['"', automatic_start_config, '" != "" and ', 'not "', automatic_start_config, '".startswith("/")']),
-            if_value=PathJoinSubstitution([EnvironmentVariable('PWD'), automatic_start_config]),
-            else_value=automatic_start_config
-            )
-
-    # #} end of automatic_start_config
-
     # #{ use_sim_time
 
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -210,7 +185,7 @@ def generate_launch_description():
                     FindPackageShare('mrs_uav_autostart'), '/launch/automatic_start.launch.py'
                 ]),
                 launch_arguments={
-                    'custom_config': automatic_start_config,
+                    'custom_config': custom_config,
                     'uav_name': uav_name,
                     'use_sim_time': use_sim_time,
                 }.items(),
