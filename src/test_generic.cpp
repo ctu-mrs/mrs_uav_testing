@@ -2321,9 +2321,10 @@ bool UAVHandler::mrsSystemReady(void) {
   bool got_constraint_manager_diag  = sh_constraint_manager_diag_.hasMsg();
   bool got_estimation_manager_diag  = sh_estim_manager_diag_.hasMsg();
   bool got_uav_state                = sh_uav_state_.hasMsg();
+  bool got_current_constraints      = sh_current_constraints_.hasMsg();
 
   return got_control_manager_diag && got_estimation_manager_diag && got_uav_manager_diag && got_gain_manager_diag && got_constraint_manager_diag &&
-         got_uav_state && got_safety_area_manager_diag;
+         got_uav_state && got_safety_area_manager_diag && got_current_constraints;
 }
 
 //}
